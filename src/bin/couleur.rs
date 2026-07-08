@@ -1,8 +1,8 @@
-use clap::{Parser, Subcommand};
+use clap::Parser;
 
 use couleur::{Error, Exit, Result};
 
-use couleur::dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
+use couleur::dispatch::ParserDispatcher;
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]

@@ -1,8 +1,8 @@
-use couleur::{Error, Result};
-use couleur::{FloatMetadata, leading_zeros_fractional};
+use couleur::FloatMetadata;
+use couleur::Result;
 use iocore::Path;
 use k9::assert_equal;
-use std::cmp::{max, min};
+
 #[test]
 fn test_to_string() -> Result<()> {
     let val = 127.00141516f64;
