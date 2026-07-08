@@ -1,6 +1,7 @@
+use crate::float::{f32_metadata, leading_zeros_exp, leading_zeros_fractional};
 use crate::{
-    ConversionToU8Error, Error, FloatMetadata, Result, RgbTriple, SINGLE_BAND_DECIMAL_RGB_REGEX,
-    SINGLE_BAND_HEX_RGB_REGEX, U8Triple, impl_op,
+    ConversionToU8Error, Error, FloatMetadata, Result, SINGLE_BAND_DECIMAL_RGB_REGEX,
+    SINGLE_BAND_HEX_RGB_REGEX, impl_op,
 };
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::ops::{
@@ -8,8 +9,10 @@ use std::ops::{
     DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
 };
 use std::str::FromStr;
+
 #[derive(Clone, Copy, Debug)]
 pub struct RGBValue(f32);
+
 impl RGBValue {
     pub fn new<T: Copy + Into<f32>>(value: T) -> RGBValue {
         RGBValue::from_f32(value.into())
@@ -39,7 +42,7 @@ impl RGBValue {
                     "cannot convert {value} to u8 because the value is out of boundary: {value} > 255",
                     value = self.0
                 ),
-            )))
+            ).to_string()))
         } else if value < 0.0 {
             Err(Error::ConversionToU8Error(ConversionToU8Error(
                 value,
@@ -47,7 +50,7 @@ impl RGBValue {
                     "cannot convert {value} to u8 because the value is out of boundary: {value} < 0",
                     value = self.0
                 ),
-            )))
+            ).to_string()))
         } else {
             Ok(value.ceil() as u8)
         }
@@ -97,6 +100,7 @@ impl RGBValue {
         )
     }
 }
+
 impl Deref for RGBValue {
     type Target = f32;
 
@@ -104,6 +108,7 @@ impl Deref for RGBValue {
         &self.0
     }
 }
+
 impl FromStr for RGBValue {
     type Err = Error;
     fn from_str(value: &str) -> std::result::Result<RGBValue, Error> {
@@ -118,48 +123,17 @@ impl FromStr for RGBValue {
                     Some(band) => {
                         let parsed = u8::from_str_radix(band.as_str(), 16)?;
                         Ok(RGBValue(parsed as f32))
-                    },
-                    None => Err(Error::ParseError(format!("cannot parse RGB value (number from 0 to 255) from {value:#?}"))),
-                }
-                None => Err(Error::ParseError(format!("cannot parse RGB value (number from 0 to 255) from {value:#?}"))),
+                    }
+                    None => Err(Error::ParseError(format!(
+                        "cannot parse RGB value (number from 0 to 255) from {value:#?}"
+                    ))),
+                },
+                None => Err(Error::ParseError(format!(
+                    "cannot parse RGB value (number from 0 to 255) from {value:#?}"
+                ))),
             },
         }
     }
-}
-pub fn f32_metadata<T: Copy + Deref<Target = f32>>(float: T) -> (bool, i32, i32, i32, usize) {
-    let value = RGBValue(*float);
-    let negative = value.round() < 0.0;
-
-    let float_round = value.round().copysign(1.0);
-
-    let float_fract = value.fract().copysign(1.0);
-    let exp = leading_zeros_exp(value);
-
-    (
-        negative,
-        float_round as i32,
-        float_fract as i32,
-        exp as i32,
-        leading_zeros_fractional(float),
-    )
-}
-pub fn leading_zeros_fractional<T: Copy + Deref<Target = f32>>(float: T) -> usize {
-    let s = float.to_string();
-    if let Some(dot_idx) = s.find('.') {
-        s[dot_idx + 1..].chars().take_while(|&c| c == '0').count()
-    } else {
-        0
-    }
-}
-pub fn leading_zeros_exp<T: Copy + Deref<Target = f32>>(float: T) -> i32 {
-    let float_fract_leading_zeroes = leading_zeros_fractional(float);
-    let float_fract = float.fract().copysign(1.0_f32);
-    let mut exp = float.fract();
-    for _ in 0..float_fract_leading_zeroes {
-        exp = exp * 10.0;
-    }
-    assert!(exp >= 0.0, "expected {exp} to be >= 0.0");
-    return exp as i32;
 }
 
 impl std::fmt::Display for RGBValue {
@@ -288,28 +262,3 @@ impl_op!(Sub, sub, value, -);
 impl_op!(Div, div, value, /);
 impl_op!(Mul, mul, value, *);
 impl_op!(Rem, rem, value, %);
-
-#[macro_export]
-macro_rules! impl_op {
-    ($ops_trait:ident, $trait_meth:ident, $value_meth:ident, $operator:tt $(,)?) => {
-        // impl $ops_trait for RGBValue {
-        //     type Output = RGBValue;
-        //     fn $trait_meth(self, rhs: RGBValue) -> Self::Output {
-        //         RGBValue(self.$value_meth() $operator rhs.$value_meth())
-        //     }
-        // }
-        // impl $ops_trait<f32> for RGBValue {
-        //     type Output = RGBValue;
-        //     fn $trait_meth(self, rhs: f32) -> Self::Output {
-        //         RGBValue(self.$value_meth() $operator rhs)
-        //     }
-        // }
-        impl<T> $ops_trait<T> for RGBValue where T: Into<RGBValue> {
-            type Output = RGBValue;
-            fn $trait_meth(self, rhs: T) -> Self::Output {
-                let rhs_value = RGBValue(*rhs.into());
-                RGBValue(self.$value_meth() $operator *rhs_value)
-            }
-        }
-    };
-}

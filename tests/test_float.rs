@@ -1,5 +1,5 @@
-use super::{FloatMetadata, leading_zeros_fractional};
-use crate::{Error, Result};
+use couleur::{Error, Result};
+use couleur::{FloatMetadata, leading_zeros_fractional};
 use iocore::Path;
 use k9::assert_equal;
 use std::cmp::{max, min};

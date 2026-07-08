@@ -1,35 +1,15 @@
 use std::fmt::Display;
-
+use std::num::ParseIntError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Error {
     IOError(String),
     RuntimeError(String),
+    ConversionToU8Error(String),
 
     ClapError(String),
-
-    ColorEyreError(String),
-
-    HeckError(String),
-
-    HexError(String),
-
-    IocoreError(String),
-
-    OgEnumToStringError(String),
-
-    OwoColorsError(String),
-
-    RegexError(String),
-
-    Rgb2ansi256Error(String),
-
-    SerdeError(String),
-
-    SupportsColorError(String),
-
-    ThiserrorError(String),
+    ParseError(String),
 }
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -38,32 +18,12 @@ impl Display for Error {
             "{}: {}",
             self.variant(),
             match self {
-                Error::IOError(e) => e.to_string(),
-                Error::RuntimeError(e) => e.to_string(),
+                Error::IOError(value) => value,
+                Error::RuntimeError(value) => value,
+                Error::ConversionToU8Error(value) => value,
 
-                Error::ClapError(e) => e.to_string(),
-
-                Error::ColorEyreError(e) => e.to_string(),
-
-                Error::HeckError(e) => e.to_string(),
-
-                Error::HexError(e) => e.to_string(),
-
-                Error::IocoreError(e) => e.to_string(),
-
-                Error::OgEnumToStringError(e) => e.to_string(),
-
-                Error::OwoColorsError(e) => e.to_string(),
-
-                Error::RegexError(e) => e.to_string(),
-
-                Error::Rgb2ansi256Error(e) => e.to_string(),
-
-                Error::SerdeError(e) => e.to_string(),
-
-                Error::SupportsColorError(e) => e.to_string(),
-
-                Error::ThiserrorError(e) => e.to_string(),
+                Error::ClapError(value) => value,
+                Error::ParseError(value) => value,
             }
         )
     }
@@ -72,32 +32,12 @@ impl Display for Error {
 impl Error {
     pub fn variant(&self) -> String {
         match self {
-            Error::IOError(_) => "IOError",
-            Error::RuntimeError(_) => "RuntimeError",
+            Error::IOError(value) => value.to_string(),
+            Error::RuntimeError(value) => value.to_string(),
+            Error::ConversionToU8Error(value) => value.to_string(),
 
-            Error::ClapError(_) => "ClapError",
-
-            Error::ColorEyreError(_) => "ColorEyreError",
-
-            Error::HeckError(_) => "HeckError",
-
-            Error::HexError(_) => "HexError",
-
-            Error::IocoreError(_) => "IocoreError",
-
-            Error::OgEnumToStringError(_) => "OgEnumToStringError",
-
-            Error::OwoColorsError(_) => "OwoColorsError",
-
-            Error::RegexError(_) => "RegexError",
-
-            Error::Rgb2ansi256Error(_) => "Rgb2ansi256Error",
-
-            Error::SerdeError(_) => "SerdeError",
-
-            Error::SupportsColorError(_) => "SupportsColorError",
-
-            Error::ThiserrorError(_) => "ThiserrorError",
+            Error::ClapError(value) => value.to_string(),
+            Error::ParseError(value) => value.to_string(),
         }
         .to_string()
     }
@@ -114,8 +54,38 @@ impl From<iocore::Error> for Error {
         Error::IOError(e.to_string())
     }
 }
+impl From<ParseIntError> for Error {
+    fn from(e: ParseIntError) -> Self {
+        Error::ParseError(e.to_string())
+    }
+}
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConversionToU8Error(pub f32, pub String);
+impl std::error::Error for ConversionToU8Error {}
+impl Display for ConversionToU8Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let (from_value, message) = (self.0, self.1.to_string());
+        write!(f, "Failed to convert {from_value}u8 to f32: {message}")
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ConversionToF32Error(pub u8, pub String);
+impl std::error::Error for ConversionToF32Error {}
+
+impl Display for ConversionToF32Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let (from_value, message) = (self.0, self.1.to_string());
+        write!(f, "Failed to convert {from_value}f32 to u8: {message}")
+    }
+}
+impl Into<Error> for ConversionToF32Error {
+    fn into(self) -> Error {
+        Error::ConversionToU8Error(ConversionToF32Error(self.0 as u8, format!("cannot convert {} to f32", self.0)).to_string())
+    }
+}
 #[derive(Debug, Clone)]
 pub enum Exit {
     Success,

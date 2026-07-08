@@ -30,7 +30,7 @@ codegen-units = 1
 
 
 [lib]
-name = "couleur_rs"
+name = "couleur"
 path = "src/lib.rs"
 
 doctest = false
