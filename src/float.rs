@@ -35,7 +35,7 @@ impl<'a> FloatMetadata<'a> {
         let float_round = value.round();
 
         let float_fract = value.fract();
-        let nonzero_fract = leading_zeros_fractional(&value);
+        let leading_fract = leading_zeros_fractional(&value);
         // dbg!(leading_fract, nonzero_fract);
         FloatMetadata::from_parts((
             value,
@@ -51,25 +51,6 @@ impl std::fmt::Display for FloatMetadata<'_> {
         write!(f, "{}", self.value)
     }
 }
-// pub fn leading_zeros_fractional<T: Copy + Deref<Target = f32>>(float: T) -> usize {
-//     let s = float.to_string();
-//     if let Some(dot_idx) = s.find('.') {
-//         s[dot_idx + 1..].chars().take_while(|&c| c == '0').count()
-//     } else {
-//         0
-//     }
-// }
-// pub fn leading_zeros_exp<T: Copy + Deref<Target = f32>>(float: T) -> i32 {
-//     let float_fract_leading_zeroes = leading_zeros_fractional(float);
-//     let float_fract = float.fract().copysign(1.0_f32);
-//     let mut exp = float.fract();
-//     for _ in 0..float_fract_leading_zeroes {
-//         exp = exp * 10.0;
-//     }
-//     assert!(exp >= 0.0, "expected {exp} to be >= 0.0");
-//     return exp as i32;
-// }
-
 pub fn f32_metadata<T: Copy + Deref<Target = f64>>(float: T) -> (bool, i32, i32, i32, usize) {
     let value = RGBValue(*float);
     let negative = value.round() < 0.0;
