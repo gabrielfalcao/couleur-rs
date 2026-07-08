@@ -15,6 +15,9 @@ pub struct Cli {
 
     #[arg(short, long)]
     reset: bool,
+
+    #[arg()]
+    text: Vec<String>,
 }
 impl Cli {
     pub fn bg_code(&self) -> String {
@@ -35,11 +38,9 @@ impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let reset = "\x1b[0m";
         println!(
-            "{}{} {}{}{reset}",
+            "{}{}{reset}",
             &self.fg(225, 184,  86),
-            "Hello",
-            &self.fg(141, 204, 48),
-            "World"
+            self.text.join(" "),
         );
 
         Ok(())
