@@ -98,6 +98,10 @@ impl RGBValue {
             self.leading_zeros_fractional(),
         )
     }
+    pub fn to_hex_rgb(&self) -> String {
+        let red = self.value() as u8;
+        format!("#{red:02X}B08B")
+    }
 }
 
 impl Deref for RGBValue {
