@@ -1,4 +1,4 @@
-use crate::float::{f32_metadata, leading_zeros_exp, leading_zeros_fractional};
+use crate::float::{leading_zeros_exp, leading_zeros_fractional};
 use crate::{
     ConversionToU8Error, Error, FloatMetadata, Result, SINGLE_BAND_DECIMAL_RGB_REGEX,
     SINGLE_BAND_HEX_RGB_REGEX, impl_op,
@@ -11,7 +11,7 @@ use std::ops::{
 use std::str::FromStr;
 
 #[derive(Clone, Copy, Debug)]
-pub struct RGBValue(f32);
+pub struct RGBValue(pub f32);
 
 impl RGBValue {
     pub fn new<T: Copy + Into<f32>>(value: T) -> RGBValue {
@@ -33,8 +33,7 @@ impl RGBValue {
         self.value().copysign(*other)
     }
     pub fn to_u8(&self) -> Result<u8> {
-        let value = self.value();
-        // todo: clamp(0.0, 255.0)
+        let value = self.value().clamp(0.0, 255.0);
         if value > 255.0 {
             Err(Error::ConversionToU8Error(ConversionToU8Error(
                 value,
