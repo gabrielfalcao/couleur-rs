@@ -2,7 +2,7 @@ use std::fmt::Display;
 use std::num::ParseIntError;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     IOError(String),
     RuntimeError(String),
