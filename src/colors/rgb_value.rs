@@ -63,7 +63,7 @@ impl RGBValue {
     pub fn from_u8(value: u8) -> RGBValue {
         RGBValue(value as f32)
     }
-    fn leading_zeros_fractional(&self) -> usize {
+    pub fn leading_zeros_fractional(&self) -> usize {
         let s = self.to_string();
         if let Some(dot_idx) = s.find('.') {
             s[dot_idx + 1..].chars().take_while(|&c| c == '0').count()
