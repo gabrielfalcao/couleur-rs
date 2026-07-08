@@ -6,7 +6,7 @@ use std::cmp::{max, min};
 #[test]
 fn test_parse_from_hex() -> Result<()> {
     let result = "ff".parse::<RGBValue>()?;
-    assert_eq!(result, 255);
+    assert_eq!(result, 255.0);
     Ok(())
 }
 
