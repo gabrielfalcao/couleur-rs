@@ -1,0 +1,65 @@
+[package]
+name = "couleur-rs"
+version = "0.0.1"
+description = "couleur-rs command-line"
+readme = "README.md"
+homepage = "https://crates.io/crates/couleur-rs"
+license = "MIT OR Apache-2.0"
+edition = "2024"
+autoexamples = false
+autobenches = false
+# default-run = "couleur-rs"
+
+# categories = [] # https://crates.io/category_slugs
+
+
+[package.metadata]
+targets = [
+    # "aarch64-apple-darwin",
+    # "x86_64-unknown-linux-gnu",
+    # "aarch64-unknown-linux-gnu",
+]
+
+[profile.release] # https://github.com/johnthagen/min-sized-rust
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size. https://doc.rust-lang.org/cargo/reference/profiles.html#opt-level
+lto = true
+panic = "abort"
+codegen-units = 1
+# https://github.com/johnthagen/min-sized-rust?tab=readme-ov-file#remove-fmtdebug
+
+
+
+[lib]
+name = "couleur_rs"
+path = "src/lib.rs"
+
+doctest = false
+bench = false
+
+
+[[bin]]
+name = "couleur-rs"
+path = "src/main.rs"
+doctest = false
+bench = false
+doc = false
+test = false
+
+[dependencies]
+clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }
+color-eyre = "0.6.5"
+heck = "0.5.0"
+hex = "0.4.3"
+iocore = "3.1.0"
+og-enum-to-string = "0.1.0"
+owo-colors = { version = "4.3.0", features = ["supports-colors", "supports-color"] }
+regex = "1.12.4"
+rgb2ansi256 = "0.1.1"
+serde = { version = "1.0.228", features = ["derive"] }
+supports-color = "3.0.2"
+thiserror = "2.0.18"
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
+
