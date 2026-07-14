@@ -1,23 +1,23 @@
 use clap::Parser;
 
 use couleur_rs::{Error, Exit, Result};
-use couleur_rs::Algorithm;
+use couleur_rs::{Algorithm, Reset};
 use couleur_rs::dispatch::ParserDispatcher;
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]
 pub struct Cli {
-    #[arg(long)]
+    #[arg(short, long)]
     bg: Option<String>,
 
-    #[arg(long)]
+    #[arg(short, long)]
     fg: Option<String>,
 
-    #[arg(long)]
-    contrast: Algorithm,
+    #[arg(short, long)]
+    contrast: Option<Algorithm>,
 
     #[arg(short, long)]
-    reset: bool,
+    reset: Option<Reset>,
 
     #[arg()]
     text: Vec<String>,

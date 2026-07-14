@@ -9,3 +9,6 @@ pub use reset::Reset;
 
 pub(crate) mod wrap;
 pub use wrap::Wrap;
+
+pub(crate) mod heck_value;
+pub use heck_value::HeckPossibleValue;
