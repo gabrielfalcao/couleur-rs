@@ -79,7 +79,7 @@ impl RGBValue {
             0
         }
     }
-    pub fn leading_zeros_exp(&self) -> (i32) {
+    pub fn leading_zeros_exp(&self) -> i32 {
         let self_fract_leading_zeroes = self.leading_zeros_fractional();
         let self_fract = self.fract().copysign(1.0_f32);
         let mut exp = self.fract();
