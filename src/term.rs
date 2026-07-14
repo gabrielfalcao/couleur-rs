@@ -1,4 +1,4 @@
-use crate::{ConversionToU8Error, Error, Result, RGBColor};
+use crate::{ConversionToU8Error, Error, RGBColor, Result};
 use owo_colors::Rgb;
 
 pub enum Layer {

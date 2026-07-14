@@ -1,8 +1,8 @@
-use std::fmt::Display;
-use std::num::ParseIntError;
-use std::num::ParseFloatError;
-use serde::{Deserialize, Serialize};
 use crate::colors::RGBParseError;
+use serde::{Deserialize, Serialize};
+use std::fmt::Display;
+use std::num::ParseFloatError;
+use std::num::ParseIntError;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     IOError(String),
@@ -94,7 +94,10 @@ impl Display for ConversionToF32Error {
 }
 impl Into<Error> for ConversionToF32Error {
     fn into(self) -> Error {
-        Error::ConversionToU8Error(ConversionToF32Error(self.0 as u8, format!("cannot convert {} to f32", self.0)).to_string())
+        Error::ConversionToU8Error(
+            ConversionToF32Error(self.0 as u8, format!("cannot convert {} to f32", self.0))
+                .to_string(),
+        )
     }
 }
 #[derive(Debug, Clone)]

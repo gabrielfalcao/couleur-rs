@@ -21,14 +21,20 @@ pub struct Cli {
 }
 impl Cli {
     pub fn bg_code(&self) -> String {
-        self.bg.as_ref().map(|bg| bg.to_string()).unwrap_or_default()
+        self.bg
+            .as_ref()
+            .map(|bg| bg.to_string())
+            .unwrap_or_default()
     }
     pub fn bg(&self, red: u8, green: u8, blue: u8) -> String {
         format!("\x1b[1;48;2;{red};{green};{blue}m")
     }
 
     pub fn fg_code(&self) -> String {
-        self.fg.as_ref().map(|fg| fg.to_string()).unwrap_or_default()
+        self.fg
+            .as_ref()
+            .map(|fg| fg.to_string())
+            .unwrap_or_default()
     }
     pub fn fg(&self, red: u8, green: u8, blue: u8) -> String {
         format!("\x1b[1;38;2;{red};{green};{blue}m")
@@ -37,11 +43,7 @@ impl Cli {
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let reset = "\x1b[0m";
-        println!(
-            "{}{}{reset}",
-            &self.fg(225, 184,  86),
-            self.text.join(" "),
-        );
+        println!("{}{}{reset}", &self.fg(225, 184, 86), self.text.join(" "),);
 
         Ok(())
     }

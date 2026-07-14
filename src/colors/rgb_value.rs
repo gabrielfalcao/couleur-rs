@@ -18,7 +18,7 @@ impl RGBValue {
         let value = value.to_string();
         let string = if value.contains(".") {
             value
-        }else {
+        } else {
             format!("{value}.0")
         };
         Ok(RGBValue(string.parse::<f32>()?))
@@ -276,7 +276,7 @@ impl_op!(Rem, rem, value, %);
 
 #[cfg(test)]
 mod tests {
-    use crate::{Result, RGBValue, RGBColor};
+    use crate::{RGBColor, RGBValue, Result};
     use k9::assert_equal;
     use std::cmp::{max, min};
 
@@ -298,7 +298,10 @@ mod tests {
         // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
         let lightest: RGBColor = "#8FF8E2".parse()?;
         let darkest: RGBColor = "#0B5E65".parse()?;
-        assert_equal!(lightest.get_accessible_contrast(), RGBColor::from_triple(255.into(),255.into(),255.into()));
+        assert_equal!(
+            lightest.get_accessible_contrast(),
+            RGBColor::from_triple(255.into(), 255.into(), 255.into())
+        );
         Ok(())
     }
 }

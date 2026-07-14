@@ -1,12 +1,14 @@
 use crate::{Algorithm, ConversionToU8Error, Error, RGBValue, Result, RgbTriple, max_rgb, min_rgb};
 use owo_colors::Rgb;
-use std::ops::Deref;
-use std::sync::LazyLock;
-use std::str::FromStr;
 use regex::Regex;
+use std::ops::Deref;
+use std::str::FromStr;
+use std::sync::LazyLock;
 use thiserror::Error as ThisError;
-pub static BLACK: LazyLock<RGBColor> = LazyLock::new(|| RGBColor::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
-pub static WHITE: LazyLock<RGBColor> = LazyLock::new(|| RGBColor::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
+pub static BLACK: LazyLock<RGBColor> =
+    LazyLock::new(|| RGBColor::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
+pub static WHITE: LazyLock<RGBColor> =
+    LazyLock::new(|| RGBColor::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
 
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq)]
 pub struct RGBColor(pub RGBValue, pub RGBValue, pub RGBValue);
@@ -72,7 +74,11 @@ impl RGBColor {
         let max_val = max_rgb(r, g, b);
         let min_val = min_rgb(r, g, b);
         let target = max_val + min_val;
-        RGBColor((target - r).copysign(& 1.0).into(), (target - g).copysign(& 1.0).into(), (target - b).copysign(& 1.0).into())
+        RGBColor(
+            (target - r).copysign(&1.0).into(),
+            (target - g).copysign(&1.0).into(),
+            (target - b).copysign(&1.0).into(),
+        )
     }
 
     pub fn get_wcag_luminance(&self) -> f32 {
@@ -111,7 +117,7 @@ impl From<RgbTriple> for RGBColor {
 #[derive(Clone, Debug, ThisError)]
 pub enum RGBParseError {
     #[error("failed to parse color {0}")]
-    HexParseError(String)
+    HexParseError(String),
 }
 
 impl<T> From<(T, T, T)> for RGBColor
@@ -131,7 +137,10 @@ where
     }
 }
 
-pub static RGB_COLOR_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(?<red>[a-fA-F0-9]{1,2})(?<green>[a-fA-F0-9]{1,2})(?<blue>[a-fA-F0-9]{1,2})").unwrap());
+pub static RGB_COLOR_REGEX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?<red>[a-fA-F0-9]{1,2})(?<green>[a-fA-F0-9]{1,2})(?<blue>[a-fA-F0-9]{1,2})")
+        .unwrap()
+});
 
 impl FromStr for RGBColor {
     type Err = Error;
@@ -139,26 +148,51 @@ impl FromStr for RGBColor {
     fn from_str(s: &str) -> Result<RGBColor> {
         match RGB_COLOR_REGEX.captures(s) {
             Some(captures) => {
-                let red_value = captures.name("red").map(|s|s.as_str().to_string()).expect("red");
-                let green_value = captures.name("green").map(|s|s.as_str().to_string()).expect("green");
-                let blue_value = captures.name("blue").map(|s|s.as_str().to_string()).expect("blue");
-                let red = u8::from_str_radix(&captures.name("red").map(|s|s.as_str().to_string()).unwrap(), 16)?;
-                let green = u8::from_str_radix(&captures.name("green").map(|s|s.as_str().to_string()).unwrap(), 16)?;
-                let blue = u8::from_str_radix(&captures.name("blue").map(|s|s.as_str().to_string()).unwrap(), 16)?;
+                let red_value = captures
+                    .name("red")
+                    .map(|s| s.as_str().to_string())
+                    .expect("red");
+                let green_value = captures
+                    .name("green")
+                    .map(|s| s.as_str().to_string())
+                    .expect("green");
+                let blue_value = captures
+                    .name("blue")
+                    .map(|s| s.as_str().to_string())
+                    .expect("blue");
+                let red = u8::from_str_radix(
+                    &captures
+                        .name("red")
+                        .map(|s| s.as_str().to_string())
+                        .unwrap(),
+                    16,
+                )?;
+                let green = u8::from_str_radix(
+                    &captures
+                        .name("green")
+                        .map(|s| s.as_str().to_string())
+                        .unwrap(),
+                    16,
+                )?;
+                let blue = u8::from_str_radix(
+                    &captures
+                        .name("blue")
+                        .map(|s| s.as_str().to_string())
+                        .unwrap(),
+                    16,
+                )?;
                 let r = RGBValue::from_u8(red)?;
                 let g = RGBValue::from_u8(green)?;
                 let b = RGBValue::from_u8(blue)?;
-                Ok(RGBColor(r,g,b))
-            },
-            None => {
-                Err(RGBParseError::HexParseError(s.to_string()).into())
+                Ok(RGBColor(r, g, b))
             }
+            None => Err(RGBParseError::HexParseError(s.to_string()).into()),
         }
     }
 }
 #[cfg(test)]
 mod tests {
-    use crate::{Result, RGBValue, RGBColor};
+    use crate::{RGBColor, RGBValue, Result};
     use k9::assert_equal;
     use std::cmp::{max, min};
 
@@ -169,7 +203,14 @@ mod tests {
         let light_pink = "#FCA790".parse::<RGBColor>()?;
         let lightest_pink = "#FDCBB0".parse::<RGBColor>()?;
 
-        assert_eq!(dark_pink.to_triple(), (RGBValue::from_u8(0xC3)?, RGBValue::from_u8(0x24)?, RGBValue::from_u8(0x54)?));
+        assert_eq!(
+            dark_pink.to_triple(),
+            (
+                RGBValue::from_u8(0xC3)?,
+                RGBValue::from_u8(0x24)?,
+                RGBValue::from_u8(0x54)?
+            )
+        );
 
         Ok(())
     }
@@ -182,8 +223,14 @@ mod tests {
         // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
         let lightest: RGBColor = "#8FF8E2".parse()?;
         let darkest: RGBColor = "#0B5E65".parse()?;
-        assert_equal!(lightest.get_accessible_contrast(), RGBColor::from_triple(255.into(),255.into(),255.into()));
-        assert_equal!(darkest.get_accessible_contrast(), RGBColor::from_triple(0.into(),0.into(),0.into()));
+        assert_equal!(
+            lightest.get_accessible_contrast(),
+            RGBColor::from_triple(255.into(), 255.into(), 255.into())
+        );
+        assert_equal!(
+            darkest.get_accessible_contrast(),
+            RGBColor::from_triple(0.into(), 0.into(), 0.into())
+        );
         Ok(())
     }
     #[test]
@@ -195,8 +242,52 @@ mod tests {
         // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
         let lightest: RGBColor = "#8FF8E2".parse()?;
         let darkest: RGBColor = "#0B5E65".parse()?;
-        assert_equal!(lightest.get_adobe_complementary(), RGBColor::from_triple(7.into(),112.into(),90.into()));
-        assert_equal!(darkest.get_adobe_complementary(), RGBColor::from_triple(101.into(),18.into(),11.into()));
+        assert_equal!(
+            lightest.get_adobe_complementary(),
+            RGBColor::from_triple(7.into(), 112.into(), 90.into())
+        );
+        assert_equal!(
+            darkest.get_adobe_complementary(),
+            RGBColor::from_triple(101.into(), 18.into(), 11.into())
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_and_get_binary_contrast() -> Result<()> {
+        // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
+        // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
+        // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
+        // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
+        // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+        let lightest: RGBColor = "#8FF8E2".parse()?;
+        let darkest: RGBColor = "#0B5E65".parse()?;
+        assert_equal!(
+            lightest.get_binary_contrast(),
+            RGBColor::from_triple(255.into(), 255.into(), 255.into())
+        );
+        assert_equal!(
+            darkest.get_binary_contrast(),
+            RGBColor::from_triple(0.into(), 0.into(), 0.into())
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_and_get_msb_invert_contrast() -> Result<()> {
+        // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
+        // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
+        // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
+        // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
+        // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+        let lightest: RGBColor = "#8FF8E2".parse()?;
+        let darkest: RGBColor = "#0B5E65".parse()?;
+        assert_equal!(
+            lightest.get_msb_invert_contrast(),
+            RGBColor::from_triple(15.into(), 120.into(), 98.into())
+        );
+        assert_equal!(
+            darkest.get_msb_invert_contrast(),
+            RGBColor::from_triple(139.into(), 222.into(), 229.into())
+        );
         Ok(())
     }
 }
