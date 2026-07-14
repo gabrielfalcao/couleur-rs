@@ -75,6 +75,6 @@ unstable_features = false
 use_field_init_shorthand = false
 use_small_heuristics = "Default"
 use_try_shorthand = false
-version = "One"
+# version = "One"
 where_single_line = false
 wrap_comments = false
