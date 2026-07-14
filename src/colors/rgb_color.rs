@@ -72,7 +72,7 @@ impl RGBColor {
         let max_val = max_rgb(r, g, b);
         let min_val = min_rgb(r, g, b);
         let target = max_val + min_val;
-        RGBColor(target - r, target - g, target - b)
+        RGBColor((target - r).copysign(& 1.0).into(), (target - g).copysign(& 1.0).into(), (target - b).copysign(& 1.0).into())
     }
 
     pub fn get_wcag_luminance(&self) -> f32 {
@@ -173,16 +173,30 @@ mod tests {
 
         Ok(())
     }
-    // #[test]
-    // fn test_parse_and_get_accessible_contrast() -> Result<()> {
-    //     // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
-    //     // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
-    //     // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
-    //     // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
-    //     // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
-    //     let lightest: RGBColor = "#8FF8E2".parse()?;
-    //     let darkest: RGBColor = "#0B5E65".parse()?;
-    //     assert_equal!(lightest.get_accessible_contrast(), RGBColor::from_triple(255.into(),255.into(),255.into()));
-    //     Ok(())
-    // }
+    #[test]
+    fn test_parse_and_get_accessible_contrast() -> Result<()> {
+        // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
+        // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
+        // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
+        // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
+        // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+        let lightest: RGBColor = "#8FF8E2".parse()?;
+        let darkest: RGBColor = "#0B5E65".parse()?;
+        assert_equal!(lightest.get_accessible_contrast(), RGBColor::from_triple(255.into(),255.into(),255.into()));
+        assert_equal!(darkest.get_accessible_contrast(), RGBColor::from_triple(0.into(),0.into(),0.into()));
+        Ok(())
+    }
+    #[test]
+    fn test_parse_and_get_adobe_complementary() -> Result<()> {
+        // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
+        // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
+        // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
+        // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
+        // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+        let lightest: RGBColor = "#8FF8E2".parse()?;
+        let darkest: RGBColor = "#0B5E65".parse()?;
+        assert_equal!(lightest.get_adobe_complementary(), RGBColor::from_triple(7.into(),112.into(),90.into()));
+        assert_equal!(darkest.get_adobe_complementary(), RGBColor::from_triple(101.into(),18.into(),11.into()));
+        Ok(())
+    }
 }
