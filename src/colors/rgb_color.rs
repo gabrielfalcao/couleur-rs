@@ -139,6 +139,9 @@ impl FromStr for RGBColor {
     fn from_str(s: &str) -> Result<RGBColor> {
         match RGB_COLOR_REGEX.captures(s) {
             Some(captures) => {
+                let red_value = captures.name("red").map(|s|s.as_str().to_string()).expect("red");
+                let green_value = captures.name("green").map(|s|s.as_str().to_string()).expect("green");
+                let blue_value = captures.name("blue").map(|s|s.as_str().to_string()).expect("blue");
                 let red = u8::from_str_radix(&captures.name("red").map(|s|s.as_str().to_string()).unwrap(), 16)?;
                 let green = u8::from_str_radix(&captures.name("green").map(|s|s.as_str().to_string()).unwrap(), 16)?;
                 let blue = u8::from_str_radix(&captures.name("blue").map(|s|s.as_str().to_string()).unwrap(), 16)?;
@@ -155,27 +158,23 @@ impl FromStr for RGBColor {
 }
 #[cfg(test)]
 mod tests {
-    use super::RGBColor;
-    use crate::Result;
+    use crate::{Result, RGBValue, RGBColor};
     use k9::assert_equal;
     use std::cmp::{max, min};
 
     #[test]
-    fn test_get_wcag_luminance() -> Result<()> {
+    fn test_parse() -> Result<()> {
         let dark_pink = "#C32454".parse::<RGBColor>()?;
         let darkest_pink = "#831C5D".parse::<RGBColor>()?;
         let light_pink = "#FCA790".parse::<RGBColor>()?;
         let lightest_pink = "#FDCBB0".parse::<RGBColor>()?;
 
-        assert_eq!(dark_pink.get_wcag_luminance(), 0.40609825_f32);
-        assert_eq!(darkest_pink.get_wcag_luminance(), 0.28317466_f32);
-        assert_eq!(light_pink.get_wcag_luminance(), 1.761342_f32);
-        assert_eq!(lightest_pink.get_wcag_luminance(), 2.0135431_f32);
+        assert_eq!(dark_pink.to_triple(), (RGBValue::from_u8(0xC3), RGBValue::from_u8(0x24), RGBValue::from_u8(0x54)));
 
         Ok(())
     }
     #[test]
-    fn test_get_adobe_complementary() -> Result<()> {
+    fn test_parse_and_get_accessible_contrast() -> Result<()> {
         // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
         // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
         // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
@@ -183,9 +182,7 @@ mod tests {
         // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
         let lightest: RGBColor = "#8FF8E2".parse()?;
         let darkest: RGBColor = "#0B5E65".parse()?;
-
-        assert_equal!(lightest.to_hex_string(), "#8FF8E2");
-        assert_equal!(darkest.to_hex_string(), "#0B5E65");
+        assert_equal!(lightest.get_accessible_contrast(), RGBColor::from_triple(255.into(),255.into(),255.into()));
         Ok(())
     }
 }

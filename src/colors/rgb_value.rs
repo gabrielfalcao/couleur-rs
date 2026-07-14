@@ -18,10 +18,10 @@ impl RGBValue {
         RGBValue::from_f32(value.into())
     }
     pub fn from_f32(value: f32) -> RGBValue {
-        RGBValue::new(value)
+        RGBValue::new(value % 255.0)
     }
     pub fn value(&self) -> f32 {
-        self.0
+        self.0 % 255.0
     }
     pub fn round(&self) -> f32 {
         self.value().round()
