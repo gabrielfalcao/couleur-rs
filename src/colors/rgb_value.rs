@@ -14,14 +14,21 @@ use std::str::FromStr;
 pub struct RGBValue(pub f32);
 
 impl RGBValue {
-    pub fn new<T: Copy + Into<f32>>(value: T) -> RGBValue {
-        RGBValue::from_f32(value.into())
+    pub fn new<T: Copy + Into<f32> + std::string::ToString>(value: T) -> Result<RGBValue> {
+        let value = value.to_string();
+        let string = if value.contains(".") {
+            value
+        }else {
+            format!("{value}.0")
+        };
+        Ok(RGBValue(string.parse::<f32>()?))
     }
-    pub fn from_f32(value: f32) -> RGBValue {
-        RGBValue::new(value % 255.0)
+    pub fn from_f32(value: f32) -> Result<RGBValue> {
+        // dbg!(value);
+        Ok(RGBValue::new(value % 255.0)?)
     }
     pub fn value(&self) -> f32 {
-        self.0 % 255.0
+        self.0 % 255.0_f32
     }
     pub fn round(&self) -> f32 {
         self.value().round()
@@ -31,6 +38,10 @@ impl RGBValue {
     }
     pub fn copysign<T: Copy + Deref<Target = f32>>(&self, other: T) -> f32 {
         self.value().copysign(*other)
+    }
+    pub fn from_u8(value: u8) -> Result<RGBValue> {
+        let string = format!("{value}.0");
+        Ok(RGBValue(string.parse::<f32>()?))
     }
     pub fn to_u8(&self) -> Result<u8> {
         let value = self.value().clamp(0.0, 255.0);
@@ -59,9 +70,6 @@ impl RGBValue {
             "RGB value to be within 0 and 255 but is {value}",
             value = self.0
         ))
-    }
-    pub fn from_u8(value: u8) -> RGBValue {
-        RGBValue(value as f32)
     }
     pub fn leading_zeros_fractional(&self) -> usize {
         let s = self.to_string();
@@ -209,28 +217,28 @@ impl From<i64> for RGBValue {
 }
 impl From<u8> for RGBValue {
     fn from(val: u8) -> RGBValue {
-        RGBValue(val as f32)
+        RGBValue::from_u8((val % 255u8).try_into().unwrap()).unwrap()
     }
 }
 impl From<u16> for RGBValue {
     fn from(val: u16) -> RGBValue {
-        RGBValue(val as f32)
+        RGBValue::from_u8((val % 255u16).try_into().unwrap()).unwrap()
     }
 }
 
 impl From<u32> for RGBValue {
     fn from(val: u32) -> RGBValue {
-        RGBValue(val as f32)
+        RGBValue::from_u8((val % 255u32).try_into().unwrap()).unwrap()
     }
 }
 impl From<u64> for RGBValue {
     fn from(val: u64) -> RGBValue {
-        RGBValue(val as f32)
+        RGBValue::from_u8((val % 255u64).try_into().unwrap()).unwrap()
     }
 }
 impl From<usize> for RGBValue {
     fn from(val: usize) -> RGBValue {
-        RGBValue(val as f32)
+        RGBValue::from_u8((val % 255usize).try_into().unwrap()).unwrap()
     }
 }
 
@@ -265,3 +273,32 @@ impl_op!(Sub, sub, value, -);
 impl_op!(Div, div, value, /);
 impl_op!(Mul, mul, value, *);
 impl_op!(Rem, rem, value, %);
+
+#[cfg(test)]
+mod tests {
+    use crate::{Result, RGBValue, RGBColor};
+    use k9::assert_equal;
+    use std::cmp::{max, min};
+
+    #[test]
+    fn test_rgb_value_from_u8() -> Result<()> {
+        let dark_pink = "#C32454".parse::<RGBColor>()?;
+
+        assert_eq!(RGBValue::from_u8(0xc3u8)?, RGBValue(195.0f32));
+        assert_eq!(RGBValue::from_u8(0xc3u8)?, RGBValue::new(195.0f32)?);
+
+        Ok(())
+    }
+    // #[test]
+    // fn test_parse_and_get_accessible_contrast() -> Result<()> {
+    //     // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
+    //     // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
+    //     // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
+    //     // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
+    //     // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+    //     let lightest: RGBColor = "#8FF8E2".parse()?;
+    //     let darkest: RGBColor = "#0B5E65".parse()?;
+    //     assert_equal!(lightest.get_accessible_contrast(), RGBColor::from_triple(255.into(),255.into(),255.into()));
+    //     Ok(())
+    // }
+}

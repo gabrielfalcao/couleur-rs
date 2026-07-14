@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use std::num::ParseIntError;
+use std::num::ParseFloatError;
 use serde::{Deserialize, Serialize};
 use crate::colors::RGBParseError;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -56,6 +57,11 @@ impl From<iocore::Error> for Error {
 }
 impl From<ParseIntError> for Error {
     fn from(e: ParseIntError) -> Self {
+        Error::ParseError(e.to_string())
+    }
+}
+impl From<ParseFloatError> for Error {
+    fn from(e: ParseFloatError) -> Self {
         Error::ParseError(e.to_string())
     }
 }
