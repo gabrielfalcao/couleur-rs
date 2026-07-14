@@ -1,6 +1,6 @@
 [package]
 name = "couleur-rs"
-version = "0.0.1"
+version = "0.0.2"
 description = "parse, print, manipulate and apply contrast to (RGB) colors"
 readme = "README.md"
 homepage = "https://crates.io/crates/couleur-rs"
