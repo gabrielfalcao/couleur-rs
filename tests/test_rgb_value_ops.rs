@@ -1,5 +1,5 @@
-use couleur::RGBValue;
-use couleur::Result;
+use couleur_rs::RGBValue;
+use couleur_rs::Result;
 use k9::assert_equal;
 use std::cmp::{max, min};
 

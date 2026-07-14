@@ -13,11 +13,6 @@ pub static WHITE: LazyLock<RGBColor> =
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq)]
 pub struct RGBColor(pub RGBValue, pub RGBValue, pub RGBValue);
 impl RGBColor {
-    pub fn contrast<T: Algorithm>(&self, algo: T) -> RGBColor {
-        return algo.apply(*self);
-    }
-}
-impl RGBColor {
     pub fn new<T: Copy + Into<f32>>(red: T, green: T, blue: T) -> Result<RGBColor> {
         Ok(RGBColor(
             RGBValue::new(red.into())?,

@@ -30,10 +30,11 @@ codegen-units = 1
 
 
 [lib]
-name = "couleur"
+name = "couleur_rs"
 path = "src/lib.rs"
 
 bench = false
+doctest = false
 
 
 [[bin]]

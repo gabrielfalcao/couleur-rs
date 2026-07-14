@@ -37,7 +37,7 @@ pub use colors::{
 };
 
 pub(crate) mod term;
-pub use term::{Algorithm, Algorithms, Layer, Reset, Wrap};
+pub use term::{Algorithm, Layer, Reset, Wrap};
 
 pub(crate) mod macros;
 // pub use macros::impl_op;
