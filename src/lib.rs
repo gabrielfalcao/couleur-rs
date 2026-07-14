@@ -1,3 +1,4 @@
+#![allow(unused)]
 //!
 //! ```rust
 //! let dark_pink = "#C32454".parse::<RGBColor>()?;
