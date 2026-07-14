@@ -13,6 +13,9 @@ pub struct Cli {
     #[arg(long)]
     fg: Option<String>,
 
+    #[arg(long)]
+    contrast: Algorithm,
+
     #[arg(short, long)]
     reset: bool,
 

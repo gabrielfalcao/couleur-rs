@@ -1,7 +1,7 @@
 [package]
 name = "couleur-rs"
 version = "0.0.1"
-description = "couleur-rs command-line"
+description = "parse, print, manipulate and apply contrast to (RGB) colors"
 readme = "README.md"
 homepage = "https://crates.io/crates/couleur-rs"
 license = "MIT OR Apache-2.0"
@@ -33,14 +33,12 @@ codegen-units = 1
 name = "couleur"
 path = "src/lib.rs"
 
-doctest = false
 bench = false
 
 
 [[bin]]
 name = "couleur-rs"
 path = "src/bin/couleur.rs"
-doctest = false
 bench = false
 doc = false
 test = false
