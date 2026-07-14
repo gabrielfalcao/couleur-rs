@@ -25,10 +25,10 @@ impl RGBValue {
     }
     pub fn from_f32(value: f32) -> Result<RGBValue> {
         // dbg!(value);
-        Ok(RGBValue::new(value % 255.0)?)
+        Ok(RGBValue::new(value)?)
     }
     pub fn value(&self) -> f32 {
-        self.0 % 255.0_f32
+        self.0
     }
     pub fn round(&self) -> f32 {
         self.value().round()
@@ -106,10 +106,6 @@ impl RGBValue {
             self.leading_zeros_fractional(),
         )
     }
-    pub fn to_hex_rgb(&self) -> String {
-        let red = self.value() as u8;
-        format!("#{red:02X}B08B")
-    }
 }
 
 impl Deref for RGBValue {
@@ -129,20 +125,24 @@ impl FromStr for RGBValue {
                 let parsed = u8::from_str_radix(band, 16)?;
                 Ok(RGBValue(parsed as f32))
             }
-            None => match SINGLE_BAND_DECIMAL_RGB_REGEX.captures(value) {
-                Some(band) => match band.name("band") {
-                    Some(band) => {
-                        let parsed = u8::from_str_radix(band.as_str(), 16)?;
-                        Ok(RGBValue(parsed as f32))
-                    }
-                    None => Err(Error::ParseError(format!(
-                        "cannot parse RGB value (number from 0 to 255) from {value:#?}"
-                    ))),
-                },
-                None => Err(Error::ParseError(format!(
-                    "cannot parse RGB value (number from 0 to 255) from {value:#?}"
-                ))),
-            },
+            None => Err(Error::ParseError(format!(
+                "cannot parse RGB value (number from 0 to 255) from {value:#?}"
+            ))),
+            // None => match SINGLE_BAND_DECIMAL_RGB_REGEX.captures(value) {
+            //
+            //     Some(band) => match band.name("band") {
+            //         Some(band) => {
+            //             let parsed = u8::from_str_radix(band.as_str(), 16)?;
+            //             Ok(RGBValue(parsed as f32))
+            //         }
+            //         None => Err(Error::ParseError(format!(
+            //             "cannot parse RGB value (number from 0 to 255) from {value:#?}"
+            //         ))),
+            //     },
+            //     None => Err(Error::ParseError(format!(
+            //         "cannot parse RGB value (number from 0 to 255) from {value:#?}"
+            //     ))),
+            // },
         }
     }
 }
@@ -205,40 +205,40 @@ impl From<f32> for RGBValue {
 }
 impl From<i32> for RGBValue {
     fn from(val: i32) -> RGBValue {
-        let value = (val % 255i32) as f32;
+        let value = (val) as f32;
         RGBValue(value)
     }
 }
 impl From<i64> for RGBValue {
     fn from(val: i64) -> RGBValue {
-        let value = (val % 255i64) as f32;
+        let value = (val) as f32;
         RGBValue(value)
     }
 }
 impl From<u8> for RGBValue {
     fn from(val: u8) -> RGBValue {
-        RGBValue::from_u8((val % 255u8).try_into().unwrap()).unwrap()
+        RGBValue::from_u8((val).try_into().unwrap()).unwrap()
     }
 }
 impl From<u16> for RGBValue {
     fn from(val: u16) -> RGBValue {
-        RGBValue::from_u8((val % 255u16).try_into().unwrap()).unwrap()
+        RGBValue::from_u8((val).try_into().unwrap()).unwrap()
     }
 }
 
 impl From<u32> for RGBValue {
     fn from(val: u32) -> RGBValue {
-        RGBValue::from_u8((val % 255u32).try_into().unwrap()).unwrap()
+        RGBValue::from_u8((val).try_into().unwrap()).unwrap()
     }
 }
 impl From<u64> for RGBValue {
     fn from(val: u64) -> RGBValue {
-        RGBValue::from_u8((val % 255u64).try_into().unwrap()).unwrap()
+        RGBValue::from_u8((val).try_into().unwrap()).unwrap()
     }
 }
 impl From<usize> for RGBValue {
     fn from(val: usize) -> RGBValue {
-        RGBValue::from_u8((val % 255usize).try_into().unwrap()).unwrap()
+        RGBValue::from_u8((val).try_into().unwrap()).unwrap()
     }
 }
 
@@ -300,8 +300,25 @@ mod tests {
         let darkest: RGBColor = "#0B5E65".parse()?;
         assert_equal!(
             lightest.get_accessible_contrast(),
-            RGBColor::from_triple(255.into(), 255.into(), 255.into())
+            RGBColor::from_triple(0.into(), 0.into(), 0.into())
         );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_from_hex() -> Result<()> {
+        let result = "ff".parse::<RGBValue>()?;
+        assert_equal!(result, 255.0);
+        assert_equal!(result.value(), 255.0);
+        // assert_equal!(result.round(), 255.0);
+        // assert_equal!(result.fract(), 0.0);
+        // assert_equal!(result.copysign(&1.0), 255.0);
+        // assert_equal!(result.to_u8()?, 255);
+        // assert_equal!(result.into_u8(), 255);
+        // assert_equal!(RGBValue::from_u8(250u8)?, 250);
+        // assert_equal!(result.leading_zeros_exp(), 0);
+        // assert_equal!(result.leading_zeros_fractional(), 0);
+        // // assert_equal!(result.float_metadata(), (0, 0, 0, 0, 0));
+        // assert_equal!(result.float_metadata(), (false, 255, 0, 0, 0));
         Ok(())
     }
 }
