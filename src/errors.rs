@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use std::num::ParseIntError;
 use serde::{Deserialize, Serialize};
-
+use crate::colors::RGBParseError;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     IOError(String),
@@ -56,6 +56,11 @@ impl From<iocore::Error> for Error {
 }
 impl From<ParseIntError> for Error {
     fn from(e: ParseIntError) -> Self {
+        Error::ParseError(e.to_string())
+    }
+}
+impl From<RGBParseError> for Error {
+    fn from(e: RGBParseError) -> Self {
         Error::ParseError(e.to_string())
     }
 }
