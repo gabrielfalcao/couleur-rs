@@ -46,14 +46,10 @@ test = false
 
 [dependencies]
 clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }
-color-eyre = "0.6.5"
 heck = "0.5.0"
 hex = "0.4.3"
 iocore = "3.1.0"
-og-enum-to-string = "0.1.0"
-owo-colors = { version = "4.3.0", features = ["supports-colors", "supports-color"] }
 regex = "1.12.4"
-rgb2ansi256 = "0.1.1"
 serde = { version = "1.0.228", features = ["derive"] }
 supports-color = "3.0.2"
 thiserror = "2.0.18"
