@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use couleur_rs::{Error, Exit, Result};
-use couleur_rs::Algorithm;
+use couleur_rs::{Algorithm, Reset};
 use couleur_rs::dispatch::ParserDispatcher;
 
 #[derive(Parser, Debug, Clone)]
@@ -17,7 +17,7 @@ pub struct Cli {
     contrast: Algorithm,
 
     #[arg(short, long)]
-    reset: bool,
+    reset: Reset,
 
     #[arg()]
     text: Vec<String>,
