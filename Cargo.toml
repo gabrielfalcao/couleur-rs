@@ -1,14 +1,21 @@
 [package]
 name = "couleur-rs"
-version = "0.0.2"
+version = "0.0.3"
 description = "parse, print, manipulate and apply contrast to (RGB) colors"
 readme = "README.md"
-homepage = "https://crates.io/crates/couleur-rs"
 license = "MIT OR Apache-2.0"
 edition = "2024"
 autoexamples = false
 autobenches = false
-# default-run = "couleur-rs"
+
+homepage = "https://crates.io/crates/couleur-rs"
+documentation = "https://docs.rs/couleur-rs"
+repository = "https://github.com/gabrielfalcao/couleur-rs"
+
+keywords = ["color", "ansi", "unix", "system"]
+authors = ["Gabriel DeMoura <gabrielteratos@gmail.com>"]
+categories = ["command-line-interface"]
+
 
 # categories = [] # https://crates.io/category_slugs
 

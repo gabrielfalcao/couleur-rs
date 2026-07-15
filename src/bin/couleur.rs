@@ -30,7 +30,7 @@ impl Cli {
 }
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
-        println!("{}");
+        println!("{}", self.text.join(" "));
         Ok(())
     }
 }

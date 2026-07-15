@@ -1,8 +1,11 @@
-use crate::{Algorithm, ConversionToU8Error, Error, RGBValue, Result, RgbTriple, max_rgb, min_rgb};
-use owo_colors::Rgb;
+use crate::{
+    Algorithm, ConversionToU8Error, Error, Layer, RGBValue, Reset, Result, RgbTriple, Wrap,
+    max_rgb, min_rgb,
+};
 use regex::Regex;
 use std::{ops::Deref, str::FromStr, sync::LazyLock};
 use thiserror::Error as ThisError;
+
 pub static BLACK: LazyLock<RGBColor> =
     LazyLock::new(|| RGBColor::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
 pub static WHITE: LazyLock<RGBColor> =
@@ -98,21 +101,21 @@ impl RGBColor {
         }
     }
     pub fn to_ansi(&self, layer: Layer, bold: bool) -> String {
-        match self {
-            Rgb(rgb) => {
-                let triple = rgb.to_triple();
-                let prefix = triple.join(";");
-                let parts = if bold {
-                    vec!["1".to_string]
-                } else {
-                    Vec::<String>::new()
-                };
-                parts.push(layer.code().to_string());
-                parts.push("2".to_string());
-                parts.push(format!("{prefix}m"));
-                format!("\x1b[{}", parts.join(";"))
-            }
-        }
+        let triple = self
+            .to_triple()
+            .iter()
+            .map(|v| v.to_string())
+            .collect::<Vec<String>>();
+        let prefix = triple.join(";");
+        let mut parts = if bold {
+            vec!["1".to_string()]
+        } else {
+            Vec::<String>::new()
+        };
+        parts.push(layer.code().to_string());
+        parts.push("2".to_string());
+        parts.push(format!("{prefix}m"));
+        format!("\x1b[{}", parts.join(";"))
     }
 
     pub fn wrap_ansi(
@@ -130,9 +133,7 @@ impl RGBColor {
         let algorithm = algorithm.unwrap_or_default();
 
         let ansi_sequence = self.to_ansi(layer, bold);
-        let contrast = self
-            .contrast(algorithm)
-            .to_ansi(layer = layer.inverted(), bold = bold);
+        let contrast = self.contrast(algorithm).to_ansi(layer.inverted(), bold);
 
         let colored = match wrap {
             Wrap::Before => format!("{ansi_sequence}{text}"),
@@ -146,6 +147,14 @@ impl RGBColor {
             Reset::None => colored,
         };
         return result;
+    }
+    pub fn contrast(&self, algorithm: Algorithm) -> RGBColor {
+        match algorithm {
+            Algorithm::Read => self.get_accessible_contrast(),
+            Algorithm::HighBit => self.get_binary_contrast(),
+            Algorithm::Harmonic => self.get_adobe_complementary(),
+            Algorithm::Web => self.get_msb_invert_contrast(),
+        }
     }
 }
 impl From<RgbTriple> for RGBColor {
