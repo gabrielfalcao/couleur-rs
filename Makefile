@@ -1,5 +1,8 @@
 run:cls
-	cargo run -- --bg FFCC00 test 123
+	cargo run -- --bg FFCC00  --fg 333333 test 123
+	cargo run -- --contrast web  --fg 333333 test 123
+	cargo run -- --contrast web --bg FFCC00  --fg 333333 test 123
+	cargo run -- --contrast web --fg 333333 test 123
 
 test:cls
 

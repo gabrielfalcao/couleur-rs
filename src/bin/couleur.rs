@@ -24,12 +24,19 @@ impl Cli {}
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let text = self.text.join(" ");
+        let bg = self
+            .bg
+            .unwrap_or_else(|| "FFFFFF".parse().unwrap())
+            .to_ansi(
+                Layer::BG,
+                true
+            );
         let fg = self
             .fg
             .unwrap_or_else(|| "000000".parse().unwrap())
             .wrap_ansi(
-                &format!("{text}"),
-                Some(Layer::BG),
+                &format!("{bg}{text}"),
+                Some(Layer::FG),
                 true,
                 self.wrap,
                 self.reset,

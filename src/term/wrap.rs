@@ -4,9 +4,9 @@ use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub enum Wrap {
+    #[default]
     Before,
     After,
-    #[default]
     Around,
 }
 
