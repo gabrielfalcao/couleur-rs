@@ -2,11 +2,12 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use std::fmt::Display;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum Reset {
     Before,
     After,
     Around,
+    #[default]
     None,
 }
 impl Display for Reset {

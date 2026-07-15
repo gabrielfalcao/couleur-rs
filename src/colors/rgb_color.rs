@@ -1,9 +1,7 @@
 use crate::{Algorithm, ConversionToU8Error, Error, RGBValue, Result, RgbTriple, max_rgb, min_rgb};
 use owo_colors::Rgb;
 use regex::Regex;
-use std::ops::Deref;
-use std::str::FromStr;
-use std::sync::LazyLock;
+use std::{ops::Deref, str::FromStr, sync::LazyLock};
 use thiserror::Error as ThisError;
 pub static BLACK: LazyLock<RGBColor> =
     LazyLock::new(|| RGBColor::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
@@ -40,18 +38,18 @@ impl RGBColor {
         self.blue_value().value()
     }
 
-    pub fn to_triple(&self) -> (RGBValue, RGBValue, RGBValue) {
-        (self.red_value(), self.green_value(), self.blue_value())
+    pub fn to_triple(&self) -> [RGBValue; 3] {
+        [self.red_value(), self.green_value(), self.blue_value()]
     }
     pub fn to_hex_string(&self) -> String {
-        let (red, green, blue) = self.to_triple();
+        let [red, green, blue] = self.to_triple();
         format!("#{red:X}{green:X}{blue:X}")
     }
     pub fn from_triple(red: RGBValue, green: RGBValue, blue: RGBValue) -> RGBColor {
         RGBColor(red, green, blue)
     }
     pub fn get_binary_contrast(&self) -> RGBColor {
-        let (r, g, b) = self.to_triple();
+        let [r, g, b] = self.to_triple();
         let luminance = (0.299 * *r) + (0.587 * *g) + (0.114 * *b);
         if luminance > 128.0 { *BLACK } else { *WHITE }
     }
@@ -65,7 +63,7 @@ impl RGBColor {
     }
 
     pub fn get_adobe_complementary(&self) -> RGBColor {
-        let (r, g, b) = self.to_triple();
+        let [r, g, b] = self.to_triple();
         let max_val = max_rgb(r, g, b);
         let min_val = min_rgb(r, g, b);
         let target = max_val + min_val;
@@ -77,7 +75,7 @@ impl RGBColor {
     }
 
     pub fn get_wcag_luminance(&self) -> f32 {
-        let (r, g, b) = self.to_triple();
+        let [r, g, b] = self.to_triple();
         let channels = [(r / 255.0), (g / 255.0), (b / 255.0)];
         let mut linear = Vec::<RGBValue>::new();
 
@@ -98,6 +96,56 @@ impl RGBColor {
         } else {
             *WHITE
         }
+    }
+    pub fn to_ansi(&self, layer: Layer, bold: bool) -> String {
+        match self {
+            Rgb(rgb) => {
+                let triple = rgb.to_triple();
+                let prefix = triple.join(";");
+                let parts = if bold {
+                    vec!["1".to_string]
+                } else {
+                    Vec::<String>::new()
+                };
+                parts.push(layer.code().to_string());
+                parts.push("2".to_string());
+                parts.push(format!("{prefix}m"));
+                format!("\x1b[{}", parts.join(";"))
+            }
+        }
+    }
+
+    pub fn wrap_ansi(
+        &self,
+        text: &str,
+        layer: Option<Layer>,
+        bold: bool,
+        wrap: Option<Wrap>,
+        reset: Option<Reset>,
+        algorithm: Option<Algorithm>,
+    ) -> String {
+        let layer = layer.unwrap_or_default();
+        let wrap = wrap.unwrap_or_default();
+        let reset = reset.unwrap_or_default();
+        let algorithm = algorithm.unwrap_or_default();
+
+        let ansi_sequence = self.to_ansi(layer, bold);
+        let contrast = self
+            .contrast(algorithm)
+            .to_ansi(layer = layer.inverted(), bold = bold);
+
+        let colored = match wrap {
+            Wrap::Before => format!("{ansi_sequence}{text}"),
+            Wrap::After => format!("{text}{ansi_sequence}"),
+            Wrap::Around => format!("{ansi_sequence}{text}{ansi_sequence}"),
+        };
+        let result = match reset {
+            Reset::Before => format!("\x1b[0m{colored}"),
+            Reset::After => format!("{colored}\x1b[0m"),
+            Reset::Around => format!("\x1b[0m{colored}\x1b[0m"),
+            Reset::None => colored,
+        };
+        return result;
     }
 }
 impl From<RgbTriple> for RGBColor {
@@ -203,22 +251,46 @@ mod tests {
 
         assert_eq!(
             dark_pink.to_triple(),
-            (
+            [
                 RGBValue::from_u8(0xC3)?,
                 RGBValue::from_u8(0x24)?,
                 RGBValue::from_u8(0x54)?
-            )
+            ]
         );
 
-        assert_eq!(lightest_pink.get_adobe_complementary().to_hex_string(), "#B0E2FD");
-        assert_eq!(lightest_pink.get_accessible_contrast().to_hex_string(), "#000000");
-        assert_eq!(lightest_pink.get_binary_contrast().to_hex_string(), "#000000");
-        assert_eq!(lightest_pink.get_msb_invert_contrast().to_hex_string(), "#7D4B30");
+        assert_eq!(
+            lightest_pink.get_adobe_complementary().to_hex_string(),
+            "#B0E2FD"
+        );
+        assert_eq!(
+            lightest_pink.get_accessible_contrast().to_hex_string(),
+            "#000000"
+        );
+        assert_eq!(
+            lightest_pink.get_binary_contrast().to_hex_string(),
+            "#000000"
+        );
+        assert_eq!(
+            lightest_pink.get_msb_invert_contrast().to_hex_string(),
+            "#7D4B30"
+        );
 
-        assert_eq!(darkest_pink.get_adobe_complementary().to_hex_string(), "#1C8342");
-        assert_eq!(darkest_pink.get_accessible_contrast().to_hex_string(), "#000000");
-        assert_eq!(darkest_pink.get_binary_contrast().to_hex_string(), "#FFFFFF");
-        assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
+        assert_eq!(
+            darkest_pink.get_adobe_complementary().to_hex_string(),
+            "#1C8342"
+        );
+        assert_eq!(
+            darkest_pink.get_accessible_contrast().to_hex_string(),
+            "#000000"
+        );
+        assert_eq!(
+            darkest_pink.get_binary_contrast().to_hex_string(),
+            "#FFFFFF"
+        );
+        assert_eq!(
+            darkest_pink.get_msb_invert_contrast().to_hex_string(),
+            "#039CDD"
+        );
         Ok(())
     }
 
@@ -231,11 +303,11 @@ mod tests {
 
         assert_eq!(
             dark_pink.to_triple(),
-            (
+            [
                 RGBValue::from_u8(0xC3)?,
                 RGBValue::from_u8(0x24)?,
                 RGBValue::from_u8(0x54)?
-            )
+            ]
         );
 
         Ok(())
