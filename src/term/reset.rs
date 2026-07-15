@@ -1,7 +1,6 @@
-use crate::RGBColor;
+use crate::{RGBColor, term::HeckPossibleValue};
 use clap::{ValueEnum, builder::PossibleValue};
 use std::fmt::Display;
-
 #[derive(Clone, Copy, Debug)]
 pub enum Reset {
     Before,
@@ -11,7 +10,7 @@ pub enum Reset {
 }
 
 impl HeckPossibleValue for Reset {
-    pub fn variant_name(&self) -> &'static str {
+    fn variant_name_pascal(&self) -> &'static str {
         match self {
             Reset::Before => "Before",
             Reset::After => "After",
@@ -19,7 +18,7 @@ impl HeckPossibleValue for Reset {
             Reset::None => "None",
         }
     }
-    pub fn variants<'a>() -> &'a [Reset] {
+    fn variants<'a>() -> &'a [Reset] {
         &[Reset::Before, Reset::After, Reset::Around, Reset::None]
     }
 }

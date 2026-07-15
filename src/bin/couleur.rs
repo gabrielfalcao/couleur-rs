@@ -5,7 +5,7 @@ use couleur_rs::{Algorithm, Reset};
 use couleur_rs::dispatch::ParserDispatcher;
 
 #[derive(Parser, Debug, Clone)]
-#[command(author, version, about, long_about = "couleur-rs command-line")]
+#[command(author, version, about, long_about = "colorize text with ansi truecolor sequences")]
 pub struct Cli {
     #[arg(short, long)]
     bg: Option<String>,

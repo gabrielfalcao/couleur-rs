@@ -1,8 +1,11 @@
 use std::fmt::Display;
+use clap::builder::PossibleValue;
+use clap::ValueEnum;
+use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 
-pub trait HeckPossibleValue {
+pub trait HeckPossibleValue: Sized + Clone + Display {
     fn variant_name_pascal(&self) -> &'static str;
-    fn variants<'a>() -> &'a [Self];
+    fn variants<'a>() -> &'a [Self] where Self: Sized;
 
     fn variant_name_snake(&self) -> String {
         self.variant_name_pascal().to_snake_case()
@@ -25,13 +28,7 @@ pub trait HeckPossibleValue {
     }
 }
 
-impl Display for Algorithm {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.variant_name())
-    }
-}
-
-impl ValueEnum for HeckPossibleValue {
+impl ValueEnum for dyn HeckPossibleValue {
     fn value_variants<'a>() -> &'a [Self] {
         Self::variants()
     }
@@ -46,14 +43,14 @@ impl ValueEnum for HeckPossibleValue {
         )
     }
 
-    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Algorithm, String> {
+    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Self, String> {
         let val = if ignore_case {
             val.to_lowercase()
         } else {
             val.to_string()
         };
         let val = val.trim();
-        for (variant, possible_strings) in Algorithm::variants()
+        for (variant, possible_strings) in HeckPossibleValue::variants()
             .iter()
             .map(|variant| (variant, variant.to_possible_strings()))
         {

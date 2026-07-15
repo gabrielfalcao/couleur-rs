@@ -1,7 +1,7 @@
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use std::fmt::Display;
-
+use crate::term::HeckPossibleValue;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Algorithm {
     Read,
@@ -11,7 +11,7 @@ pub enum Algorithm {
 }
 
 impl HeckPossibleValue for Algorithm {
-    pub fn variant_name_pascal(&self) -> &'static str {
+ fn variant_name_pascal(&self) -> &'static str {
         match self {
             Algorithm::Read => "Read",
             Algorithm::HighBit => "HighBit",
@@ -19,7 +19,7 @@ impl HeckPossibleValue for Algorithm {
             Algorithm::Web => "Web",
         }
     }
-    pub fn variants<'a>() -> &'a [Algorithm] {
+ fn variants<'a>() -> &'a [Algorithm] {
         &[
             Algorithm::Read,
             Algorithm::HighBit,
