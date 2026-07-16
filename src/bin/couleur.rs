@@ -2,6 +2,7 @@ use clap::Parser;
 use couleur_rs::{
     Algorithm, Error, Exit, Layer, RGBColor, Reset, Result, Wrap, dispatch::ParserDispatcher,
 };
+
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]
 pub struct Cli {
@@ -24,25 +25,23 @@ impl Cli {}
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let text = self.text.join(" ");
-        let bg = self
-            .bg
-            .unwrap_or_else(|| "FFFFFF".parse().unwrap())
-            .to_ansi(
-                Layer::BG,
-                true
-            );
-        let fg = self
-            .fg
-            .unwrap_or_else(|| "000000".parse().unwrap())
-            .wrap_ansi(
-                &format!("{bg}{text}"),
-                Some(Layer::FG),
-                true,
-                self.wrap,
-                self.reset,
-                self.contrast,
-            );
-        println!("{fg}");
+        let layer = if self.bg.is_none() {
+            Layer::BG
+        } else {
+            Layer::FG
+        };
+        let bg = match self.bg {
+            Some(bg) => bg,
+            None => RGBColor::default_for_bg()?,
+        };
+        let fg = match self.fg {
+            Some(fg) => fg,
+            None => RGBColor::default_for_fg()?,
+        };
+
+        let fore = fg.to_ansi(layer, true);
+        let back = bg.to_ansi(layer.inverted(), true);
+        println!("{back}{fore}{text}\x1b[0m");
         Ok(())
     }
 }

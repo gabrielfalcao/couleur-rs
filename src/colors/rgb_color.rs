@@ -10,6 +10,7 @@ pub static BLACK: LazyLock<RGBColor> =
     LazyLock::new(|| RGBColor::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
 pub static WHITE: LazyLock<RGBColor> =
     LazyLock::new(|| RGBColor::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
+use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq)]
 pub struct RGBColor(pub RGBValue, pub RGBValue, pub RGBValue);
@@ -20,6 +21,22 @@ impl RGBColor {
             RGBValue::new(green.into())?,
             RGBValue::new(blue.into())?,
         ))
+    }
+    pub fn default_for_bg() -> Result<RGBColor> {
+        let terminal_bg_color = background_color(QueryOptions::default())?;
+        let (r, g, b) = terminal_bg_color.scale_to_8bit();
+        Ok(RGBColor::from_triple(r.into(), g.into(), b.into()))
+    }
+    pub fn default_for_fg() -> Result<RGBColor> {
+        let terminal_bg_color = foreground_color(QueryOptions::default())?;
+        let (r, g, b) = terminal_bg_color.scale_to_8bit();
+        Ok(RGBColor::from_triple(r.into(), g.into(), b.into()))
+    }
+    pub fn default_for_layer(layer: Layer) -> Result<RGBColor> {
+        Ok(match layer {
+            Layer::BG => Self::default_for_bg()?,
+            Layer::FG => Self::default_for_fg()?,
+        })
     }
     pub fn red_value(&self) -> RGBValue {
         self.0

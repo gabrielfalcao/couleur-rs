@@ -59,6 +59,7 @@ iocore = "3.1.0"
 regex = "1.12.4"
 serde = { version = "1.0.228", features = ["derive"] }
 supports-color = "3.0.2"
+terminal-colorsaurus = "1.0.3"
 thiserror = "2.0.18"
 
 [dev-dependencies]

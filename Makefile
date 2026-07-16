@@ -1,14 +1,27 @@
-run:cls
-	cargo run -- --bg FFCC00  --fg 333333 test 123
-	cargo run -- --contrast web  --fg 333333 test 123
-	cargo run -- --contrast web --bg FFCC00  --fg 333333 test 123
-	cargo run -- --contrast web --fg 333333 test 123
+run: cls
+	cargo run -q -- --bg FFCC00  --fg 333333 test 123
+	cargo run -q -- --contrast web  --fg 333333 test 123
+	cargo run -q -- --contrast web --bg FFCC00  --fg 333333 test 123
+	cargo run -q -- --contrast web --fg 333333 test 123
 
-test:cls
+	cargo run -q -- --fg FFCC00  --bg 333333 test 123
+	cargo run -q -- --contrast web  --bg 333333 test 123
+	cargo run -q -- --contrast web --fg FFCC00  --bg 333333 test 123
+	cargo run -q -- --contrast web --bg 333333 test 123
+
+test: cls
 
 	cargo test
 
+all: run test
 
+
+format:
+	find src/ -type f -name '*.rs' -exec rustfmt {} \;
+
+clean: format
+	cargo clean
 cls:
 	1>&2 echo -en "\x1b[2J\x1b[3J\x1b[H"
-.PHONY: test
+
+.PHONY: run test format cls all clean
