@@ -1,8 +1,8 @@
 run: cls
-	cargo run -q -- --bg FFCC00  --fg 333333 test background
-	cargo run -q -- --contrast web  --fg 333333 test background
-	cargo run -q -- --contrast web --bg FFCC00  --fg 333333 test background
-	cargo run -q -- --contrast web --fg 333333 test background
+	cargo run -q -- --bg FFCC00  --fg CCCCCC test background
+	cargo run -q -- --contrast web  --fg CCCCCC test background
+	cargo run -q -- --contrast web --bg FFCC00 test background
+	cargo run -q -- --contrast web --fg CCCCCC test background
 
 	cargo run -q -- --fg FFCC00  --bg 333333 test foreground
 	cargo run -q -- --contrast web  --bg 333333 test foreground

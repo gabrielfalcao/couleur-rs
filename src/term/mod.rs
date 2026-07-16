@@ -9,3 +9,6 @@ pub use reset::Reset;
 
 pub(crate) mod wrap;
 pub use wrap::Wrap;
+
+pub(crate) mod util;
+pub use util::RESET;

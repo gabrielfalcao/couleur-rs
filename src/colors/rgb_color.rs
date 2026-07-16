@@ -1,5 +1,5 @@
 use crate::{
-    Algorithm, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RGBValue, Reset, Result,
+    Algorithm, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RESET, RGBValue, Reset, Result,
     RgbTriple, Wrap, max_rgb, min_rgb,
 };
 use regex::Regex;
@@ -162,9 +162,9 @@ impl RGBColor {
             Wrap::Around => format!("{ansi_sequence}{text}{ansi_sequence}"),
         };
         let result = match reset {
-            Reset::Before => format!("\x1b[0m{colored}"),
-            Reset::After => format!("{colored}\x1b[0m"),
-            Reset::Around => format!("\x1b[0m{colored}\x1b[0m"),
+            Reset::Before => format!("{RESET}{colored}"),
+            Reset::After => format!("{colored}{RESET}"),
+            Reset::Around => format!("{RESET}{colored}{RESET}"),
             Reset::None => colored,
         };
         return result;
