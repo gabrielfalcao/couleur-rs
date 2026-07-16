@@ -37,7 +37,7 @@ pub use float::{FloatMetadata, leading_zeros_fractional};
 
 pub mod colors;
 pub use colors::{
-    BLACK, HEX_RGB_REGEX, RGB_COLOR_REGEX, RGBColor, RGBParseError, RGBValue, RgbTriple,
+    BLACK, HEX_RGB_REGEX, RGBColor, RGBParseError, RGBValue, RgbTriple,
     SINGLE_BAND_DECIMAL_RGB_REGEX, SINGLE_BAND_HEX_RGB_REGEX, TRIPLE_RGB_REGEX, U8Triple, WHITE,
     max_rgb, min_rgb,
 };

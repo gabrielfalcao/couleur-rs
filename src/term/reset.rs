@@ -6,8 +6,8 @@ use std::fmt::Display;
 pub enum Reset {
     Before,
     After,
-    Around,
     #[default]
+    Around,
     None,
 }
 impl Display for Reset {

@@ -1,6 +1,6 @@
 use crate::{
-    Algorithm, ConversionToU8Error, Error, Layer, RGBValue, Reset, Result, RgbTriple, Wrap,
-    max_rgb, min_rgb,
+    Algorithm, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RGBValue, Reset, Result,
+    RgbTriple, Wrap, max_rgb, min_rgb,
 };
 use regex::Regex;
 use std::{ops::Deref, str::FromStr, sync::LazyLock};
@@ -133,7 +133,11 @@ impl RGBColor {
         let algorithm = algorithm.unwrap_or_default();
 
         let ansi_sequence = self.to_ansi(layer, bold);
-        let contrast = self.contrast(algorithm).to_ansi(layer.inverted(), bold);
+        let contrast = if algorithm != Algorithm::None {
+            self.contrast(algorithm).to_ansi(layer.inverted(), bold)
+        } else {
+            String::new()
+        };
 
         let colored = match wrap {
             Wrap::Before => format!("{ansi_sequence}{text}"),
@@ -154,6 +158,7 @@ impl RGBColor {
             Algorithm::HighBit => self.get_binary_contrast(),
             Algorithm::Harmonic => self.get_adobe_complementary(),
             Algorithm::Web => self.get_msb_invert_contrast(),
+            Algorithm::None => *self,
         }
     }
 }
@@ -189,16 +194,11 @@ where
     }
 }
 
-pub static RGB_COLOR_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?<red>[a-fA-F0-9]{1,2})(?<green>[a-fA-F0-9]{1,2})(?<blue>[a-fA-F0-9]{1,2})")
-        .unwrap()
-});
-
 impl FromStr for RGBColor {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<RGBColor> {
-        match RGB_COLOR_REGEX.captures(s) {
+        match HEX_RGB_REGEX.captures(s) {
             Some(captures) => {
                 let red_value = captures
                     .name("red")
@@ -244,7 +244,7 @@ impl FromStr for RGBColor {
 }
 #[cfg(test)]
 mod tests {
-    use crate::{RGBColor, RGBValue, Result};
+    use crate::{Algorithm, Layer, RGBColor, RGBValue, Reset, Result, Wrap};
     use k9::assert_equal;
     use std::cmp::{max, min};
 
@@ -396,6 +396,25 @@ mod tests {
             darkest.get_msb_invert_contrast(),
             RGBColor::from_triple(139.into(), 222.into(), 229.into())
         );
+        Ok(())
+    }
+    #[test]
+    fn test_wrap_ansi() -> Result<()> {
+        let color: RGBColor = "#FFCC00".parse()?;
+        let text = "test 123";
+        let fg = color.wrap_ansi(
+            text,
+            Some(Layer::FG),
+            true,
+            Some(Wrap::Around),
+            Some(Reset::After),
+            Some(Algorithm::Web),
+        );
+        assert_equal!(
+            format!("{fg}"),
+            "\u{1b}[1;38;2;255;204;0mtest 123\u{1b}[1;38;2;255;204;0m\u{1b}[0m"
+        );
+
         Ok(())
     }
 }

@@ -4,8 +4,9 @@ use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum Algorithm {
-    #[default]
+    None,
     Read,
+    #[default]
     HighBit,
     Harmonic,
     Web,
@@ -19,6 +20,7 @@ impl Display for Algorithm {
 impl Algorithm {
     pub fn variant_name_snake(&self) -> &'static str {
         match self {
+            Algorithm::None => "none",
             Algorithm::Read => "read",
             Algorithm::HighBit => "high_bit",
             Algorithm::Harmonic => "harmonic",

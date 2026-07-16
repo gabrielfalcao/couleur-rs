@@ -1,14 +1,17 @@
-use crate::float::{leading_zeros_exp, leading_zeros_fractional};
 use crate::{
     ConversionToU8Error, Error, FloatMetadata, Result, SINGLE_BAND_DECIMAL_RGB_REGEX,
-    SINGLE_BAND_HEX_RGB_REGEX, impl_op,
+    SINGLE_BAND_HEX_RGB_REGEX,
+    float::{leading_zeros_exp, leading_zeros_fractional},
+    impl_op,
 };
-use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
-use std::ops::{
-    Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Deref, Div,
-    DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
+use std::{
+    cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
+    ops::{
+        Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Deref, Div,
+        DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
+    },
+    str::FromStr,
 };
-use std::str::FromStr;
 
 #[derive(Clone, Copy, Debug)]
 pub struct RGBValue(pub f32);
