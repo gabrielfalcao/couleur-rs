@@ -22,7 +22,7 @@ fn test_colorize_fg() -> Result<()> {
     let result = colorizer.colorize("test 123")?;
     assert_equal!(
         result,
-        "\x1b[0m\x1b[1;48;2;28;26;28m\x1b[1;38;2;255;204;0mtest 123\x1b[0m",
+        "\x1b[0m\x1b[1;48;2;28;26;28m\x1b[1;38;2;255;204;0mtest 123\x1b[0m"
     );
     Ok(())
 }

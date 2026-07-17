@@ -27,24 +27,6 @@ impl Cli {}
 
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
-        // let text = self.text.join(" ");
-        // let bg = self.bg.clone();
-        // let bold = self.bold;
-        // let fg = self.fg.clone();
-        // let contrast = self.contrast.unwrap_or_else(|| Contrast::None);
-        // let reset = self.reset.unwrap_or_default();
-        // let wrap = self.wrap.unwrap_or_default();
-        // let colorizer = AnsiColorizer {
-        //     bg,
-        //     fg,
-        //     contrast,
-        //     wrap,
-        //     bold,
-        //     reset,
-        // };
-        //
-        // let result = colorizer.colorize(&text)?;
-        // println!("{text}");
         let bg = None;
         let bold = true;
         let fg = Some("#FFCC00".parse::<Color>()?);
