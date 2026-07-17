@@ -1,17 +1,17 @@
 #![allow(unused)]
 //!
 //! ```rust
-//! let dark_pink = "#C32454".parse::<RGBColor>()?;
-//! let darkest_pink = "#831C5D".parse::<RGBColor>()?;
-//! let light_pink = "#FCA790".parse::<RGBColor>()?;
-//! let lightest_pink = "#FDCBB0".parse::<RGBColor>()?;
+//! let dark_pink = "#C32454".parse::<Color>()?;
+//! let darkest_pink = "#831C5D".parse::<Color>()?;
+//! let light_pink = "#FCA790".parse::<Color>()?;
+//! let lightest_pink = "#FDCBB0".parse::<Color>()?;
 //!
 //! assert_eq!(
 //!     dark_pink.to_triple(),
 //!     (
-//!         RGBValue::from_u8(0xC3)?,
-//!         RGBValue::from_u8(0x24)?,
-//!         RGBValue::from_u8(0x54)?
+//!         Value::from_u8(0xC3)?,
+//!         Value::from_u8(0x24)?,
+//!         Value::from_u8(0x54)?
 //!     )
 //! );
 //!
@@ -26,24 +26,47 @@
 //! assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
 //! ```
 //!
-pub(crate) mod errors;
+pub mod errors;
 pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Exit, Result};
 
 pub mod dispatch;
 pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
 
-pub(crate) mod float;
+pub mod float;
 pub use float::{FloatMetadata, leading_zeros_fractional};
 
-pub mod colors;
-pub use colors::{
-    BLACK, HEX_RGB_REGEX, RGBColor, RGBParseError, RGBValue, RgbTriple,
-    SINGLE_BAND_DECIMAL_RGB_REGEX, SINGLE_BAND_HEX_RGB_REGEX, TRIPLE_RGB_REGEX, U8Triple, WHITE,
-    max_rgb, min_rgb,
-};
+pub mod color;
+pub use color::{BLACK, Color, RGBParseError, WHITE};
 
-pub(crate) mod term;
-pub use term::{Algorithm, Colorizer, Layer, RESET, Reset, Wrap};
+pub mod value;
+pub use value::Value;
 
-pub(crate) mod macros;
+pub mod wrap;
+pub use wrap::Wrap;
+
+pub mod reset;
+pub use reset::Reset;
+
+pub mod algorithm;
+pub use algorithm::Algorithm;
+
+pub mod triples;
+pub use triples::{RgbTriple, U8Triple};
+
+pub mod macros;
 // pub use macros::impl_op;
+
+pub mod colorize;
+pub use colorize::Colorizer;
+
+pub mod layer;
+pub use layer::Layer;
+
+pub mod cmp;
+pub use cmp::{max_rgb, min_rgb};
+
+pub(crate) mod util;
+pub use util::{
+    HEX_RGB_REGEX, RESET, SINGLE_BAND_DECIMAL_RGB_REGEX, SINGLE_BAND_HEX_RGB_REGEX,
+    TRIPLE_RGB_REGEX,
+};

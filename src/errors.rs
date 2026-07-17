@@ -1,4 +1,4 @@
-use crate::colors::RGBParseError;
+use crate::color::RGBParseError;
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::Display,

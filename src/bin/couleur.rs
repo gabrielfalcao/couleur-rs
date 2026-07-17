@@ -1,15 +1,18 @@
+#![allow(unused)]
 use clap::Parser;
 use couleur_rs::{
-    Algorithm, Error, Exit, Layer, RGBColor, Reset, Result, Wrap, dispatch::ParserDispatcher,
+    Algorithm, Colorizer, Error, Exit, Layer, Color, Reset, Result, Wrap,
+    dispatch::ParserDispatcher,
 };
-
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]
 pub struct Cli {
     #[arg(long)]
-    bg: Option<RGBColor>,
+    bg: Option<Color>,
     #[arg(long)]
-    fg: Option<RGBColor>,
+    fg: Option<Color>,
+    #[arg(long)]
+    bold: bool,
     #[arg(long)]
     contrast: Option<Algorithm>,
     #[arg(short, long)]
@@ -25,23 +28,23 @@ impl Cli {}
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let text = self.text.join(" ");
-        let layer = if self.bg.is_none() {
-            Layer::BG
-        } else {
-            Layer::FG
-        };
-        let bg = match self.bg {
-            Some(bg) => bg,
-            None => RGBColor::default_for_bg()?,
-        };
-        let fg = match self.fg {
-            Some(fg) => fg,
-            None => RGBColor::default_for_fg()?,
+        let bg = self.bg.clone();
+        let bold = self.bold;
+        let fg = self.fg.clone();
+        let contrast = self.contrast.unwrap_or_else(|| Algorithm::None);
+        let reset = self.reset.unwrap_or_default();
+        let wrap = self.wrap.unwrap_or_default();
+        let colorizer = Colorizer {
+            bg,
+            fg,
+            contrast,
+            wrap,
+            bold,
+            reset,
         };
 
-        let fore = fg.to_ansi(layer, true);
-        let back = bg.to_ansi(layer.inverted(), true);
-        println!("{back}{fore}{text}\x1b[0m");
+        let result = colorizer.colorize(&text)?;
+        println!("{text}");
         Ok(())
     }
 }

@@ -5,8 +5,8 @@ use std::fmt::Display;
 #[derive(Clone, Copy, Debug, Default)]
 pub enum Reset {
     Before,
-    After,
     #[default]
+    After,
     Around,
     None,
 }

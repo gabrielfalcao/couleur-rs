@@ -1,11 +1,11 @@
 use couleur_rs::{
-    Algorithm, Error, Exit, Layer, RESET, RGBColor, Reset, Result, Wrap, dispatch::ParserDispatcher,
+    Algorithm, Error, Exit, Layer, RESET, Color, Reset, Result, Wrap, dispatch::ParserDispatcher,
 };
 
 #[derive(Parser, Debug, Clone, Copy)]
 pub struct AnsiSequence {
-    bg: Option<RGBColor>,
-    fg: Option<RGBColor>,
+    bg: Option<Color>,
+    fg: Option<Color>,
     contrast: Option<Algorithm>,
     reset: Option<Reset>,
     wrap: Option<Wrap>,
@@ -27,12 +27,12 @@ impl AnsiSequence {
 
 #[cfg(test)]
 mod test {
-    use crate::{Algorithm, Layer, RGBColor, RGBValue, Reset, Result, Wrap};
+    use crate::{Algorithm, Layer, Color, Value, Reset, Result, Wrap};
     use k9::assert_equal;
 
     #[test]
     fn test_fg_contrast() -> Result<()> {
-        let fore = AnsiSequenceBuilder::bg("FFCC00".parse::<RGBColor>().unwrap())
+        let fore = AnsiSequenceBuilder::bg("FFCC00".parse::<Color>().unwrap())
             .wrap(Wrap::Before)
             .reset(Reset::After)
             .contrast(Algorithm::Harmonic);
