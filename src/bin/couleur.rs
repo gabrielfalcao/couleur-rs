@@ -7,13 +7,13 @@ use couleur_rs::{
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]
 pub struct Cli {
-    #[arg(long)]
+    #[arg(long, required_unless_present_any = ["fg", "contrast"])]
     bg: Option<Color>,
-    #[arg(long)]
+    #[arg(long, required_unless_present_any = ["bg", "contrast"])]
     fg: Option<Color>,
     #[arg(long)]
     bold: bool,
-    #[arg(long)]
+    #[arg(long, required_unless_present_all = ["bg", "fg"])]
     contrast: Option<Contrast>,
     #[arg(short, long)]
     reset: Option<Reset>,
