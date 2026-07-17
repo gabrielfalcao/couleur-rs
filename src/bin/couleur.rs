@@ -11,14 +11,16 @@ pub struct Cli {
     bg: Option<Color>,
     #[arg(long, required_unless_present_any = ["bg", "contrast"])]
     fg: Option<Color>,
-    #[arg(long)]
+    #[arg(short, long)]
     bold: bool,
     #[arg(long, required_unless_present_all = ["bg", "fg"])]
     contrast: Option<Contrast>,
     #[arg(short, long)]
     reset: Option<Reset>,
-    #[arg(short, long)]
+    #[arg(short, short, long)]
     wrap: Option<Wrap>,
+    #[arg(short, long, help="detect terminal default colors for background and foreground instead of using contrast", required_unless_present_any=["contrast"])]
+    detect: bool,
     #[arg()]
     text: Vec<String>,
 }
@@ -27,12 +29,12 @@ impl Cli {}
 
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
-        let bg = None;
-        let bold = true;
-        let fg = Some("#FFCC00".parse::<Color>()?);
-        let contrast = Contrast::None;
-        let reset = Reset::After;
-        let wrap = Wrap::Before;
+        let bg = self.bg;
+        let bold = self.bold;
+        let fg = self.fg;
+        let contrast = self.contrast.unwrap_or_default();
+        let reset = self.reset.unwrap_or_default();
+        let wrap = self.wrap.unwrap_or_default();
         let colorizer = AnsiColorizer {
             bg,
             fg,
@@ -41,7 +43,7 @@ impl ParserDispatcher<Error> for Cli {
             bold,
             reset,
         };
-        let result = colorizer.colorize("test 123")?;
+        let result = colorizer.colorize(self.text.join(" "))?;
         println!("{result}");
 
         Ok(())
