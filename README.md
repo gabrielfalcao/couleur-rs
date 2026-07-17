@@ -1,5 +1,6 @@
 # couleur-rs
 
+parse, print, manipulate and apply contrast to RGB colors
 
 ```rust
 let dark_pink = "#C32454".parse::<RGBColor>()?;
