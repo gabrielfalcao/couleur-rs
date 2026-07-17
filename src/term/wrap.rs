@@ -82,3 +82,15 @@ impl ValueEnum for Wrap {
         return Err(val.to_string());
     }
 }
+//impl PartialEq<&Wrap> for Wrap {
+//    fn eq(&self, other: &Wrap) -> bool {
+//        self == *other
+//    }
+//}
+//
+//impl PartialOrd<&Wrap> for Wrap {
+//    fn partial_cmp(&self, other: &Rhs) -> Option<Ordering> {
+//        self.partial_cmp(*other)
+//    }
+//}
+//

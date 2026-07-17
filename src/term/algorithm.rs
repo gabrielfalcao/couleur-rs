@@ -1,6 +1,9 @@
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
-use std::fmt::Display;
+use std::{
+    cmp::{Ordering, PartialOrd},
+    fmt::Display,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum Algorithm {
@@ -18,6 +21,15 @@ impl Display for Algorithm {
 }
 
 impl Algorithm {
+    pub fn is_none(self) -> bool {
+        self == Algorithm::None
+    }
+    pub fn is_some(self) -> bool {
+        self != Algorithm::None
+    }
+    pub fn unwrap(self) -> Self {
+        self
+    }
     pub fn variant_name_snake(&self) -> &'static str {
         match self {
             Algorithm::None => "none",
@@ -89,3 +101,26 @@ impl ValueEnum for Algorithm {
         return Err(val.to_string());
     }
 }
+//impl PartialEq for &Algorithm {
+//    fn eq(&self, other: &Algorithm) -> bool {
+//        *self == *other
+//    }
+//}
+//impl PartialOrd for &Algorithm {
+//    fn partial_cmp(&self, other: &Algorithm) -> Option<Ordering> {
+//        (*self).partial_cmp(*other)
+//    }
+//}
+//
+//// impl PartialEq<Algorithm> for &Algorithm {
+////     fn eq(&self, other: Algorithm) -> bool {
+////         *self == other
+////     }
+//// }
+//
+//// impl PartialOrd<&Algorithm> for Algorithm {
+////     fn partial_cmp(&self, other: &Algorithm) -> Option<Ordering> {
+////         self.partial_cmp(*other)
+////     }
+//// }
+//

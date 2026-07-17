@@ -83,3 +83,15 @@ impl ValueEnum for Reset {
         return Err(val.to_string());
     }
 }
+//impl PartialEq<&Reset> for Reset {
+//    fn eq(&self, other: &Reset) -> bool {
+//        self == *other
+//    }
+//}
+//
+//impl PartialOrd<&Reset> for Reset {
+//    fn partial_cmp(&self, other: &Rhs) -> Option<Ordering> {
+//        self.partial_cmp(*other)
+//    }
+//}
+//

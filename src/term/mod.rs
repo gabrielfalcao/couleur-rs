@@ -12,3 +12,6 @@ pub use wrap::Wrap;
 
 pub(crate) mod util;
 pub use util::RESET;
+
+pub(crate) mod colorize;
+pub use colorize::Colorizer;

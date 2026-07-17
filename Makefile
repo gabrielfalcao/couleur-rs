@@ -1,3 +1,5 @@
+all: test
+
 run: cls
 	cargo run -q -- --bg FFCC00  --fg CCCCCC test background
 	cargo run -q -- --contrast web  --fg CCCCCC test background
@@ -10,11 +12,7 @@ run: cls
 	cargo run -q -- --contrast web --bg 333333 test foreground
 
 test: cls
-
-	cargo test
-
-all: run test
-
+	cargo test -q
 
 format:
 	find src/ -type f -name '*.rs' -exec rustfmt {} \;
