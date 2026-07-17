@@ -1,4 +1,4 @@
-use couleur_rs::{Algorithm, Layer, Color, Value, Reset, Result, Wrap};
+use couleur_rs::{Contrast, Layer, Color, Value, Reset, Result, Wrap};
 use k9::assert_equal;
 use std::cmp::{max, min};
 
@@ -162,7 +162,7 @@ fn test_wrap_ansi() -> Result<()> {
         true,
         Some(Wrap::Around),
         Some(Reset::After),
-        Some(Algorithm::Web),
+        Some(Contrast::Web),
     );
     assert_equal!(
         format!("{fg}"),

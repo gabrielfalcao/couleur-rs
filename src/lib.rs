@@ -47,8 +47,8 @@ pub use wrap::Wrap;
 pub mod reset;
 pub use reset::Reset;
 
-pub mod algorithm;
-pub use algorithm::Algorithm;
+pub mod contrast;
+pub use contrast::Contrast;
 
 pub mod triples;
 pub use triples::{RgbTriple, U8Triple};
@@ -56,8 +56,8 @@ pub use triples::{RgbTriple, U8Triple};
 pub mod macros;
 // pub use macros::impl_op;
 
-pub mod colorize;
-pub use colorize::Colorizer;
+pub mod ansi_colorizer;
+pub use ansi_colorizer::AnsiColorizer;
 
 pub mod layer;
 pub use layer::Layer;

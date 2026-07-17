@@ -6,7 +6,7 @@ use std::{
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub enum Algorithm {
+pub enum Contrast {
     None,
     Read,
     #[default]
@@ -14,29 +14,29 @@ pub enum Algorithm {
     Harmonic,
     Web,
 }
-impl Display for Algorithm {
+impl Display for Contrast {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.variant_name_snake())
     }
 }
 
-impl Algorithm {
+impl Contrast {
     pub fn is_none(self) -> bool {
-        self == Algorithm::None
+        self == Contrast::None
     }
     pub fn is_some(self) -> bool {
-        self != Algorithm::None
+        self != Contrast::None
     }
     pub fn unwrap(self) -> Self {
         self
     }
     pub fn variant_name_snake(&self) -> &'static str {
         match self {
-            Algorithm::None => "none",
-            Algorithm::Read => "read",
-            Algorithm::HighBit => "high_bit",
-            Algorithm::Harmonic => "harmonic",
-            Algorithm::Web => "web",
+            Contrast::None => "none",
+            Contrast::Read => "read",
+            Contrast::HighBit => "high_bit",
+            Contrast::Harmonic => "harmonic",
+            Contrast::Web => "web",
         }
     }
     pub fn variant_name_kebab(&self) -> String {
@@ -49,12 +49,12 @@ impl Algorithm {
         self.variant_name_snake().to_train_case()
     }
 
-    pub fn variants<'a>() -> &'a [Algorithm] {
+    pub fn variants<'a>() -> &'a [Contrast] {
         &[
-            Algorithm::Read,
-            Algorithm::HighBit,
-            Algorithm::Harmonic,
-            Algorithm::Web,
+            Contrast::Read,
+            Contrast::HighBit,
+            Contrast::Harmonic,
+            Contrast::Web,
         ]
     }
     fn to_possible_strings(&self) -> [String; 4] {
@@ -67,9 +67,9 @@ impl Algorithm {
     }
 }
 
-impl ValueEnum for Algorithm {
-    fn value_variants<'a>() -> &'a [Algorithm] {
-        Algorithm::variants()
+impl ValueEnum for Contrast {
+    fn value_variants<'a>() -> &'a [Contrast] {
+        Contrast::variants()
     }
 
     fn to_possible_value(&self) -> Option<PossibleValue> {
@@ -81,14 +81,14 @@ impl ValueEnum for Algorithm {
         )
     }
 
-    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Algorithm, String> {
+    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Contrast, String> {
         let val = if ignore_case {
             val.to_lowercase()
         } else {
             val.to_string()
         };
         let val = val.trim();
-        for (variant, possible_strings) in Algorithm::variants()
+        for (variant, possible_strings) in Contrast::variants()
             .iter()
             .map(|variant| (variant, variant.to_possible_strings()))
         {
@@ -101,26 +101,11 @@ impl ValueEnum for Algorithm {
         return Err(val.to_string());
     }
 }
-//impl PartialEq for &Algorithm {
-//    fn eq(&self, other: &Algorithm) -> bool {
-//        *self == *other
-//    }
-//}
-//impl PartialOrd for &Algorithm {
-//    fn partial_cmp(&self, other: &Algorithm) -> Option<Ordering> {
-//        (*self).partial_cmp(*other)
-//    }
-//}
-//
-//// impl PartialEq<Algorithm> for &Algorithm {
-////     fn eq(&self, other: Algorithm) -> bool {
-////         *self == other
-////     }
-//// }
-//
-//// impl PartialOrd<&Algorithm> for Algorithm {
-////     fn partial_cmp(&self, other: &Algorithm) -> Option<Ordering> {
-////         self.partial_cmp(*other)
-////     }
-//// }
-//
+impl From<Option<Contrast>> for Contrast {
+    fn from(contrast: Option<Contrast>) -> Contrast {
+        match contrast {
+            Some(contrast) => contrast,
+            None => Contrast::None,
+        }
+    }
+}

@@ -1,7 +1,7 @@
 #![allow(unused)]
 use clap::Parser;
 use couleur_rs::{
-    Algorithm, Colorizer, Error, Exit, Layer, Color, Reset, Result, Wrap,
+    Contrast, AnsiColorizer, Color, Error, Exit, Layer, Reset, Result, Wrap,
     dispatch::ParserDispatcher,
 };
 #[derive(Parser, Debug, Clone)]
@@ -14,7 +14,7 @@ pub struct Cli {
     #[arg(long)]
     bold: bool,
     #[arg(long)]
-    contrast: Option<Algorithm>,
+    contrast: Option<Contrast>,
     #[arg(short, long)]
     reset: Option<Reset>,
     #[arg(short, long)]
@@ -27,14 +27,31 @@ impl Cli {}
 
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
-        let text = self.text.join(" ");
-        let bg = self.bg.clone();
-        let bold = self.bold;
-        let fg = self.fg.clone();
-        let contrast = self.contrast.unwrap_or_else(|| Algorithm::None);
-        let reset = self.reset.unwrap_or_default();
-        let wrap = self.wrap.unwrap_or_default();
-        let colorizer = Colorizer {
+        // let text = self.text.join(" ");
+        // let bg = self.bg.clone();
+        // let bold = self.bold;
+        // let fg = self.fg.clone();
+        // let contrast = self.contrast.unwrap_or_else(|| Contrast::None);
+        // let reset = self.reset.unwrap_or_default();
+        // let wrap = self.wrap.unwrap_or_default();
+        // let colorizer = AnsiColorizer {
+        //     bg,
+        //     fg,
+        //     contrast,
+        //     wrap,
+        //     bold,
+        //     reset,
+        // };
+        //
+        // let result = colorizer.colorize(&text)?;
+        // println!("{text}");
+        let bg = None;
+        let bold = true;
+        let fg = Some("#FFCC00".parse::<Color>()?);
+        let contrast = Contrast::None;
+        let reset = Reset::After;
+        let wrap = Wrap::Before;
+        let colorizer = AnsiColorizer {
             bg,
             fg,
             contrast,
@@ -42,9 +59,9 @@ impl ParserDispatcher<Error> for Cli {
             bold,
             reset,
         };
+        let result = colorizer.colorize("test 123")?;
+        println!("{result}");
 
-        let result = colorizer.colorize(&text)?;
-        println!("{text}");
         Ok(())
     }
 }

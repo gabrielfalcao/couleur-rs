@@ -1,5 +1,5 @@
 use crate::{
-    Algorithm, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RESET, Value, Reset, Result,
+    Contrast, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RESET, Value, Reset, Result,
     RgbTriple, Wrap, max_rgb, min_rgb,
 };
 use regex::Regex;
@@ -142,16 +142,16 @@ impl Color {
         bold: bool,
         wrap: Option<Wrap>,
         reset: Option<Reset>,
-        algorithm: Option<Algorithm>,
+        contrast: Option<Contrast>,
     ) -> String {
         let layer = layer.unwrap_or_default();
         let wrap = wrap.unwrap_or_default();
         let reset = reset.unwrap_or_default();
-        let algorithm = algorithm.unwrap_or_default();
+        let contrast = contrast.unwrap_or_default();
 
         let ansi_sequence = self.to_ansi(layer, bold);
-        let contrast = if algorithm != Algorithm::None {
-            self.contrast(algorithm).to_ansi(layer.inverted(), bold)
+        let contrast = if contrast != Contrast::None {
+            self.contrast(contrast).to_ansi(layer.inverted(), bold)
         } else {
             String::new()
         };
@@ -169,13 +169,13 @@ impl Color {
         };
         return result;
     }
-    pub fn contrast(&self, algorithm: Algorithm) -> Color {
-        match algorithm {
-            Algorithm::Read => self.get_accessible_contrast(),
-            Algorithm::HighBit => self.get_binary_contrast(),
-            Algorithm::Harmonic => self.get_adobe_complementary(),
-            Algorithm::Web => self.get_msb_invert_contrast(),
-            Algorithm::None => *self,
+    pub fn contrast(&self, contrast: Contrast) -> Color {
+        match contrast {
+            Contrast::Read => self.get_accessible_contrast(),
+            Contrast::HighBit => self.get_binary_contrast(),
+            Contrast::Harmonic => self.get_adobe_complementary(),
+            Contrast::Web => self.get_msb_invert_contrast(),
+            Contrast::None => *self,
         }
     }
 }
