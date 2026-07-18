@@ -20,6 +20,9 @@ run: cls
 test: cls
 	cargo test -q
 
+nextest: cls
+	cargo nextest run
+
 format:
 	find src/ -type f -name '*.rs' -exec rustfmt {} \;
 
@@ -28,4 +31,4 @@ clean: format
 cls:
 	1>&2 printf "\x1b[2J\x1b[3J\x1b[H"
 
-.PHONY: run test format cls all clean
+.PHONY: run test format cls all clean nextest hex-to-bin
