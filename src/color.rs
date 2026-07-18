@@ -1,6 +1,6 @@
 use crate::{
-    Contrast, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RESET, Value, Reset, Result,
-    RgbTriple, Wrap, max_rgb, min_rgb,
+    Contrast, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RESET, Reset, Result, RgbTriple,
+    Value, Wrap, max_rgb, min_rgb,
 };
 use regex::Regex;
 use std::{ops::Deref, str::FromStr, sync::LazyLock};
@@ -257,5 +257,22 @@ impl FromStr for Color {
             }
             None => Err(RGBParseError::HexParseError(s.to_string()).into()),
         }
+    }
+}
+
+impl std::fmt::Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "#{}", self.to_triple().iter().map(|c|format!("{:02X}", c.into_u8())).collect::<Vec<String>>().join(""))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{Result, Error, Color};
+    #[test]
+    fn test_to_string() -> Result<()>{
+        let color = "A4F681".parse::<Color>()?;
+        assert_eq!(color.to_string(), "#A4F681");
+        Ok(())
     }
 }

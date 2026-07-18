@@ -21,26 +21,12 @@ impl ParserDispatcher<Error> for Cli {
             let lines = path.read_lines()?;
             for line in lines {
                 let color = line.parse::<Color>()?;
-                let fg_colorizer = AnsiColorizer {
-                    bg: None,
-                    fg: Some(color),
-                    contrast: Contrast::Harmonic,
-                    wrap: Wrap::default(),
-                    bold: true,
-                    reset: Reset::default(),
-                };
-                let bg_colorizer = AnsiColorizer {
-                    bg: Some(color),
-                    fg: None,
-                    contrast: Contrast::Web,
-                    wrap: Wrap::default(),
-                    bold: true,
-                    reset: Reset::default(),
-                };
+                let fg = color.to_ansi(Layer::FG, true);
+                let bg = color.to_ansi(Layer::BG, true);
+                let fg_contrast = Contrast::Harmonic.apply(color, Layer::FG)?;
+                let bg_contrast = Contrast::Web.apply(color, Layer::BG)?;
                 let [r,g,b] = color.to_triple();
-                let fg = fg_colorizer.colorize(&format!("#{line}"))?;
-                let bg = bg_colorizer.colorize(&format!("{r}, {g}, {b}"))?;
-                println!("{fg}\t{bg}");
+                println!("{color}{line}\x1b[0m");
             }
         }
 
