@@ -10,6 +10,7 @@ pub enum Error {
     RuntimeError(String),
     ConversionToU8Error(String),
     TerminalQueryError(String),
+    RenderError(String),
 
     ClapError(String),
     ParseError(String),
@@ -25,6 +26,7 @@ impl Display for Error {
                 Error::RuntimeError(value) => value,
                 Error::ConversionToU8Error(value) => value,
                 Error::TerminalQueryError(value) => value,
+                Error::RenderError(value) => value,
 
                 Error::ClapError(value) => value,
                 Error::ParseError(value) => value,
@@ -40,6 +42,7 @@ impl Error {
             Error::RuntimeError(value) => value.to_string(),
             Error::ConversionToU8Error(value) => value.to_string(),
             Error::TerminalQueryError(value) => value.to_string(),
+            Error::RenderError(value) => value.to_string(),
 
             Error::ClapError(value) => value.to_string(),
             Error::ParseError(value) => value.to_string(),

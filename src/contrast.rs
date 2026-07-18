@@ -1,3 +1,5 @@
+use crate::{Result, Error, Color, Layer};
+
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use std::{
@@ -21,6 +23,15 @@ impl Display for Contrast {
 }
 
 impl Contrast {
+    pub fn apply(&self, color: Color, layer: Layer) -> Result<Color> {
+        Ok(match self {
+            Contrast::None => layer.default_color()?,
+            Contrast::Read => color.get_accessible_contrast(),
+            Contrast::HighBit => color.get_binary_contrast(),
+            Contrast::Harmonic => color.get_adobe_complementary(),
+            Contrast::Web => color.get_msb_invert_contrast(),
+        })
+    }
     pub fn is_none(self) -> bool {
         self == Contrast::None
     }

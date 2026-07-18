@@ -11,22 +11,42 @@ pub struct AnsiColorizer {
 }
 
 impl AnsiColorizer {
-    pub fn colors(&self) -> Result<(Color, Color, Option<Contrast>)> {
+    pub fn colors(&self) -> Result<(Option<Color>, Option<Color>)> {
         let bg = match self.bg {
-            Some(bg) => bg,
-            None => Color::default_for_bg()?
+            Some(bg) => Some(bg),
+            None => match Color::default_for_bg() {
+                Ok(bg) => Some(bg),
+                Err(_) => None
+            }
         };
         let fg = match self.fg {
-            Some(fg) => fg,
-            None => Color::default_for_fg()?
+            Some(fg) => Some(fg),
+            None => match Color::default_for_fg() {
+                Ok(fg) => Some(fg),
+                Err(_) => None
+            }
         };
-        let contrast = self.contrast;
-        Ok((bg, fg, contrast.into()))
+        Ok((bg, fg))
     }
     pub fn colorize<T: std::fmt::Display>(&self, text: T) -> Result<String> {
-        let (bg, fg, contrast) = self.colors()?;
-        let bg = bg.to_ansi(Layer::BG, true);
-        let fg = fg.to_ansi(Layer::FG, true);
+        let (bg, fg) = self.colors()?;
+        let (bg, fg)=if bg.is_none() && fg.is_none() {
+            return Err(Error::RenderError(format!("AnsiColorizer requires at least some bg or some fg, but neither was provided")))
+        } else if bg.is_none() {
+            let fg = fg.unwrap();
+            let bg = self.contrast.apply(fg, Layer::BG)?;
+            (bg, fg)
+        } else if fg.is_none() {
+            let bg = bg.unwrap();
+            let fg = self.contrast.apply(bg, Layer::FG)?;
+            (bg, fg)
+        } else {
+            let bg = bg.unwrap();
+            let fg = fg.unwrap();
+            (bg, fg)
+        };
+        let bg = bg.to_ansi(Layer::BG, self.bold);
+        let fg = fg.to_ansi(Layer::FG, self.bold);
         let result = format!("\x1b[0m{bg}{fg}{text}\x1b[0m");
         Ok(result)
     }

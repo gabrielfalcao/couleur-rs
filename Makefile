@@ -1,4 +1,8 @@
-all: test
+# all: run test
+all: cls hex-to-bin
+
+hex-to-bin:
+	cargo run --bin hex-to-bin ./palettes/cs108.hex
 
 run: cls
 	@printf "testing background\n\n"

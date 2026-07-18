@@ -16,7 +16,8 @@ repository = "https://github.com/gabrielfalcao/couleur-rs"
 keywords = ["color", "ansi", "unix", "system"]
 authors = ["Gabriel DeMoura <gabrielteratos@gmail.com>"]
 categories = ["command-line-interface"]
-
+# default-bin = "couleur"
+default-bin = "hex-to-bin"
 
 # categories = [] # https://crates.io/category_slugs
 [dependencies]
@@ -48,8 +49,15 @@ test = true
 
 
 [[bin]]
-name = "couleur-rs"
+name = "couleur"
 path = "src/bin/couleur.rs"
+bench = false
+doc = false
+test = false
+
+[[bin]]
+name = "hex-to-bin"
+path = "src/bin/hex-to-bin.rs"
 bench = false
 doc = false
 test = false

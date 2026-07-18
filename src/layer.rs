@@ -1,3 +1,4 @@
+use crate::{Color, Error, Result};
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use std::fmt::Display;
@@ -9,13 +10,16 @@ pub enum Layer {
     BG,
 }
 impl Layer {
-    pub fn inverted(&self) -> Layer {
+    pub fn default_color(self) -> Result<Color> {
+        Ok(Color::default_for_layer(self)?)
+    }
+    pub fn inverted(self) -> Layer {
         match self {
             Layer::BG => Layer::FG,
             Layer::FG => Layer::BG,
         }
     }
-    pub fn code(&self) -> i32 {
+    pub fn code(self) -> i32 {
         match self {
             Layer::BG => 48,
             Layer::FG => 38,
