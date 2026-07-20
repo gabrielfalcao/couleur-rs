@@ -23,10 +23,10 @@ impl ParserDispatcher<Error> for Cli {
                 let color = line.parse::<Color>()?;
                 let fg = color.to_ansi(Layer::FG, true);
                 let bg = color.to_ansi(Layer::BG, true);
-                let fg_contrast = Contrast::Harmonic.apply(color, Layer::FG)?;
-                let bg_contrast = Contrast::Web.apply(color, Layer::BG)?;
+                let fg_contrast = Contrast::Harmonic.apply(color, Layer::BG)?.to_ansi(Layer::FG, true);
+                let bg_contrast = Contrast::Web.apply(color, Layer::FG)?.to_ansi(Layer::BG, true);
                 let [r,g,b] = color.to_triple();
-                println!("{color}{line}\x1b[0m");
+                println!("{fg_contrast}{fg}{color}\x1b[0m");
             }
         }
 
