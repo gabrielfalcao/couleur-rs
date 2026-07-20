@@ -1,13 +1,16 @@
-use crate::colors::RGBParseError;
+use crate::color::RGBParseError;
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
-use std::num::ParseFloatError;
-use std::num::ParseIntError;
+use std::{
+    fmt::Display,
+    num::{ParseFloatError, ParseIntError},
+};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     IOError(String),
     RuntimeError(String),
     ConversionToU8Error(String),
+    TerminalQueryError(String),
+    RenderError(String),
 
     ClapError(String),
     ParseError(String),
@@ -22,6 +25,8 @@ impl Display for Error {
                 Error::IOError(value) => value,
                 Error::RuntimeError(value) => value,
                 Error::ConversionToU8Error(value) => value,
+                Error::TerminalQueryError(value) => value,
+                Error::RenderError(value) => value,
 
                 Error::ClapError(value) => value,
                 Error::ParseError(value) => value,
@@ -36,6 +41,8 @@ impl Error {
             Error::IOError(value) => value.to_string(),
             Error::RuntimeError(value) => value.to_string(),
             Error::ConversionToU8Error(value) => value.to_string(),
+            Error::TerminalQueryError(value) => value.to_string(),
+            Error::RenderError(value) => value.to_string(),
 
             Error::ClapError(value) => value.to_string(),
             Error::ParseError(value) => value.to_string(),
@@ -55,6 +62,12 @@ impl From<iocore::Error> for Error {
         Error::IOError(e.to_string())
     }
 }
+impl From<terminal_colorsaurus::Error> for Error {
+    fn from(e: terminal_colorsaurus::Error) -> Self {
+        Error::TerminalQueryError(e.to_string())
+    }
+}
+
 impl From<ParseIntError> for Error {
     fn from(e: ParseIntError) -> Self {
         Error::ParseError(e.to_string())

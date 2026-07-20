@@ -1,52 +1,50 @@
+#![allow(unused)]
 use clap::Parser;
-
-use couleur_rs::{Error, Exit, Result};
-use couleur_rs::{Algorithm, Reset};
-use couleur_rs::dispatch::ParserDispatcher;
-
+use couleur_rs::{
+    Contrast, AnsiColorizer, Color, Error, Exit, Layer, Reset, Result, Wrap,
+    dispatch::ParserDispatcher,
+};
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]
 pub struct Cli {
-    #[arg(long)]
-    bg: Option<String>,
-
-    #[arg(long)]
-    fg: Option<String>,
-
-    #[arg(long)]
-    contrast: Algorithm,
-
+    #[arg(long, required_unless_present_any = ["fg", "contrast"])]
+    bg: Option<Color>,
+    #[arg(long, required_unless_present_any = ["bg", "contrast"])]
+    fg: Option<Color>,
     #[arg(short, long)]
-    reset: Reset,
-
+    bold: bool,
+    #[arg(long, required_unless_present_all = ["bg", "fg"])]
+    contrast: Option<Contrast>,
+    #[arg(short, long)]
+    reset: Option<Reset>,
+    #[arg(short, short, long)]
+    wrap: Option<Wrap>,
+    #[arg(short, long, help="detect terminal default colors for background and foreground instead of using contrast", required_unless_present_any=["contrast"])]
+    detect: bool,
     #[arg()]
     text: Vec<String>,
 }
-impl Cli {
-    pub fn bg_code(&self) -> String {
-        self.bg
-            .as_ref()
-            .map(|bg| bg.to_string())
-            .unwrap_or_default()
-    }
-    pub fn bg(&self, red: u8, green: u8, blue: u8) -> String {
-        format!("\x1b[1;48;2;{red};{green};{blue}m")
-    }
 
-    pub fn fg_code(&self) -> String {
-        self.fg
-            .as_ref()
-            .map(|fg| fg.to_string())
-            .unwrap_or_default()
-    }
-    pub fn fg(&self, red: u8, green: u8, blue: u8) -> String {
-        format!("\x1b[1;38;2;{red};{green};{blue}m")
-    }
-}
+impl Cli {}
+
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
-        let reset = "\x1b[0m";
-        println!("{}{}{reset}", &self.fg(225, 184, 86), self.text.join(" "),);
+        let bg = self.bg;
+        let bold = self.bold;
+        let fg = self.fg;
+        let contrast = self.contrast.unwrap_or_default();
+        let reset = self.reset.unwrap_or_default();
+        let wrap = self.wrap.unwrap_or_default();
+        let colorizer = AnsiColorizer {
+            bg,
+            fg,
+            contrast,
+            wrap,
+            bold,
+            reset,
+        };
+        let result = colorizer.colorize(self.text.join(" "))?;
+        println!("{result}");
 
         Ok(())
     }

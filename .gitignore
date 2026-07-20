@@ -20,3 +20,5 @@ __fixtures__/
 **/__fixtures__/
 
 *.json
+*.diff
+*.patch

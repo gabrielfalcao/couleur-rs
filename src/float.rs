@@ -53,7 +53,7 @@ impl std::fmt::Display for FloatMetadata<'_> {
     }
 }
 // pub fn f32_metadata<T: Copy + Deref<Target = f64>>(float: T) -> (bool, i32, i32, i32, usize) {
-//     let value = RGBValue(*float);
+//     let value = Value(*float);
 //     let negative = value.round() < 0.0;
 //
 //     let float_round = value.round().copysign(1.0);

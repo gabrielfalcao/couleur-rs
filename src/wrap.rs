@@ -2,28 +2,32 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use std::fmt::Display;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Algorithm {
-    Read,
-    HighBit,
-    Harmonic,
-    Web,
+#[derive(Clone, Copy, Debug, Default)]
+pub enum Wrap {
+    #[default]
+    Before,
+    After,
+    Around,
 }
-impl Display for Algorithm {
+
+impl Display for Wrap {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.variant_name_snake())
     }
 }
 
-impl Algorithm {
+impl Wrap {
     pub fn variant_name_snake(&self) -> &'static str {
         match self {
-            Algorithm::Read => "read",
-            Algorithm::HighBit => "high_bit",
-            Algorithm::Harmonic => "harmonic",
-            Algorithm::Web => "web",
+            Wrap::Before => "before",
+            Wrap::After => "after",
+            Wrap::Around => "around",
         }
     }
+    pub fn variants<'a>() -> &'a [Wrap] {
+        &[Wrap::Before, Wrap::After, Wrap::Around]
+    }
+
     pub fn variant_name_kebab(&self) -> String {
         self.variant_name_snake().to_kebab_case()
     }
@@ -34,14 +38,6 @@ impl Algorithm {
         self.variant_name_snake().to_train_case()
     }
 
-    pub fn variants<'a>() -> &'a [Algorithm] {
-        &[
-            Algorithm::Read,
-            Algorithm::HighBit,
-            Algorithm::Harmonic,
-            Algorithm::Web,
-        ]
-    }
     fn to_possible_strings(&self) -> [String; 4] {
         [
             self.variant_name_snake().to_string(),
@@ -52,9 +48,9 @@ impl Algorithm {
     }
 }
 
-impl ValueEnum for Algorithm {
-    fn value_variants<'a>() -> &'a [Algorithm] {
-        Algorithm::variants()
+impl ValueEnum for Wrap {
+    fn value_variants<'a>() -> &'a [Wrap] {
+        Wrap::variants()
     }
 
     fn to_possible_value(&self) -> Option<PossibleValue> {
@@ -66,14 +62,14 @@ impl ValueEnum for Algorithm {
         )
     }
 
-    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Algorithm, String> {
+    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Wrap, String> {
         let val = if ignore_case {
             val.to_lowercase()
         } else {
             val.to_string()
         };
         let val = val.trim();
-        for (variant, possible_strings) in Algorithm::variants()
+        for (variant, possible_strings) in Wrap::variants()
             .iter()
             .map(|variant| (variant, variant.to_possible_strings()))
         {
@@ -86,3 +82,15 @@ impl ValueEnum for Algorithm {
         return Err(val.to_string());
     }
 }
+//impl PartialEq<&Wrap> for Wrap {
+//    fn eq(&self, other: &Wrap) -> bool {
+//        self == *other
+//    }
+//}
+//
+//impl PartialOrd<&Wrap> for Wrap {
+//    fn partial_cmp(&self, other: &Rhs) -> Option<Ordering> {
+//        self.partial_cmp(*other)
+//    }
+//}
+//

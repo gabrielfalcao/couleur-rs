@@ -1,16 +1,35 @@
 [package]
 name = "couleur-rs"
-version = "0.0.2"
-description = "parse, print, manipulate and apply contrast to (RGB) colors"
+version = "0.0.4"
+description = "parse, print, manipulate and apply contrast to RGB colors"
 readme = "README.md"
-homepage = "https://crates.io/crates/couleur-rs"
 license = "MIT OR Apache-2.0"
 edition = "2024"
 autoexamples = false
 autobenches = false
-# default-run = "couleur-rs"
+autotests = false
+
+homepage = "https://crates.io/crates/couleur-rs"
+documentation = "https://docs.rs/couleur-rs"
+repository = "https://github.com/gabrielfalcao/couleur-rs"
+
+keywords = ["color", "ansi", "unix", "system"]
+authors = ["Gabriel DeMoura <gabrielteratos@gmail.com>"]
+categories = ["command-line-interface"]
+# default-bin = "couleur"
+default-bin = "hex-to-bin"
 
 # categories = [] # https://crates.io/category_slugs
+[dependencies]
+clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }
+heck = "0.5.0"
+hex = "0.4.3"
+iocore = "3.1.0"
+regex = "1.12.4"
+serde = { version = "1.0.228", features = ["derive"] }
+supports-color = "3.0.2"
+terminal-colorsaurus = "1.0.3"
+thiserror = "2.0.18"
 
 
 [package.metadata]
@@ -20,6 +39,55 @@ targets = [
     # "aarch64-unknown-linux-gnu",
 ]
 
+[lib]
+name = "couleur_rs"
+path = "src/lib.rs"
+
+bench = false
+doctest = false
+test = true
+
+
+[[bin]]
+name = "couleur"
+path = "src/bin/couleur.rs"
+bench = false
+doc = false
+test = false
+
+[[bin]]
+name = "hex-to-bin"
+path = "src/bin/hex-to-bin.rs"
+bench = false
+doc = false
+test = false
+
+[[test]]
+name = "test_colorizer"
+path = "./tests/test_colorizer.rs"
+
+# [[test]]
+# name = "test_float"
+# path = "./tests/test_float.rs"
+
+# [[test]]
+# name = "test_rgb_color"
+# path = "./tests/test_rgb_color.rs"
+
+# [[test]]
+# name = "test_rgb_value"
+# path = "./tests/test_rgb_value.rs"
+
+# [[test]]
+# name = "test_rgb_value_ops"
+# path = "./tests/test_rgb_value_ops.rs"
+
+
+[dev-dependencies]
+k9 = "0.12.0"
+pretty_assertions = "1.4.1"
+serde_json = "1.0.150"
+
 [profile.release] # https://github.com/johnthagen/min-sized-rust
 strip = true  # Automatically strip symbols from the binary.
 opt-level = "z"  # Optimize for size. https://doc.rust-lang.org/cargo/reference/profiles.html#opt-level
@@ -27,38 +95,3 @@ lto = true
 panic = "abort"
 codegen-units = 1
 # https://github.com/johnthagen/min-sized-rust?tab=readme-ov-file#remove-fmtdebug
-
-
-[lib]
-name = "couleur_rs"
-path = "src/lib.rs"
-
-bench = false
-doctest = false
-
-
-[[bin]]
-name = "couleur-rs"
-path = "src/bin/couleur.rs"
-bench = false
-doc = false
-test = false
-
-[dependencies]
-clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }
-color-eyre = "0.6.5"
-heck = "0.5.0"
-hex = "0.4.3"
-iocore = "3.1.0"
-og-enum-to-string = "0.1.0"
-owo-colors = { version = "4.3.0", features = ["supports-colors", "supports-color"] }
-regex = "1.12.4"
-rgb2ansi256 = "0.1.1"
-serde = { version = "1.0.228", features = ["derive"] }
-supports-color = "3.0.2"
-thiserror = "2.0.18"
-
-[dev-dependencies]
-k9 = "0.12.0"
-pretty_assertions = "1.4.1"
-serde_json = "1.0.150"
