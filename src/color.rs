@@ -68,10 +68,13 @@ impl Color {
     pub fn from_triple(red: Value, green: Value, blue: Value) -> Color {
         Color(red, green, blue)
     }
-    pub fn get_binary_contrast(&self) -> Color {
+    pub fn get_binary_luminance(&self) -> f32 {
         let [r, g, b] = self.to_triple();
         let luminance = (0.299 * *r) + (0.587 * *g) + (0.114 * *b);
-        if luminance > 128.0 { *BLACK } else { *WHITE }
+        luminance
+    }
+    pub fn get_binary_contrast(&self) -> Color {
+        if self.is_dark() { *BLACK } else { *WHITE }
     }
 
     pub fn get_msb_invert_contrast(&self) -> Color {
@@ -178,6 +181,12 @@ impl Color {
             Contrast::None => *self,
         }
     }
+    pub fn is_dark(&self) -> bool {
+        self.get_binary_luminance() <= 128.0
+    }
+    pub fn is_light(&self) -> bool {
+        self.get_binary_luminance() > 128.0
+    }
 }
 impl From<RgbTriple> for Color {
     fn from(triple: RgbTriple) -> Color {
@@ -262,17 +271,49 @@ impl FromStr for Color {
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "#{}", self.to_triple().iter().map(|c|format!("{:02X}", c.into_u8())).collect::<Vec<String>>().join(""))
+        write!(
+            f,
+            "#{}",
+            self.to_triple()
+                .iter()
+                .map(|c| format!("{:02X}", c.into_u8()))
+                .collect::<Vec<String>>()
+                .join("")
+        )
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{Result, Error, Color};
+    use crate::{Color, Error, Result};
     #[test]
-    fn test_to_string() -> Result<()>{
+    fn test_to_string() -> Result<()> {
         let color = "A4F681".parse::<Color>()?;
         assert_eq!(color.to_string(), "#A4F681");
+        Ok(())
+    }
+    #[test]
+    fn test_get_binary_luminance() -> Result<()> {
+        let color_547e64 = "#547E64".parse::<Color>()?;
+        assert_eq!(color_547e64.is_dark(), true);
+        assert_eq!(color_547e64.is_light(), false);
+
+        let color_374e4a = "#374E4A".parse::<Color>()?;
+        assert_eq!(color_374e4a.is_dark(), true);
+        assert_eq!(color_374e4a.is_light(), false);
+
+        let color_92a984 = "#92A984".parse::<Color>()?;
+        assert_eq!(color_92a984.is_dark(), false);
+        assert_eq!(color_92a984.is_light(), true);
+
+        let color_b2ba90 = "#B2BA90".parse::<Color>()?;
+        assert_eq!(color_b2ba90.is_dark(), false);
+        assert_eq!(color_b2ba90.is_light(), true);
+
+        let color_cddf6c = "#CDDF6C".parse::<Color>()?;
+        assert_eq!(color_cddf6c.is_dark(), false);
+        assert_eq!(color_cddf6c.is_light(), true);
+
         Ok(())
     }
 }
