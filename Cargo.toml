@@ -1,6 +1,6 @@
 [package]
 name = "couleur-rs"
-version = "0.0.5"
+version = "0.0.6"
 description = "parse, print, manipulate and apply contrast to RGB colors"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
