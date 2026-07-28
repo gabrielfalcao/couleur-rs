@@ -8,15 +8,29 @@ use crate::{
     RgbTriple, Terminal, Value, Wrap, max_rgb, min_rgb,
 };
 
+/// static instance of [`Color`] which holds the absolute black RGB color.
 pub static BLACK: LazyLock<Color> =
     LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
+
+/// static instance of [`Color`] which holds the absolute white RGB color.
 pub static WHITE: LazyLock<Color> =
     LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
+
 use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
+/// Represents an RGB color, providing methods to obtain color
+/// information and render the color in ANSI terminals supporting true-color.
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq)]
-pub struct Color(pub Value, pub Value, pub Value);
+pub struct Color(
+    /// The **red** band
+    pub Value,
+    /// The **green** band
+    pub Value,
+    /// The **blue** band
+    pub Value,
+);
 impl Color {
+    /// Creates a new color from the given red, green and blue values which should be of a type convertible [`Into<f32>`]
     pub fn new<T: Copy + Into<f32>>(red: T, green: T, blue: T) -> Result<Color> {
         Ok(Color(
             Value::new(red.into())?,
@@ -25,9 +39,9 @@ impl Color {
         ))
     }
 
-    /// queries the [`crate::Terminal`] for the background color,
-    /// defaulting to BLACK in case
-    /// [`crate::Terminal::background_color`] fails.
+    /// queries the [`Terminal`] for the background color,
+    /// defaulting to [`BLACK`] in case
+    /// [`Terminal::background_color`] fails.
     ///
     /// In other words, in case of querying the background color of
     /// the terminal fails, this method assumes the background is black.
@@ -35,15 +49,22 @@ impl Color {
     /// Because this method ignores terminal query errors you miss on
     /// the opportunity to handle errors and notify the user of your
     /// rust application or library, if this is the case you use the
-    /// [`crate::Terminal`] methods directly, in this case simply call
-    /// [`crate::Terminal::background_color`].
+    /// [`Terminal`] methods directly, in this case simply call
+    /// [`Terminal::background_color()`].
+    ///
+    /// [`Terminal`]: crate::Terminal
+    /// [`BLACK`]: crate::color::BLACK
+    /// [`Terminal::background_color()`]: crate::Terminal::background_color
+    /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
+    ///
+
     pub fn default_for_bg() -> Color {
         Terminal::background_color().unwrap_or_else(|_| *BLACK)
     }
 
-    /// queries the [`crate::Terminal`] for the foreground color,
-    /// defaulting to BLACK in case
-    /// [`crate::Terminal::foreground_color`] fails.
+    /// queries the [`Terminal`] for the foreground color,
+    /// defaulting to [`WHITE`] in case
+    /// [`Terminal::foreground_color`] fails.
     ///
     /// In other words, in case of querying the foreground color of
     /// the terminal fails, this method assumes the foreground is black.
@@ -51,17 +72,29 @@ impl Color {
     /// Because this method ignores terminal query errors you miss on
     /// the opportunity to handle errors and notify the user of your
     /// rust application or library, if this is the case you use the
-    /// [`crate::Terminal`] methods directly, in this case simply call
-    /// [`crate::Terminal::foreground_color`].
+    /// [`Terminal`] methods directly, in this case simply call
+    /// [`Terminal::foreground_color()`].
+    ///
+    /// [`Terminal`]: crate::Terminal
+    /// [`WHITE`]: crate::color::WHITE
+    /// [`Terminal::background_color()`]: crate::Terminal::background_color
+    /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
+    ///
     pub fn default_for_fg() -> Color {
         Terminal::foreground_color().unwrap_or_else(|_| *WHITE)
     }
 
-    /// queries the [`crate::Terminal`] for the color of the given
-    /// [`crate::Layer`], defaulting the background to black and the
+    /// queries the [`Terminal`] for the color of the given
+    /// [`Layer`], defaulting the background to black and the
     /// foreground to white in case of errors, which is the same
-    /// behavior of the [`background_color`] and [`foreground_color`]
+    /// behavior of the [`Terminal::background_color()`] and [`Terminal::foreground_color()`]
     /// methods.
+    ///
+    /// [`Terminal`]: crate::Terminal
+    /// [`Layer`]: crate::Layer
+    /// [`Terminal::background_color()`]: crate::Terminal::background_color
+    /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
+    ///
     pub fn default_for_layer(layer: Layer) -> Color {
         Terminal::layer_color(layer).unwrap_or_else(|_| match layer {
             Layer::BG => *BLACK,
@@ -69,32 +102,56 @@ impl Color {
         })
     }
 
-    /// Returns the raw [`crate::Value`] for the red band of this [`Color`]
+    /// Returns the raw [`Value`] for the red band of this [`Color`]
+    ///
+    /// [`Color`]: crate::Color
+    /// [`Value`]: crate::Value
+    ///
     pub fn red_value(&self) -> Value {
         self.0
     }
 
-    /// Returns the raw [`crate::Value`] for the green band of this [`Color`]
+    /// Returns the raw [`Value`] for the green band of this [`Color`]
+    ///
+    /// [`Color`]: crate::Color
+    /// [`Value`]: crate::Value
+    ///
     pub fn green_value(&self) -> Value {
         self.1
     }
 
-    /// Returns the raw [`crate::Value`] for the blue band of this [`Color`]
+    /// Returns the raw [`Value`] for the blue band of this [`Color`]
+    ///
+    /// [`Color`]: crate::Color
+    /// [`Value`]: crate::Value
+    ///
     pub fn blue_value(&self) -> Value {
         self.2
     }
 
     /// Returns the raw [`f32`] for the red band of this [`Color`]
+    ///
+    /// [`Color`]: crate::Color
+    /// [`Value`]: crate::Value
+    ///
     pub fn red(&self) -> f32 {
         self.red_value().value()
     }
 
     /// Returns the raw [`f32`] for the green band of this [`Color`]
+    ///
+    /// [`Color`]: crate::Color
+    /// [`Value`]: crate::Value
+    ///
     pub fn green(&self) -> f32 {
         self.green_value().value()
     }
 
     /// Returns the raw [`f32`] for the blue band of this [`Color`]
+    ///
+    /// [`Color`]: crate::Color
+    /// [`Value`]: crate::Value
+    ///
     pub fn blue(&self) -> f32 {
         self.blue_value().value()
     }
@@ -110,20 +167,30 @@ impl Color {
         format!("#{red:X}{green:X}{blue:X}")
     }
 
+    /// Returns a [`Color`] from three [`Value`] values representing red, green and blue.
     pub fn from_triple(red: Value, green: Value, blue: Value) -> Color {
         Color(red, green, blue)
     }
 
+    /// Returns the luminance of the color based on the binary
+    /// luminance algorithm which reduces the color to either black or
+    /// white based on human perception of color brightness.
     pub fn get_binary_luminance(&self) -> Value {
         let [r, g, b] = self.to_triple();
         let luminance = (0.299 * *r) + (0.587 * *g) + (0.114 * *b);
         Value(luminance)
     }
 
+    /// Returns either [`BLACK`] or [`WHITE`] as the contrasting color based on the [`binary luminance algorithm`](`crate::Color::get_binary_luminance`)
     pub fn get_binary_contrast(&self) -> Color {
         if self.is_dark() { *BLACK } else { *WHITE }
     }
 
+    /// Returns the contrast of the current color based on the simple
+    /// application of the MSB (Most significant bit) algorithm. This
+    /// method is probably the less sophisticated among the other
+    /// color contrast algorithms methods of [`Color`] but is here as
+    /// an option since it is so basic and common.
     pub fn get_msb_invert_contrast(&self) -> Color {
         Color(
             (self.red_value().into_u8() ^ 128).into(),
@@ -132,6 +199,8 @@ impl Color {
         )
     }
 
+    /// Returns a complementary color according to one of Adobe's
+    /// complementary color algorithm.
     pub fn get_adobe_complementary(&self) -> Color {
         let [r, g, b] = self.to_triple();
         let max_val = max_rgb(r, g, b);
@@ -144,6 +213,15 @@ impl Color {
         )
     }
 
+    /// Returns the perceived brightness via WCAG (Web Content
+    /// Accessibility Guidelines) luminance.
+    ///
+    /// A value above 0.175 is considered bright and a value below that
+    /// is considered dark.
+    ///
+    /// This math is the basis for determining whether text and its
+    /// background have enough contrast to be readable by users with
+    /// low vision or color blindness
     pub fn get_wcag_luminance(&self) -> Value {
         let [r, g, b] = self.to_triple();
         let channels = [(r / 255.0), (g / 255.0), (b / 255.0)];
@@ -160,6 +238,8 @@ impl Color {
         Value(luminance)
     }
 
+    /// Returns either [`BLACK`] or [`WHITE`] as the contrast of the
+    /// current color.
     pub fn get_accessible_contrast(&self) -> Color {
         if self.get_wcag_luminance() > 0.175 {
             *BLACK
@@ -168,10 +248,12 @@ impl Color {
         }
     }
 
+    /// Returns a string which renders the current color as an ANSI sequence in the given [`Layer`].
     pub fn to_ansi(&self, layer: Layer) -> String {
         self.to_ansi_with_prefix(layer, None)
     }
 
+    /// Returns a string which renders the current color as an ANSI sequence in the given [`Layer`] and [`Prefix`].
     pub fn to_ansi_with_prefix(&self, layer: Layer, prefix: Option<Prefix>) -> String {
         let triple = self
             .to_triple()
@@ -236,14 +318,21 @@ impl Color {
         }
     }
 
+    /// uses the [`binary luminance`](`Color::get_binary_luminance`)
+    /// algorithm to determine if a [`Color`] is dark
     pub fn is_dark(&self) -> bool {
         self.get_binary_luminance() <= 128.0
     }
 
+    /// uses the [`binary luminance`](`Color::get_binary_luminance`)
+    /// algorithm to determine if a [`Color`] is light
     pub fn is_light(&self) -> bool {
         self.get_binary_luminance() > 128.0
     }
 
+    /// uses the [`binary luminance`](`Color::get_binary_luminance`)
+    /// algorithm to determine the given [`Color`] contrasts with the
+    /// current color.
     pub fn contrasts_with_color(&self, other: Color) -> bool {
         if self.is_dark() {
             return other.is_light();
@@ -252,14 +341,54 @@ impl Color {
         }
     }
 
-    pub fn contrasts_with_background(&self) -> Result<bool> {
-        let terminal_background = Terminal::background_color()?;
-        Ok(self.contrasts_with_color(terminal_background))
+    /// uses the [`binary luminance`](`Color::get_binary_luminance`)
+    /// algorithm to determine the current color contrasts with the
+    /// [`terminal background`](`Terminal::background_color`).
+    ///
+    /// Note that the background color used for comparison might be
+    /// [`BLACK`] if querying the terminal fails. In other words, this
+    /// method does not use [`Terminal::background_color`] directly
+    /// but instead uses [`Color::default_for_bg`].
+    ///
+    /// Check the documentation of [`default_for_bg`] for more
+    /// information.
+    ///
+    /// [`Terminal`]: crate::Terminal
+    /// [`BLACK`]: crate::color::BLACK
+    /// [`WHITE`]: crate::color::WHITE
+    /// [`Terminal::background_color()`]: crate::Terminal::background_color
+    /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
+    /// [`default_for_bg`]: crate::Color::default_for_bg
+    /// [`default_for_fg`]: crate::Color::default_for_fg
+    ///
+    pub fn contrasts_with_background(&self) -> bool {
+        let terminal_background = Color::default_for_bg();
+        self.contrasts_with_color(terminal_background)
     }
 
-    pub fn contrasts_with_foreground(&self) -> Result<bool> {
-        let terminal_foreground = Terminal::foreground_color()?;
-        Ok(self.contrasts_with_color(terminal_foreground))
+    /// uses the [`binary luminance`](`Color::get_binary_luminance`)
+    /// algorithm to determine the current color contrasts with the
+    /// [`terminal foreground`](`Terminal::foreground_color`)
+    ///
+    /// Note that the foreground color used for comparison might be
+    /// [`BLACK`] if querying the terminal fails. In other words, this
+    /// method does not use [`Terminal::foreground_color`] directly
+    /// but instead uses [`Color::default_for_fg`].
+    ///
+    /// Check the documentation of [`default_for_fg`] for more
+    /// information.
+    ///
+    /// [`Terminal`]: crate::Terminal
+    /// [`BLACK`]: crate::color::BLACK
+    /// [`WHITE`]: crate::color::WHITE
+    /// [`Terminal::background_color()`]: crate::Terminal::background_color
+    /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
+    /// [`default_for_bg`]: crate::Color::default_for_bg
+    /// [`default_for_fg`]: crate::Color::default_for_fg
+    ///
+    pub fn contrasts_with_foreground(&self) -> bool {
+        let terminal_foreground = Color::default_for_fg();
+        self.contrasts_with_color(terminal_foreground)
     }
 }
 impl From<RgbTriple> for Color {
@@ -271,6 +400,10 @@ impl From<RgbTriple> for Color {
         )
     }
 }
+
+/// Represents a failure to parse a [`Color`] from strings.
+///
+/// This enum is the `Err` error type used in the [`std::str::FromStr#required-associated-types`] implementation for [`Color`]
 #[derive(Clone, Debug, ThisError)]
 pub enum RGBParseError {
     #[error("failed to parse color {0}")]

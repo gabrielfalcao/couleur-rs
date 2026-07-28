@@ -3,6 +3,8 @@ use std::fmt::Display;
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 
+/// Represents the intent of rendering a [`Color`] before, after or
+/// around the text being colored.
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq)]
 pub enum Wrap {
     #[default]

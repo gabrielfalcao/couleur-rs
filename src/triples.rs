@@ -1,5 +1,8 @@
+/// U8Triple is a type alias which represents a tuple containing the three RGB bands as [`u8`]
 pub type U8Triple = (u8, u8, u8);
 
+/// RgbTriple is an intermediary container which holds each of the
+/// three bands of an RGB color as [`u8`] values.
 #[derive(Clone, Copy, Debug, PartialOrd, Ord, PartialEq, Eq)]
 pub struct RgbTriple(u8, u8, u8);
 

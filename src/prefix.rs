@@ -3,6 +3,12 @@ use std::fmt::{Debug, Display};
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 
+/// Represents the intent to use an specific type of ANSI sequence
+/// prefix such as `\x1b`, `\033` or `\E` so as to allow rendering
+/// ANSI colors in various contexts such as bash PS1 variable (which
+/// uses the Octal variant).
+///
+/// Defaults to the hex prefix which is used by rust programs.
 #[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq)]
 pub enum Prefix {
     Octal,

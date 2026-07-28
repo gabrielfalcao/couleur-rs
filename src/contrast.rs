@@ -8,6 +8,7 @@ use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase
 
 use crate::{Color, Error, Layer, Result};
 
+/// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum Contrast {
     None,

@@ -5,6 +5,7 @@ use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase
 
 use crate::{Color, Error, Result};
 
+/// Represents the concept of "background" and "foreground" colors in a terminal
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq)]
 pub enum Layer {
     #[default]

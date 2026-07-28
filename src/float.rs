@@ -1,6 +1,8 @@
 use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
+
+/// FloatMetadata contains, as the name indicates, metadata about float values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
 pub struct FloatMetadata<'a> {
     value: &'a str,

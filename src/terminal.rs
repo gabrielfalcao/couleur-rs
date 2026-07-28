@@ -7,7 +7,7 @@ use crate::{Color, Error, Layer, Result, Value};
 /// with information such as whether the background is dark or light
 /// and the binary luminance of both.
 ///
-/// The [`info`] method returns a [`TerminalInfo`] struct with all the
+/// The [`Terminal::info()`] method returns a [`TerminalInfo`] struct with all the
 /// information at only one place so that the terminal need not be
 /// queried every time for the same information since the terminal's
 /// background and foreground color tend not do change during runtime.
@@ -16,7 +16,7 @@ use crate::{Color, Error, Layer, Result, Value};
 /// [`TerminalInfo`] contains the error message and the layer for
 /// which querying failed, those two details are available in the
 /// `Details` variant of [`TerminalInfoError`].  Conversely, when
-/// querying the [`info`] succeeds, the resulting [`TerminalInfo`] is
+/// querying the [`Terminal::info()`] succeeds, the resulting [`TerminalInfo`] is
 /// **valid** and its `error` field is the `None` variant of
 /// [`TerminalInfoError`].
 ///
@@ -24,6 +24,8 @@ use crate::{Color, Error, Layer, Result, Value};
 /// use [`crate::TERMINAL`] which is a static variable with
 /// information queried at the beginning of the runtime of your rust
 /// application or library.
+///
+/// [`Terminal::info()`]: crate::Terminal::info
 ///
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
 pub struct Terminal;
@@ -99,6 +101,8 @@ impl Terminal {
         info
     }
 }
+
+/// Holds error details which may occur while querying terminal colors via [`Terminal::background_color`] or  [`Terminal::foreground_color`].
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
 pub enum TerminalInfoError {
     None,
@@ -118,6 +122,11 @@ impl TerminalInfoError {
         }
     }
 }
+
+/// Holds all terminal info obtained via [`Terminal::info()`]
+///
+/// [`Terminal::info()`]: crate::Terminal::info
+///
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
 pub struct TerminalInfo {
     pub background: Color,

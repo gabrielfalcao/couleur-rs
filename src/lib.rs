@@ -93,8 +93,10 @@ pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
 
 #[doc(hidden)]
 pub mod errors;
+#[doc(hidden)]
+pub use errors::Exit;
 #[doc(inline)]
-pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Exit, Result};
+pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Result};
 
 #[doc(hidden)]
 pub mod float;
@@ -122,7 +124,7 @@ pub use reset::Reset;
 #[doc(hidden)]
 pub mod terminal;
 #[doc(inline)]
-pub use terminal::{Terminal, TerminalInfo};
+pub use terminal::{Terminal, TerminalInfo, TerminalInfoError};
 
 #[doc(hidden)]
 pub mod to_ansi;

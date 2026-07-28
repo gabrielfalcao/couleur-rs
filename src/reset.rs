@@ -5,6 +5,8 @@ use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase
 
 use crate::{Prefix, ToAnsi};
 
+/// Represents the intent of adding an "ansi reset" sequence before,
+/// after or around an ANSI color sequence.
 #[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq)]
 pub enum Reset {
     Before,

@@ -1,5 +1,9 @@
 use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
 
+/// Utility struct to [`colorize()`] arbitrary text
+///
+/// [`colorize()`]: crate::AnsiColorizer::colorize
+///
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
 pub struct AnsiColorizer {
     pub bg: Option<Color>,
@@ -23,6 +27,7 @@ impl AnsiColorizer {
         Ok((bg, fg))
     }
 
+    /// Colorizes any objects which implement [`std::fmt::Display`]
     pub fn colorize<T: std::fmt::Display>(&self, text: T) -> Result<String> {
         let (bg, fg) = self.colors()?;
         let (bg, fg) = if bg.is_none() && fg.is_none() {

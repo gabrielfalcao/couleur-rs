@@ -6,6 +6,8 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::color::RGBParseError;
+
+/// Main error enum used across the crate. All errors are cast into this enum throughout the crate.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     IOError(String),
@@ -87,6 +89,7 @@ impl From<RGBParseError> for Error {
 }
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// Contains information of errors which occur while converting RGB band values from [`f32`] to [`u8`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConversionToU8Error(pub f32, pub String);
 impl std::error::Error for ConversionToU8Error {}
@@ -97,6 +100,7 @@ impl Display for ConversionToU8Error {
     }
 }
 
+/// Contains information of errors which occur while converting RGB band values from [`u8`] to [`f32`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConversionToF32Error(pub u8, pub String);
 impl std::error::Error for ConversionToF32Error {}
@@ -115,6 +119,8 @@ impl Into<Error> for ConversionToF32Error {
         )
     }
 }
+
+#[doc(hidden)]
 #[derive(Debug, Clone)]
 pub enum Exit {
     Success,
