@@ -1,4 +1,4 @@
-use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
+use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap, RenderError};
 
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
 pub struct AnsiColorizer {
@@ -32,10 +32,7 @@ impl AnsiColorizer {
     pub fn colorize<T: std::fmt::Display>(&self, text: T) -> Result<String> {
         let (bg, fg) = self.colors()?;
         let (bg, fg) = if bg.is_none() && fg.is_none() {
-            return Err(Error::RenderError(format!(
-                "AnsiColorizer requires at least some bg or some fg, but \
-                 neither was provided"
-            )));
+            return Err(Error::RenderError(RenderError::MissingColors));
         } else if bg.is_none() {
             let fg = fg.unwrap();
             let bg = self.contrast.apply(fg, Layer::BG)?;

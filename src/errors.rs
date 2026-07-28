@@ -1,104 +1,88 @@
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::Display,
     num::{ParseFloatError, ParseIntError},
 };
-
-use serde::{Deserialize, Serialize};
+use thiserror::Error as ThisError;
 
 use crate::color::RGBParseError;
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(ThisError, Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
-    IOError(String),
-    RuntimeError(String),
-    ConversionToU8Error(String),
-    TerminalQueryError(String),
-    RenderError(String),
-
-    ClapError(String),
-    ParseError(String),
+    #[error("I/O Error")]
+    IOError(#[from] std::io::Error),
+    #[error("I/O Core Error")]
+    IOCoreError(#[from] iocore::Error),
+    #[error("Runtime Error {0}")]
+    RuntimeError(&'static str),
+    #[error("Error converting {0} to u8: {1}")]
+    ConversionToU8Error(f32, ConversionToU8Error),
+    #[error("Error querying terminal colors: {0}")]
+    TerminalQueryError(#[from] terminal_colorsaurus::Error),
+    #[error("Render Error: {0}")]
+    RenderError(RenderError),
+    #[error("Parse Error: {0}")]
+    ParseError(&'static str),
+    #[error("error parsing integer: {0}")]
+    ParseIntError(#[from] ParseIntError),
+    #[error("error parsing float: {0}")]
+    ParseFloatError(#[from] ParseFloatError),
+    #[error("error parsing RGB color: {0}")]
+    RGBParseError(#[from] RGBParseError),
 }
-impl Display for Error {
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ConversionToU8Error {
+    OutOfBoundary,
+}
+impl Display for ConversionToU8Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "{}: {}",
-            self.variant(),
+            "{}",
             match self {
-                Error::IOError(value) => value,
-                Error::RuntimeError(value) => value,
-                Error::ConversionToU8Error(value) => value,
-                Error::TerminalQueryError(value) => value,
-                Error::RenderError(value) => value,
+                ConversionToU8Error::OutOfBoundary => "value is out of boundary (0 to 255)",
+            }
+        )
+    }
+}
+impl std::error::Error for ConversionToU8Error {}
 
-                Error::ClapError(value) => value,
-                Error::ParseError(value) => value,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum RenderError {
+    MissingColors,
+}
+impl Display for RenderError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                RenderError::MissingColors => "neither background nor foreground colors provided",
             }
         )
     }
 }
 
-impl Error {
-    pub fn variant(&self) -> String {
-        match self {
-            Error::IOError(value) => value.to_string(),
-            Error::RuntimeError(value) => value.to_string(),
-            Error::ConversionToU8Error(value) => value.to_string(),
-            Error::TerminalQueryError(value) => value.to_string(),
-            Error::RenderError(value) => value.to_string(),
-
-            Error::ClapError(value) => value.to_string(),
-            Error::ParseError(value) => value.to_string(),
-        }
-        .to_string()
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ParseError {
+    OutOfRange(&'static str),
+}
+impl Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ParseError::OutOfRange(desc) => format!("value '{desc}' is out of range"),
+            }
+        )
     }
 }
 
-impl std::error::Error for Error {}
-impl From<std::io::Error> for Error {
-    fn from(e: std::io::Error) -> Self {
-        Error::IOError(e.to_string())
-    }
-}
-impl From<iocore::Error> for Error {
-    fn from(e: iocore::Error) -> Self {
-        Error::IOError(e.to_string())
-    }
-}
-impl From<terminal_colorsaurus::Error> for Error {
-    fn from(e: terminal_colorsaurus::Error) -> Self {
-        Error::TerminalQueryError(e.to_string())
-    }
-}
-
-impl From<ParseIntError> for Error {
-    fn from(e: ParseIntError) -> Self {
-        Error::ParseError(e.to_string())
-    }
-}
-impl From<ParseFloatError> for Error {
-    fn from(e: ParseFloatError) -> Self {
-        Error::ParseError(e.to_string())
-    }
-}
-impl From<RGBParseError> for Error {
-    fn from(e: RGBParseError) -> Self {
-        Error::ParseError(e.to_string())
-    }
-}
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ConversionToU8Error(pub f32, pub String);
-impl std::error::Error for ConversionToU8Error {}
-impl Display for ConversionToU8Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let (from_value, message) = (self.0, self.1.to_string());
-        write!(f, "Failed to convert {from_value}u8 to f32: {message}")
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ConversionToF32Error(pub u8, pub String);
+pub struct ConversionToF32Error(pub u8, pub &'static str);
 impl std::error::Error for ConversionToF32Error {}
 
 impl Display for ConversionToF32Error {

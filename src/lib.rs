@@ -81,7 +81,9 @@ pub mod dispatch;
 pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
 
 pub mod errors;
-pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Exit, Result};
+pub use errors::{
+    ConversionToF32Error, ConversionToU8Error, Error, Exit, ParseError, RenderError, Result,
+};
 
 pub mod float;
 pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};

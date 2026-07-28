@@ -8,8 +8,8 @@ use std::{
 };
 
 use crate::{
-    ConversionToU8Error, Error, FloatMetadata, Result, SINGLE_BAND_DECIMAL_RGB_REGEX,
-    SINGLE_BAND_HEX_RGB_REGEX,
+    ConversionToU8Error, Error, FloatMetadata, ParseError, RenderError, Result,
+    SINGLE_BAND_DECIMAL_RGB_REGEX, SINGLE_BAND_HEX_RGB_REGEX,
     float::{leading_zeros_exp, leading_zeros_fractional},
     impl_op,
 };
@@ -58,27 +58,13 @@ impl Value {
         let value = self.value().clamp(0.0, 255.0);
         if value > 255.0 {
             Err(Error::ConversionToU8Error(
-                ConversionToU8Error(
-                    value,
-                    format!(
-                        "cannot convert {value} to u8 because the value is \
-                         out of boundary: {value} > 255",
-                        value = self.0
-                    ),
-                )
-                .to_string(),
+                value,
+                ConversionToU8Error::OutOfBoundary,
             ))
         } else if value < 0.0 {
             Err(Error::ConversionToU8Error(
-                ConversionToU8Error(
-                    value,
-                    format!(
-                        "cannot convert {value} to u8 because the value is \
-                         out of boundary: {value} < 0",
-                        value = self.0
-                    ),
-                )
-                .to_string(),
+                value,
+                ConversionToU8Error::OutOfBoundary,
             ))
         } else {
             Ok(value.ceil() as u8)
@@ -148,9 +134,7 @@ impl FromStr for Value {
                 let parsed = u8::from_str_radix(band, 16)?;
                 Ok(Value(parsed as f32))
             }
-            None => Err(Error::ParseError(format!(
-                "cannot parse RGB value (number from 0 to 255) from {value:#?}"
-            ))),
+            None => Err(Error::ParseError(ParseError::OutOfRange(value))),
             // None => match SINGLE_BAND_DECIMAL_RGB_REGEX.captures(value) {
             //
             //     Some(band) => match band.name("band") {
