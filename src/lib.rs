@@ -26,17 +26,41 @@
 //! assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
 //! ```
 //!
-pub mod errors;
-pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Exit, Result};
+
+pub mod ansi_colorizer;
+pub use ansi_colorizer::AnsiColorizer;
+
+pub mod cmp;
+pub use cmp::{max_rgb, min_rgb};
+
+pub mod color;
+pub use color::{BLACK, Color, RGBParseError, WHITE};
+
+pub mod contrast;
+pub use contrast::Contrast;
 
 pub mod dispatch;
 pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
 
-pub mod float;
-pub use float::{FloatMetadata, leading_zeros_fractional};
+pub mod errors;
+pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Exit, Result};
 
-pub mod color;
-pub use color::{BLACK, Color, RGBParseError, WHITE};
+pub mod float;
+pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
+
+pub mod layer;
+pub use layer::Layer;
+
+pub mod macros;
+
+pub mod reset;
+pub use reset::Reset;
+
+pub mod terminal;
+pub use terminal::Terminal;
+
+pub mod triples;
+pub use triples::{RgbTriple, U8Triple};
 
 pub mod value;
 pub use value::Value;
@@ -44,28 +68,7 @@ pub use value::Value;
 pub mod wrap;
 pub use wrap::Wrap;
 
-pub mod reset;
-pub use reset::Reset;
-
-pub mod contrast;
-pub use contrast::Contrast;
-
-pub mod triples;
-pub use triples::{RgbTriple, U8Triple};
-
-pub mod macros;
-// pub use macros::impl_op;
-
-pub mod ansi_colorizer;
-pub use ansi_colorizer::AnsiColorizer;
-
-pub mod layer;
-pub use layer::Layer;
-
-pub mod cmp;
-pub use cmp::{max_rgb, min_rgb};
-
-pub(crate) mod util;
+pub mod util;
 pub use util::{
     HEX_RGB_REGEX, RESET, SINGLE_BAND_DECIMAL_RGB_REGEX, SINGLE_BAND_HEX_RGB_REGEX,
     TRIPLE_RGB_REGEX,

@@ -21,6 +21,7 @@ default-bin = "hex-to-bin"
 
 # categories = [] # https://crates.io/category_slugs
 [dependencies]
+bon = "3.9.3"
 clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }
 heck = "0.5.0"
 hex = "0.4.3"
@@ -63,12 +64,17 @@ doc = false
 test = false
 
 [[test]]
+name = "test_terminal"
+path = "./tests/test_terminal.rs"
+
+
+[[test]]
 name = "test_colorizer"
 path = "./tests/test_colorizer.rs"
 
-# [[test]]
-# name = "test_float"
-# path = "./tests/test_float.rs"
+[[test]]
+name = "test_float"
+path = "./tests/test_float.rs"
 
 # [[test]]
 # name = "test_rgb_color"

@@ -1,6 +1,6 @@
 use crate::{
     Contrast, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RESET, Reset, Result, RgbTriple,
-    Value, Wrap, max_rgb, min_rgb,
+    Terminal, Value, Wrap, max_rgb, min_rgb,
 };
 use regex::Regex;
 use std::{ops::Deref, str::FromStr, sync::LazyLock};
@@ -23,20 +23,13 @@ impl Color {
         ))
     }
     pub fn default_for_bg() -> Result<Color> {
-        let terminal_bg_color = background_color(QueryOptions::default())?;
-        let (r, g, b) = terminal_bg_color.scale_to_8bit();
-        Ok(Color::from_triple(r.into(), g.into(), b.into()))
+        Ok(Terminal::background_color()?)
     }
     pub fn default_for_fg() -> Result<Color> {
-        let terminal_bg_color = foreground_color(QueryOptions::default())?;
-        let (r, g, b) = terminal_bg_color.scale_to_8bit();
-        Ok(Color::from_triple(r.into(), g.into(), b.into()))
+        Ok(Terminal::foreground_color()?)
     }
     pub fn default_for_layer(layer: Layer) -> Result<Color> {
-        Ok(match layer {
-            Layer::BG => Self::default_for_bg()?,
-            Layer::FG => Self::default_for_fg()?,
-        })
+        Ok(Terminal::layer_color(layer)?)
     }
     pub fn red_value(&self) -> Value {
         self.0
@@ -186,6 +179,21 @@ impl Color {
     }
     pub fn is_light(&self) -> bool {
         self.get_binary_luminance() > 128.0
+    }
+    pub fn contrasts_with_color(&self, other: Color) -> bool {
+        if self.is_dark() {
+            return other.is_light();
+        } else {
+            return other.is_dark();
+        }
+    }
+    pub fn contrasts_with_background(&self) -> Result<bool> {
+        let terminal_background = Terminal::background_color()?;
+        Ok(self.contrasts_with_color(terminal_background))
+    }
+    pub fn contrasts_with_foreground(&self) -> Result<bool> {
+        let terminal_foreground = Terminal::foreground_color()?;
+        Ok(self.contrasts_with_color(terminal_foreground))
     }
 }
 impl From<RgbTriple> for Color {

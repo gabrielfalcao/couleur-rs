@@ -3,7 +3,7 @@ use k9::assert_equal;
 use std::cmp::{max, min};
 
 #[test]
-fn test() -> Result<()> {
+fn test_contrast_functions() -> Result<()> {
     // use crate::{Color, Value, Result};
     // use std::cmp::{max, min};
 
@@ -58,7 +58,7 @@ fn test() -> Result<()> {
 }
 
 #[test]
-fn test_parse() -> Result<()> {
+fn test_parse_rgb_hex() -> Result<()> {
     let dark_pink = "#C32454".parse::<Color>()?;
     let darkest_pink = "#831C5D".parse::<Color>()?;
     let light_pink = "#FCA790".parse::<Color>()?;
@@ -152,6 +152,7 @@ fn test_parse_and_get_msb_invert_contrast() -> Result<()> {
     );
     Ok(())
 }
+
 #[test]
 fn test_wrap_ansi() -> Result<()> {
     let color: Color = "#FFCC00".parse()?;
