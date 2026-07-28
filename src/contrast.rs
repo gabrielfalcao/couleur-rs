@@ -1,11 +1,12 @@
-use crate::{Result, Error, Color, Layer};
-
-use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use std::{
     cmp::{Ordering, PartialOrd},
     fmt::Display,
 };
+
+use clap::{ValueEnum, builder::PossibleValue};
+use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+
+use crate::{Color, Error, Layer, Result};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum Contrast {
@@ -32,15 +33,19 @@ impl Contrast {
             Contrast::Web => color.get_msb_invert_contrast(),
         })
     }
+
     pub fn is_none(self) -> bool {
         self == Contrast::None
     }
+
     pub fn is_some(self) -> bool {
         self != Contrast::None
     }
+
     pub fn unwrap(self) -> Self {
         self
     }
+
     pub fn variant_name_snake(&self) -> &'static str {
         match self {
             Contrast::None => "none",
@@ -50,12 +55,15 @@ impl Contrast {
             Contrast::Web => "web",
         }
     }
+
     pub fn variant_name_kebab(&self) -> String {
         self.variant_name_snake().to_kebab_case()
     }
+
     pub fn variant_name_pascal(&self) -> String {
         self.variant_name_snake().to_pascal_case()
     }
+
     pub fn variant_name_train(&self) -> String {
         self.variant_name_snake().to_train_case()
     }
@@ -68,6 +76,7 @@ impl Contrast {
             Contrast::Web,
         ]
     }
+
     fn to_possible_strings(&self) -> [String; 4] {
         [
             self.variant_name_snake().to_string(),

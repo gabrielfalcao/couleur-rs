@@ -1,23 +1,24 @@
-use couleur_rs::{Color, Value, Result};
-use k9::assert_equal;
 use std::cmp::{max, min};
+
+use couleur_rs::{Color, Result, Value};
+use k9::assert_equal;
 
 #[test]
 fn test_value_from_u8() -> Result<()> {
     let dark_pink = "#C32454".parse::<Color>()?;
 
-    assert_eq!(Value::from_u8(0xc3u8)?, Value(195.0f32));
-    assert_eq!(Value::from_u8(0xc3u8)?, Value::new(195.0f32)?);
+    assert_eq!(Value::from_u8(0xC3u8)?, Value(195.0f32));
+    assert_eq!(Value::from_u8(0xC3u8)?, Value::new(195.0f32)?);
 
     Ok(())
 }
 #[test]
 fn test_parse_and_get_accessible_contrast() -> Result<()> {
-    // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
-    // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
-    // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
-    // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
-    // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+    // #0B5E65  \x1b[38;2;11;94;101m     11,  94, 101
+    // #0B8A8F  \x1b[38;2;11;138;143m    11, 138, 143
+    // #0EAF9B  \x1b[38;2;14;175;155m    14, 175, 155
+    // #30E1B9  \x1b[38;2;48;225;185m    48, 225, 185
+    // #8FF8E2  \x1b[38;2;143;248;226m  143, 248, 226
     let lightest: Color = "#8FF8E2".parse()?;
     let darkest: Color = "#0B5E65".parse()?;
     assert_equal!(

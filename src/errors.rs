@@ -1,9 +1,11 @@
-use crate::color::RGBParseError;
-use serde::{Deserialize, Serialize};
 use std::{
     fmt::Display,
     num::{ParseFloatError, ParseIntError},
 };
+
+use serde::{Deserialize, Serialize};
+
+use crate::color::RGBParseError;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     IOError(String),

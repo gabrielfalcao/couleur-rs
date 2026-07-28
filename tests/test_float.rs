@@ -1,5 +1,4 @@
-use couleur_rs::FloatMetadata;
-use couleur_rs::Result;
+use couleur_rs::{FloatMetadata, Result};
 use iocore::Path;
 use k9::assert_equal;
 

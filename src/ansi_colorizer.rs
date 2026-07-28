@@ -1,12 +1,12 @@
-use crate::{Contrast, Error, Exit, Layer, Color, Reset, Result, Wrap};
+use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
 pub struct AnsiColorizer {
     pub bg: Option<Color>,
     pub fg: Option<Color>,
-    pub bold: bool,
     pub contrast: Contrast,
     pub reset: Reset,
+    pub prefix: Option<Prefix>,
     pub wrap: Wrap,
 }
 
@@ -16,22 +16,26 @@ impl AnsiColorizer {
             Some(bg) => Some(bg),
             None => match Color::default_for_bg() {
                 Ok(bg) => Some(bg),
-                Err(_) => None
-            }
+                Err(_) => None,
+            },
         };
         let fg = match self.fg {
             Some(fg) => Some(fg),
             None => match Color::default_for_fg() {
                 Ok(fg) => Some(fg),
-                Err(_) => None
-            }
+                Err(_) => None,
+            },
         };
         Ok((bg, fg))
     }
+
     pub fn colorize<T: std::fmt::Display>(&self, text: T) -> Result<String> {
         let (bg, fg) = self.colors()?;
-        let (bg, fg)=if bg.is_none() && fg.is_none() {
-            return Err(Error::RenderError(format!("AnsiColorizer requires at least some bg or some fg, but neither was provided")))
+        let (bg, fg) = if bg.is_none() && fg.is_none() {
+            return Err(Error::RenderError(format!(
+                "AnsiColorizer requires at least some bg or some fg, but \
+                 neither was provided"
+            )));
         } else if bg.is_none() {
             let fg = fg.unwrap();
             let bg = self.contrast.apply(fg, Layer::BG)?;
@@ -45,9 +49,12 @@ impl AnsiColorizer {
             let fg = fg.unwrap();
             (bg, fg)
         };
-        let bg = bg.to_ansi(Layer::BG, self.bold);
-        let fg = fg.to_ansi(Layer::FG, self.bold);
-        let result = format!("\x1b[0m{bg}{fg}{text}\x1b[0m");
+        let bg = bg.to_ansi(Layer::BG, self.prefix);
+        let fg = fg.to_ansi(Layer::FG, self.prefix);
+        let result = format!(
+            "{prefix}[0m{bg}{fg}{text}{prefix}[0m",
+            prefix = self.prefix.unwrap_or_default()
+        );
         Ok(result)
     }
 }

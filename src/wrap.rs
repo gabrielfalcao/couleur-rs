@@ -1,8 +1,9 @@
-use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use std::fmt::Display;
 
-#[derive(Clone, Copy, Debug, Default)]
+use clap::{ValueEnum, builder::PossibleValue};
+use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+
+#[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq)]
 pub enum Wrap {
     #[default]
     Before,
@@ -24,6 +25,7 @@ impl Wrap {
             Wrap::Around => "around",
         }
     }
+
     pub fn variants<'a>() -> &'a [Wrap] {
         &[Wrap::Before, Wrap::After, Wrap::Around]
     }
@@ -31,9 +33,11 @@ impl Wrap {
     pub fn variant_name_kebab(&self) -> String {
         self.variant_name_snake().to_kebab_case()
     }
+
     pub fn variant_name_pascal(&self) -> String {
         self.variant_name_snake().to_pascal_case()
     }
+
     pub fn variant_name_train(&self) -> String {
         self.variant_name_snake().to_train_case()
     }

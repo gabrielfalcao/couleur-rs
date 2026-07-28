@@ -1,7 +1,7 @@
 #![allow(unused)]
 use clap::Parser;
 use couleur_rs::{
-    Contrast, AnsiColorizer, Color, Error, Exit, Layer, Reset, Result, Wrap,
+    AnsiColorizer, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap,
     dispatch::ParserDispatcher,
 };
 #[derive(Parser, Debug, Clone)]
@@ -11,10 +11,10 @@ pub struct Cli {
     bg: Option<Color>,
     #[arg(long, required_unless_present_any = ["bg", "contrast"])]
     fg: Option<Color>,
-    #[arg(short, long)]
-    bold: bool,
     #[arg(long, required_unless_present_all = ["bg", "fg"])]
     contrast: Option<Contrast>,
+    #[arg(short, long)]
+    prefix: Option<Prefix>,
     #[arg(short, long)]
     reset: Option<Reset>,
     #[arg(short, short, long)]
@@ -30,17 +30,17 @@ impl Cli {}
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let bg = self.bg;
-        let bold = self.bold;
         let fg = self.fg;
         let contrast = self.contrast.unwrap_or_default();
+        let prefix = self.prefix;
         let reset = self.reset.unwrap_or_default();
         let wrap = self.wrap.unwrap_or_default();
         let colorizer = AnsiColorizer {
             bg,
             fg,
             contrast,
+            prefix,
             wrap,
-            bold,
             reset,
         };
         let result = colorizer.colorize(self.text.join(" "))?;

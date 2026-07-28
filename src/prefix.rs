@@ -1,52 +1,43 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 
-use crate::{Color, Error, Result};
-
-#[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq)]
-pub enum Layer {
+#[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq)]
+pub enum Prefix {
+    Octal,
     #[default]
-    FG,
-    BG,
+    Hex,
+    Unicode,
+    Escape,
 }
-impl Layer {
-    pub fn default_color(self) -> Result<Color> {
-        Ok(Color::default_for_layer(self)?)
-    }
-
-    pub fn inverted(self) -> Layer {
-        match self {
-            Layer::BG => Layer::FG,
-            Layer::FG => Layer::BG,
-        }
-    }
-
-    pub fn code(self) -> i32 {
-        match self {
-            Layer::BG => 48,
-            Layer::FG => 38,
-        }
-    }
-}
-
-impl Display for Layer {
+impl Display for Prefix {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.variant_name_snake())
+        write!(
+            f,
+            "{}",
+            match self {
+                Prefix::Octal => "\033",
+                Prefix::Hex => "\x1b",
+                Prefix::Unicode => "\u{1b}",
+                Prefix::Escape => r"\E",
+            }
+        )
     }
 }
 
-impl Layer {
+impl Prefix {
     pub fn variant_name_snake(&self) -> &'static str {
         match self {
-            Layer::BG => "bg",
-            Layer::FG => "fg",
+            Prefix::Octal => "octal",
+            Prefix::Hex => "hex",
+            Prefix::Unicode => "unicode",
+            Prefix::Escape => "escape",
         }
     }
 
-    pub fn variants<'a>() -> &'a [Layer] {
-        &[Layer::BG, Layer::FG]
+    pub fn variants<'a>() -> &'a [Prefix] {
+        &[Prefix::Octal, Prefix::Hex, Prefix::Escape]
     }
 
     pub fn variant_name_kebab(&self) -> String {
@@ -71,9 +62,9 @@ impl Layer {
     }
 }
 
-impl ValueEnum for Layer {
-    fn value_variants<'a>() -> &'a [Layer] {
-        Layer::variants()
+impl ValueEnum for Prefix {
+    fn value_variants<'a>() -> &'a [Prefix] {
+        Prefix::variants()
     }
 
     fn to_possible_value(&self) -> Option<PossibleValue> {
@@ -85,14 +76,14 @@ impl ValueEnum for Layer {
         )
     }
 
-    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Layer, String> {
+    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Prefix, String> {
         let val = if ignore_case {
             val.to_lowercase()
         } else {
             val.to_string()
         };
         let val = val.trim();
-        for (variant, possible_strings) in Layer::variants()
+        for (variant, possible_strings) in Prefix::variants()
             .iter()
             .map(|variant| (variant, variant.to_possible_strings()))
         {
@@ -105,3 +96,15 @@ impl ValueEnum for Layer {
         return Err(val.to_string());
     }
 }
+//impl PartialEq<&Prefix> for Prefix {
+//    fn eq(&self, other: &Prefix) -> bool {
+//        self == *other
+//    }
+//}
+//
+//impl PartialOrd<&Prefix> for Prefix {
+//    fn partial_cmp(&self, other: &Rhs) -> Option<Ordering> {
+//        self.partial_cmp(*other)
+//    }
+//}
+//

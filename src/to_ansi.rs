@@ -1,0 +1,12 @@
+use crate::{Error, Prefix, Result};
+
+pub trait ToAnsi: Sized {
+    fn as_ansi_suffix(&self) -> String;
+    fn to_ansi(&self, prefix: Option<Prefix>) -> String {
+        format!(
+            "{prefix}{suffix}",
+            prefix = prefix.unwrap_or_default(),
+            suffix = self.as_ansi_suffix()
+        )
+    }
+}

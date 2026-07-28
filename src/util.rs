@@ -1,5 +1,6 @@
-use regex::Regex;
 use std::sync::LazyLock;
+
+use regex::Regex;
 
 pub const RESET: &'static str = "\x1b[0m";
 

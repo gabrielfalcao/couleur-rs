@@ -1,9 +1,3 @@
-use crate::{
-    ConversionToU8Error, Error, FloatMetadata, Result, SINGLE_BAND_DECIMAL_RGB_REGEX,
-    SINGLE_BAND_HEX_RGB_REGEX,
-    float::{leading_zeros_exp, leading_zeros_fractional},
-    impl_op,
-};
 use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
     ops::{
@@ -11,6 +5,13 @@ use std::{
         DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
     },
     str::FromStr,
+};
+
+use crate::{
+    ConversionToU8Error, Error, FloatMetadata, Result, SINGLE_BAND_DECIMAL_RGB_REGEX,
+    SINGLE_BAND_HEX_RGB_REGEX,
+    float::{leading_zeros_exp, leading_zeros_fractional},
+    impl_op,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -26,54 +27,71 @@ impl Value {
         };
         Ok(Value(string.parse::<f32>()?))
     }
+
     pub fn from_f32(value: f32) -> Result<Value> {
         // dbg!(value);
         Ok(Value::new(value)?)
     }
+
     pub fn value(&self) -> f32 {
         self.0
     }
+
     pub fn round(&self) -> f32 {
         self.value().round()
     }
+
     pub fn fract(&self) -> f32 {
         self.value().fract()
     }
+
     pub fn copysign<T: Copy + Deref<Target = f32>>(&self, other: T) -> f32 {
         self.value().copysign(*other)
     }
+
     pub fn from_u8(value: u8) -> Result<Value> {
         let string = format!("{value}.0");
         Ok(Value(string.parse::<f32>()?))
     }
+
     pub fn to_u8(&self) -> Result<u8> {
         let value = self.value().clamp(0.0, 255.0);
         if value > 255.0 {
-            Err(Error::ConversionToU8Error(ConversionToU8Error(
-                value,
-                format!(
-                    "cannot convert {value} to u8 because the value is out of boundary: {value} > 255",
-                    value = self.0
-                ),
-            ).to_string()))
+            Err(Error::ConversionToU8Error(
+                ConversionToU8Error(
+                    value,
+                    format!(
+                        "cannot convert {value} to u8 because the value is \
+                         out of boundary: {value} > 255",
+                        value = self.0
+                    ),
+                )
+                .to_string(),
+            ))
         } else if value < 0.0 {
-            Err(Error::ConversionToU8Error(ConversionToU8Error(
-                value,
-                format!(
-                    "cannot convert {value} to u8 because the value is out of boundary: {value} < 0",
-                    value = self.0
-                ),
-            ).to_string()))
+            Err(Error::ConversionToU8Error(
+                ConversionToU8Error(
+                    value,
+                    format!(
+                        "cannot convert {value} to u8 because the value is \
+                         out of boundary: {value} < 0",
+                        value = self.0
+                    ),
+                )
+                .to_string(),
+            ))
         } else {
             Ok(value.ceil() as u8)
         }
     }
+
     pub fn into_u8(self) -> u8 {
         self.to_u8().expect(&format!(
             "RGB value to be within 0 and 255 but is {value}",
             value = self.0
         ))
     }
+
     pub fn leading_zeros_fractional(&self) -> usize {
         let s = self.to_string();
         if let Some(dot_idx) = s.find('.') {
@@ -82,6 +100,7 @@ impl Value {
             0
         }
     }
+
     pub fn leading_zeros_exp(&self) -> i32 {
         let self_fract_leading_zeroes = self.leading_zeros_fractional();
         let self_fract = self.fract().copysign(1.0_f32);
@@ -121,6 +140,7 @@ impl Deref for Value {
 
 impl FromStr for Value {
     type Err = Error;
+
     fn from_str(value: &str) -> std::result::Result<Value, Error> {
         match SINGLE_BAND_HEX_RGB_REGEX.captures(value) {
             Some(caps) => {
@@ -272,6 +292,7 @@ impl Ord for Value {
 }
 
 impl_op!(Add, add, value, +);
+// impl_op!(AddAssign, add_assign, value, +=);
 impl_op!(Sub, sub, value, -);
 impl_op!(Div, div, value, /);
 impl_op!(Mul, mul, value, *);

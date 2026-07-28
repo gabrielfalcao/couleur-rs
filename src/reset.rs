@@ -1,8 +1,11 @@
-use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use std::fmt::Display;
 
-#[derive(Clone, Copy, Debug, Default)]
+use clap::{ValueEnum, builder::PossibleValue};
+use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+
+use crate::{Prefix, ToAnsi};
+
+#[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq)]
 pub enum Reset {
     Before,
     #[default]
@@ -10,13 +13,21 @@ pub enum Reset {
     Around,
     None,
 }
-impl Display for Reset {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.variant_name_snake())
+impl ToAnsi for Reset {
+    fn as_ansi_suffix(&self) -> String {
+        "[0m".to_string()
     }
 }
-
+impl Display for Reset {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "reset {}", self.variant_name_snake())
+    }
+}
 impl Reset {
+    pub fn to_ansi(&self, prefix: Option<Prefix>) -> String {
+        format!("{prefix}[0m", prefix = prefix.unwrap_or_default())
+    }
+
     pub fn variant_name_snake(&self) -> &'static str {
         match self {
             Reset::Before => "before",
@@ -25,6 +36,7 @@ impl Reset {
             Reset::None => "none",
         }
     }
+
     pub fn variants<'a>() -> &'a [Reset] {
         &[Reset::Before, Reset::After, Reset::Around, Reset::None]
     }
@@ -32,9 +44,11 @@ impl Reset {
     pub fn variant_name_kebab(&self) -> String {
         self.variant_name_snake().to_kebab_case()
     }
+
     pub fn variant_name_pascal(&self) -> String {
         self.variant_name_snake().to_pascal_case()
     }
+
     pub fn variant_name_train(&self) -> String {
         self.variant_name_snake().to_train_case()
     }

@@ -1,7 +1,7 @@
-use couleur_rs::Value;
-use couleur_rs::Result;
-use k9::assert_equal;
 use std::cmp::{max, min};
+
+use couleur_rs::{Result, Value};
+use k9::assert_equal;
 
 #[test]
 fn test_parse_from_hex() -> Result<()> {

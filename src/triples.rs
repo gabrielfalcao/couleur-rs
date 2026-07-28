@@ -7,12 +7,15 @@ impl RgbTriple {
     pub fn red(&self) -> u8 {
         self.0
     }
+
     pub fn green(&self) -> u8 {
         self.1
     }
+
     pub fn blue(&self) -> u8 {
         self.2
     }
+
     pub fn into_triple(self) -> U8Triple {
         (self.red(), self.green(), self.blue())
     }

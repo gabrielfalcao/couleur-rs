@@ -1,10 +1,12 @@
-use crate::{
-    Contrast, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, RESET, Reset, Result, RgbTriple,
-    Terminal, Value, Wrap, max_rgb, min_rgb,
-};
-use regex::Regex;
 use std::{ops::Deref, str::FromStr, sync::LazyLock};
+
+use regex::Regex;
 use thiserror::Error as ThisError;
+
+use crate::{
+    Contrast, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, Prefix, RESET, Reset, Result,
+    RgbTriple, Terminal, Value, Wrap, max_rgb, min_rgb,
+};
 
 pub static BLACK: LazyLock<Color> =
     LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
@@ -12,7 +14,7 @@ pub static WHITE: LazyLock<Color> =
     LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
 use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
-#[derive(Clone, Copy, Debug, PartialOrd, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq)]
 pub struct Color(pub Value, pub Value, pub Value);
 impl Color {
     pub fn new<T: Copy + Into<f32>>(red: T, green: T, blue: T) -> Result<Color> {
@@ -22,21 +24,27 @@ impl Color {
             Value::new(blue.into())?,
         ))
     }
+
     pub fn default_for_bg() -> Result<Color> {
         Ok(Terminal::background_color()?)
     }
+
     pub fn default_for_fg() -> Result<Color> {
         Ok(Terminal::foreground_color()?)
     }
+
     pub fn default_for_layer(layer: Layer) -> Result<Color> {
         Ok(Terminal::layer_color(layer)?)
     }
+
     pub fn red_value(&self) -> Value {
         self.0
     }
+
     pub fn green_value(&self) -> Value {
         self.1
     }
+
     pub fn blue_value(&self) -> Value {
         self.2
     }
@@ -44,9 +52,11 @@ impl Color {
     pub fn red(&self) -> f32 {
         self.red_value().value()
     }
+
     pub fn green(&self) -> f32 {
         self.green_value().value()
     }
+
     pub fn blue(&self) -> f32 {
         self.blue_value().value()
     }
@@ -54,18 +64,22 @@ impl Color {
     pub fn to_triple(&self) -> [Value; 3] {
         [self.red_value(), self.green_value(), self.blue_value()]
     }
+
     pub fn to_hex_string(&self) -> String {
         let [red, green, blue] = self.to_triple();
         format!("#{red:X}{green:X}{blue:X}")
     }
+
     pub fn from_triple(red: Value, green: Value, blue: Value) -> Color {
         Color(red, green, blue)
     }
-    pub fn get_binary_luminance(&self) -> f32 {
+
+    pub fn get_binary_luminance(&self) -> Value {
         let [r, g, b] = self.to_triple();
         let luminance = (0.299 * *r) + (0.587 * *g) + (0.114 * *b);
-        luminance
+        Value(luminance)
     }
+
     pub fn get_binary_contrast(&self) -> Color {
         if self.is_dark() { *BLACK } else { *WHITE }
     }
@@ -90,7 +104,7 @@ impl Color {
         )
     }
 
-    pub fn get_wcag_luminance(&self) -> f32 {
+    pub fn get_wcag_luminance(&self) -> Value {
         let [r, g, b] = self.to_triple();
         let channels = [(r / 255.0), (g / 255.0), (b / 255.0)];
         let mut linear = Vec::<Value>::new();
@@ -103,7 +117,7 @@ impl Color {
             }
         }
         let luminance = 0.2126 * *linear[0] + 0.7152 * *linear[1] + 0.0722 * *linear[2];
-        luminance
+        Value(luminance)
     }
 
     pub fn get_accessible_contrast(&self) -> Color {
@@ -113,29 +127,30 @@ impl Color {
             *WHITE
         }
     }
-    pub fn to_ansi(&self, layer: Layer, bold: bool) -> String {
+
+    pub fn to_ansi(&self, layer: Layer, prefix: Option<Prefix>) -> String {
         let triple = self
             .to_triple()
             .iter()
             .map(|v| v.to_string())
             .collect::<Vec<String>>();
-        let prefix = triple.join(";");
-        let mut parts = if bold {
-            vec!["1".to_string()]
-        } else {
-            Vec::<String>::new()
-        };
+        let color = triple.join(";");
+        let mut parts = Vec::<String>::new();
         parts.push(layer.code().to_string());
         parts.push("2".to_string());
-        parts.push(format!("{prefix}m"));
-        format!("\x1b[{}", parts.join(";"))
+        parts.push(format!("{color}m"));
+        format!(
+            "{prefix}[{code}",
+            prefix = prefix.unwrap_or_default(),
+            code = parts.join(";")
+        )
     }
 
     pub fn wrap_ansi(
         &self,
         text: &str,
+        prefix: Option<Prefix>,
         layer: Option<Layer>,
-        bold: bool,
         wrap: Option<Wrap>,
         reset: Option<Reset>,
         contrast: Option<Contrast>,
@@ -145,9 +160,9 @@ impl Color {
         let reset = reset.unwrap_or_default();
         let contrast = contrast.unwrap_or_default();
 
-        let ansi_sequence = self.to_ansi(layer, bold);
+        let ansi_sequence = self.to_ansi(layer, prefix);
         let contrast = if contrast != Contrast::None {
-            self.contrast(contrast).to_ansi(layer.inverted(), bold)
+            self.contrast(contrast).to_ansi(layer.inverted(), prefix)
         } else {
             String::new()
         };
@@ -165,6 +180,7 @@ impl Color {
         };
         return result;
     }
+
     pub fn contrast(&self, contrast: Contrast) -> Color {
         match contrast {
             Contrast::Read => self.get_accessible_contrast(),
@@ -174,12 +190,15 @@ impl Color {
             Contrast::None => *self,
         }
     }
+
     pub fn is_dark(&self) -> bool {
         self.get_binary_luminance() <= 128.0
     }
+
     pub fn is_light(&self) -> bool {
         self.get_binary_luminance() > 128.0
     }
+
     pub fn contrasts_with_color(&self, other: Color) -> bool {
         if self.is_dark() {
             return other.is_light();
@@ -187,10 +206,12 @@ impl Color {
             return other.is_dark();
         }
     }
+
     pub fn contrasts_with_background(&self) -> Result<bool> {
         let terminal_background = Terminal::background_color()?;
         Ok(self.contrasts_with_color(terminal_background))
     }
+
     pub fn contrasts_with_foreground(&self) -> Result<bool> {
         let terminal_foreground = Terminal::foreground_color()?;
         Ok(self.contrasts_with_color(terminal_foreground))

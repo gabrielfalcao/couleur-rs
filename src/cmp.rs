@@ -1,5 +1,6 @@
-use crate::Value;
 use std::cmp::{max, min};
+
+use crate::Value;
 
 pub fn max_rgb(r: Value, g: Value, b: Value) -> Value {
     let rg_max = if r > g { r } else { g };

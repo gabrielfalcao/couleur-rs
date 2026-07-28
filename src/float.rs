@@ -1,5 +1,6 @@
-use serde::{Deserialize, Serialize};
 use std::ops::Deref;
+
+use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
 pub struct FloatMetadata<'a> {
     value: &'a str,
@@ -20,6 +21,7 @@ impl<'a> FloatMetadata<'a> {
             leading_zeros_fractional,
         }
     }
+
     pub fn to_parts(&self) -> (f64, bool, i32, i32, i32) {
         (
             self.value.parse::<f64>().unwrap(),
@@ -29,6 +31,7 @@ impl<'a> FloatMetadata<'a> {
             self.leading_zeros_fractional,
         )
     }
+
     pub fn new(value: f64) -> FloatMetadata<'a> {
         let negative = value.round() < 0.0;
 

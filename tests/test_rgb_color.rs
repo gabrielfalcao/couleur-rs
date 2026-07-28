@@ -1,6 +1,7 @@
-use couleur_rs::{Contrast, Layer, Color, Value, Reset, Result, Wrap};
-use k9::assert_equal;
 use std::cmp::{max, min};
+
+use couleur_rs::{Color, Contrast, Layer, Reset, Result, Value, Wrap};
+use k9::assert_equal;
 
 #[test]
 fn test_contrast_functions() -> Result<()> {
@@ -77,11 +78,11 @@ fn test_parse_rgb_hex() -> Result<()> {
 }
 #[test]
 fn test_parse_and_get_accessible_contrast() -> Result<()> {
-    // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
-    // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
-    // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
-    // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
-    // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+    // #0B5E65  \x1b[38;2;11;94;101m     11,  94, 101
+    // #0B8A8F  \x1b[38;2;11;138;143m    11, 138, 143
+    // #0EAF9B  \x1b[38;2;14;175;155m    14, 175, 155
+    // #30E1B9  \x1b[38;2;48;225;185m    48, 225, 185
+    // #8FF8E2  \x1b[38;2;143;248;226m  143, 248, 226
     let lightest: Color = "#8FF8E2".parse()?;
     let darkest: Color = "#0B5E65".parse()?;
     assert_equal!(
@@ -96,11 +97,11 @@ fn test_parse_and_get_accessible_contrast() -> Result<()> {
 }
 #[test]
 fn test_parse_and_get_binary_contrast() -> Result<()> {
-    // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
-    // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
-    // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
-    // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
-    // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+    // #0B5E65  \x1b[38;2;11;94;101m     11,  94, 101
+    // #0B8A8F  \x1b[38;2;11;138;143m    11, 138, 143
+    // #0EAF9B  \x1b[38;2;14;175;155m    14, 175, 155
+    // #30E1B9  \x1b[38;2;48;225;185m    48, 225, 185
+    // #8FF8E2  \x1b[38;2;143;248;226m  143, 248, 226
     let lightest: Color = "#8FF8E2".parse()?;
     let darkest: Color = "#0B5E65".parse()?;
     assert_equal!(
@@ -116,11 +117,11 @@ fn test_parse_and_get_binary_contrast() -> Result<()> {
 
 #[test]
 fn test_parse_and_get_adobe_complementary() -> Result<()> {
-    // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
-    // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
-    // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
-    // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
-    // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+    // #0B5E65  \x1b[38;2;11;94;101m     11,  94, 101
+    // #0B8A8F  \x1b[38;2;11;138;143m    11, 138, 143
+    // #0EAF9B  \x1b[38;2;14;175;155m    14, 175, 155
+    // #30E1B9  \x1b[38;2;48;225;185m    48, 225, 185
+    // #8FF8E2  \x1b[38;2;143;248;226m  143, 248, 226
     let lightest: Color = "#8FF8E2".parse()?;
     let darkest: Color = "#0B5E65".parse()?;
     assert_equal!(
@@ -135,11 +136,11 @@ fn test_parse_and_get_adobe_complementary() -> Result<()> {
 }
 #[test]
 fn test_parse_and_get_msb_invert_contrast() -> Result<()> {
-    // #0B5E65  \x1b[1;38;2;11;94;101m     11,  94, 101
-    // #0B8A8F  \x1b[1;38;2;11;138;143m    11, 138, 143
-    // #0EAF9B  \x1b[1;38;2;14;175;155m    14, 175, 155
-    // #30E1B9  \x1b[1;38;2;48;225;185m    48, 225, 185
-    // #8FF8E2  \x1b[1;38;2;143;248;226m  143, 248, 226
+    // #0B5E65  \x1b[38;2;11;94;101m     11,  94, 101
+    // #0B8A8F  \x1b[38;2;11;138;143m    11, 138, 143
+    // #0EAF9B  \x1b[38;2;14;175;155m    14, 175, 155
+    // #30E1B9  \x1b[38;2;48;225;185m    48, 225, 185
+    // #8FF8E2  \x1b[38;2;143;248;226m  143, 248, 226
     let lightest: Color = "#8FF8E2".parse()?;
     let darkest: Color = "#0B5E65".parse()?;
     assert_equal!(
@@ -167,7 +168,7 @@ fn test_wrap_ansi() -> Result<()> {
     );
     assert_equal!(
         format!("{fg}"),
-        "\u{1b}[1;38;2;255;204;0mtest 123\u{1b}[1;38;2;255;204;0m\u{1b}[0m"
+        "\u{1b}[38;2;255;204;0mtest 123\u{1b}[38;2;255;204;0m\u{1b}[0m"
     );
 
     Ok(())
