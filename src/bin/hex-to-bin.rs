@@ -20,14 +20,14 @@ impl ParserDispatcher<Error> for Cli {
             let lines = path.read_lines()?;
             for line in lines {
                 let color = line.parse::<Color>()?;
-                let fg = color.to_ansi(Layer::FG, None);
-                let bg = color.to_ansi(Layer::BG, None);
+                let fg = color.to_ansi(Layer::FG);
+                let bg = color.to_ansi(Layer::BG);
                 let fg_contrast = Contrast::Harmonic
                     .apply(color, Layer::FG)?
-                    .to_ansi(Layer::BG, None);
+                    .to_ansi(Layer::BG);
                 let bg_contrast = Contrast::Harmonic
                     .apply(color, Layer::BG)?
-                    .to_ansi(Layer::FG, None);
+                    .to_ansi(Layer::FG);
                 let [r, g, b] = color.to_triple();
                 println!("{fg_contrast}{fg}{color}\x1b[0m");
             }

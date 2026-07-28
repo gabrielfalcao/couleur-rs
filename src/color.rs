@@ -128,7 +128,11 @@ impl Color {
         }
     }
 
-    pub fn to_ansi(&self, layer: Layer, prefix: Option<Prefix>) -> String {
+    pub fn to_ansi(&self, layer: Layer) -> String {
+        self.to_ansi_with_prefix(layer, None)
+    }
+
+    pub fn to_ansi_with_prefix(&self, layer: Layer, prefix: Option<Prefix>) -> String {
         let triple = self
             .to_triple()
             .iter()
@@ -160,9 +164,9 @@ impl Color {
         let reset = reset.unwrap_or_default();
         let contrast = contrast.unwrap_or_default();
 
-        let ansi_sequence = self.to_ansi(layer, prefix);
+        let ansi_sequence = self.to_ansi_with_prefix(layer, prefix);
         let contrast = if contrast != Contrast::None {
-            self.contrast(contrast).to_ansi(layer.inverted(), prefix)
+            self.contrast(contrast).to_ansi_with_prefix(layer.inverted(), prefix)
         } else {
             String::new()
         };
