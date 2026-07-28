@@ -1,7 +1,8 @@
 #![allow(unused)]
 use clap::Parser;
 use couleur_rs::{
-    Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap, dispatch::ParserDispatcher,
+    BLACK, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, TERMINAL, WHITE, Wrap,
+    dispatch::ParserDispatcher,
 };
 use iocore::Path;
 
@@ -21,15 +22,23 @@ impl ParserDispatcher<Error> for Cli {
             for line in lines {
                 let color = line.parse::<Color>()?;
                 let fg = color.to_ansi(Layer::FG);
+                let fg_contrast = if color.is_dark() && TERMINAL.is_dark {
+                    *WHITE
+                } else {
+                    *BLACK
+                }
+                .to_ansi(Layer::BG);
+
                 let bg = color.to_ansi(Layer::BG);
-                let fg_contrast = Contrast::Harmonic
-                    .apply(color, Layer::FG)?
-                    .to_ansi(Layer::BG);
-                let bg_contrast = Contrast::Harmonic
-                    .apply(color, Layer::BG)?
-                    .to_ansi(Layer::FG);
+                let bg_contrast = if color.is_dark() && TERMINAL.is_dark {
+                    TERMINAL.foreground
+                } else {
+                    TERMINAL.background
+                }
+                .to_ansi(Layer::FG);
+
                 let [r, g, b] = color.to_triple();
-                println!("{fg_contrast}{fg}{color}\x1b[0m");
+                println!("{fg_contrast}{fg}{color}\x1b[0m{bg_contrast}{bg}{color}\x1b[0m");
             }
         }
 

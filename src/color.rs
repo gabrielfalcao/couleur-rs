@@ -25,46 +25,86 @@ impl Color {
         ))
     }
 
-    pub fn default_for_bg() -> Result<Color> {
-        Ok(Terminal::background_color()?)
+    /// queries the [`crate::Terminal`] for the background color,
+    /// defaulting to BLACK in case
+    /// [`crate::Terminal::background_color`] fails.
+    ///
+    /// In other words, in case of querying the background color of
+    /// the terminal fails, this method assumes the background is black.
+    ///
+    /// Because this method ignores terminal query errors you miss on
+    /// the opportunity to handle errors and notify the user of your
+    /// rust application or library, if this is the case you use the
+    /// [`crate::Terminal`] methods directly, in this case simply call
+    /// [`crate::Terminal::background_color`].
+    pub fn default_for_bg() -> Color {
+        Terminal::background_color().unwrap_or_else(|_| *BLACK)
     }
 
-    pub fn default_for_fg() -> Result<Color> {
-        Ok(Terminal::foreground_color()?)
+    /// queries the [`crate::Terminal`] for the foreground color,
+    /// defaulting to BLACK in case
+    /// [`crate::Terminal::foreground_color`] fails.
+    ///
+    /// In other words, in case of querying the foreground color of
+    /// the terminal fails, this method assumes the foreground is black.
+    ///
+    /// Because this method ignores terminal query errors you miss on
+    /// the opportunity to handle errors and notify the user of your
+    /// rust application or library, if this is the case you use the
+    /// [`crate::Terminal`] methods directly, in this case simply call
+    /// [`crate::Terminal::foreground_color`].
+    pub fn default_for_fg() -> Color {
+        Terminal::foreground_color().unwrap_or_else(|_| *WHITE)
     }
 
-    pub fn default_for_layer(layer: Layer) -> Result<Color> {
-        Ok(Terminal::layer_color(layer)?)
+    /// queries the [`crate::Terminal`] for the color of the given
+    /// [`crate::Layer`], defaulting the background to black and the
+    /// foreground to white in case of errors, which is the same
+    /// behavior of the [`background_color`] and [`foreground_color`]
+    /// methods.
+    pub fn default_for_layer(layer: Layer) -> Color {
+        Terminal::layer_color(layer).unwrap_or_else(|_| match layer {
+            Layer::BG => *BLACK,
+            Layer::FG => *WHITE,
+        })
     }
 
+    /// Returns the raw [`crate::Value`] for the red band of this [`Color`]
     pub fn red_value(&self) -> Value {
         self.0
     }
 
+    /// Returns the raw [`crate::Value`] for the green band of this [`Color`]
     pub fn green_value(&self) -> Value {
         self.1
     }
 
+    /// Returns the raw [`crate::Value`] for the blue band of this [`Color`]
     pub fn blue_value(&self) -> Value {
         self.2
     }
 
+    /// Returns the raw [`f32`] for the red band of this [`Color`]
     pub fn red(&self) -> f32 {
         self.red_value().value()
     }
 
+    /// Returns the raw [`f32`] for the green band of this [`Color`]
     pub fn green(&self) -> f32 {
         self.green_value().value()
     }
 
+    /// Returns the raw [`f32`] for the blue band of this [`Color`]
     pub fn blue(&self) -> f32 {
         self.blue_value().value()
     }
 
+    /// Returns the a sized array of values of the 3 bands - red, green blue - for this color.
     pub fn to_triple(&self) -> [Value; 3] {
         [self.red_value(), self.green_value(), self.blue_value()]
     }
 
+    /// Returns a string with the hex RGB representation of this color
     pub fn to_hex_string(&self) -> String {
         let [red, green, blue] = self.to_triple();
         format!("#{red:X}{green:X}{blue:X}")
@@ -166,7 +206,8 @@ impl Color {
 
         let ansi_sequence = self.to_ansi_with_prefix(layer, prefix);
         let contrast = if contrast != Contrast::None {
-            self.contrast(contrast).to_ansi_with_prefix(layer.inverted(), prefix)
+            self.contrast(contrast)
+                .to_ansi_with_prefix(layer.inverted(), prefix)
         } else {
             String::new()
         };

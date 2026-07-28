@@ -12,8 +12,8 @@ pub enum Layer {
     BG,
 }
 impl Layer {
-    pub fn default_color(self) -> Result<Color> {
-        Ok(Color::default_for_layer(self)?)
+    pub fn default_color(self) -> Color {
+        Color::default_for_layer(self)
     }
 
     pub fn inverted(self) -> Layer {

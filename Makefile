@@ -1,3 +1,9 @@
+MAKEFILE_PATH		:= $(realpath $(firstword $(MAKEFILE_LIST)))
+PROJECT_ROOT		:= $(shell dirname $(MAKEFILE_PATH))
+SRC_ROOT		:= $(PROJECT_ROOT)/src
+TEST_ROOT		:= $(PROJECT_ROOT)/tests
+
+
 # all: run test
 all: cls hex-to-bin
 
@@ -24,7 +30,7 @@ nextest: cls
 	cargo nextest run
 
 format:
-	find src/ -type f -name '*.rs' -exec rustfmt {} \;
+	find $(SRC_ROOT) $(TEST_ROOT) -type f -name '*.rs' -exec rustfmt {} \;
 
 clean: format
 	cargo clean

@@ -14,6 +14,12 @@ use crate::{
     impl_op,
 };
 
+/// Value is a container of float values used within [`crate::Color`]
+/// for each RGB band (red, green blue).
+///
+/// Value wraps a [`f32`] float value and provides mechanisms to
+/// convert from [`f32`] to [`u8`] and vice-versa so that other items
+/// of this crate can calculate color luminance, contrast etc.
 #[derive(Clone, Copy, Debug)]
 pub struct Value(pub f32);
 
@@ -127,6 +133,12 @@ impl Value {
             exp as i32,
             self.leading_zeros_fractional(),
         )
+    }
+}
+
+impl Default for Value {
+    fn default() -> Value {
+        Value(f32::default())
     }
 }
 

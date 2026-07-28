@@ -14,17 +14,11 @@ impl AnsiColorizer {
     pub fn colors(&self) -> Result<(Option<Color>, Option<Color>)> {
         let bg = match self.bg {
             Some(bg) => Some(bg),
-            None => match Color::default_for_bg() {
-                Ok(bg) => Some(bg),
-                Err(_) => None,
-            },
+            None => Some(Color::default_for_bg()),
         };
         let fg = match self.fg {
             Some(fg) => Some(fg),
-            None => match Color::default_for_fg() {
-                Ok(fg) => Some(fg),
-                Err(_) => None,
-            },
+            None => Some(Color::default_for_fg()),
         };
         Ok((bg, fg))
     }
@@ -38,11 +32,11 @@ impl AnsiColorizer {
             )));
         } else if bg.is_none() {
             let fg = fg.unwrap();
-            let bg = self.contrast.apply(fg, Layer::BG)?;
+            let bg = self.contrast.apply(fg, Layer::BG);
             (bg, fg)
         } else if fg.is_none() {
             let bg = bg.unwrap();
-            let fg = self.contrast.apply(bg, Layer::FG)?;
+            let fg = self.contrast.apply(bg, Layer::FG);
             (bg, fg)
         } else {
             let bg = bg.unwrap();

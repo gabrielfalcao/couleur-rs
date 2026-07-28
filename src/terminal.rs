@@ -2,15 +2,40 @@ use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
 use crate::{Color, Error, Layer, Result, Value};
 
+/// Terminal is an abstraction to retrive information regarding the
+/// background and foreground colors of the terminal at runtime along
+/// with information such as whether the background is dark or light
+/// and the binary luminance of both.
+///
+/// The [`info`] method returns a [`TerminalInfo`] struct with all the
+/// information at only one place so that the terminal need not be
+/// queried every time for the same information since the terminal's
+/// background and foreground color tend not do change during runtime.
+///
+/// A [`TerminalInfo`] may be valid or invalid: an invalid
+/// [`TerminalInfo`] contains the error message and the layer for
+/// which querying failed, those two details are available in the
+/// `Details` variant of [`TerminalInfoError`].  Conversely, when
+/// querying the [`info`] succeeds, the resulting [`TerminalInfo`] is
+/// **valid** and its `error` field is the `None` variant of
+/// [`TerminalInfoError`].
+///
+/// Note that instead of using [`Terminal`] directly you can simply
+/// use [`crate::TERMINAL`] which is a static variable with
+/// information queried at the beginning of the runtime of your rust
+/// application or library.
+///
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
 pub struct Terminal;
 impl Terminal {
+    /// returns the background color of the [`Terminal`]
     pub fn background_color() -> Result<Color> {
         let terminal_bg_color = background_color(QueryOptions::default())?;
         let (r, g, b) = terminal_bg_color.scale_to_8bit();
         Ok(Color::from_triple(r.into(), g.into(), b.into()))
     }
 
+    /// returns the foreground color of the [`Terminal`]
     pub fn foreground_color() -> Result<Color> {
         let terminal_bg_color = foreground_color(QueryOptions::default())?;
         let (r, g, b) = terminal_bg_color.scale_to_8bit();
@@ -43,14 +68,18 @@ impl Terminal {
         let luminance = Self::background_luminance()?;
         Ok(luminance >= 128.0)
     }
-    pub fn info() -> TerminalInfoResult {
+
+    /// returns a [`TerminalInfo`] by querying the terminal's
+    /// background and foreground colors and computing their luminance
+    /// to obtain all the details in [`TerminalInfo`].
+    pub fn info() -> TerminalInfo {
         let background = match Terminal::background_color() {
             Ok(color) => color,
-            Err(error) => return TerminalInfoResult::Error(Layer::BG, error.to_string().leak()),
+            Err(error) => return TerminalInfo::invalid(Layer::BG, error),
         };
         let foreground = match Terminal::foreground_color() {
             Ok(color) => color,
-            Err(error) => return TerminalInfoResult::Error(Layer::FG, error.to_string().leak()),
+            Err(error) => return TerminalInfo::invalid(Layer::FG, error),
         };
 
         let is_dark = background.is_dark();
@@ -64,17 +93,31 @@ impl Terminal {
             is_light,
             binary_luminance,
             wcag_luminance,
+            is_valid: true,
+            error: TerminalInfoError::None,
         };
-        TerminalInfoResult::Info(info)
+        info
     }
 }
-
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
-pub enum TerminalInfoResult {
-    Info(TerminalInfo),
-    Error(Layer, &'static str),
+pub enum TerminalInfoError {
+    None,
+    Details { layer: Layer, message: &'static str },
 }
-
+impl TerminalInfoError {
+    pub fn is_none(&self) -> bool {
+        match self {
+            TerminalInfoError::None => true,
+            TerminalInfoError::Details { .. } => false,
+        }
+    }
+    pub fn has_details(&self) -> bool {
+        match self {
+            TerminalInfoError::None => false,
+            TerminalInfoError::Details { .. } => true,
+        }
+    }
+}
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
 pub struct TerminalInfo {
     pub background: Color,
@@ -83,4 +126,36 @@ pub struct TerminalInfo {
     pub is_light: bool,
     pub binary_luminance: Value,
     pub wcag_luminance: Value,
+    pub is_valid: bool,
+    pub error: TerminalInfoError,
+}
+
+impl TerminalInfo {
+    pub fn is_valid(&self) -> bool {
+        self.error.is_none()
+    }
+    pub fn invalid(layer: Layer, error: Error) -> TerminalInfo {
+        let error = TerminalInfoError::Details {
+            layer,
+            message: error.to_string().leak(),
+        };
+
+        let background = Color::default_for_bg();
+        let foreground = Color::default_for_fg();
+        let is_dark = bool::default();
+        let is_light = bool::default();
+        let binary_luminance = Value::default();
+        let wcag_luminance = Value::default();
+        let is_valid = bool::default();
+        TerminalInfo {
+            background,
+            foreground,
+            is_dark,
+            is_light,
+            binary_luminance,
+            wcag_luminance,
+            is_valid,
+            error,
+        }
+    }
 }
