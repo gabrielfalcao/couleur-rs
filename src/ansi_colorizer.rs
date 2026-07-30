@@ -3,7 +3,6 @@ use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
 /// Utility struct to [`colorize()`] arbitrary text
 ///
 /// [`colorize()`]: crate::AnsiColorizer::colorize
-///
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
 pub struct AnsiColorizer {
     pub bg: Option<Color>,
@@ -50,10 +49,7 @@ impl AnsiColorizer {
         };
         let bg = bg.to_ansi_with_prefix(Layer::BG, self.prefix);
         let fg = fg.to_ansi_with_prefix(Layer::FG, self.prefix);
-        let result = format!(
-            "{prefix}[0m{bg}{fg}{text}{prefix}[0m",
-            prefix = self.prefix.unwrap_or_default()
-        );
+        let result = format!("{prefix}[0m{bg}{fg}{text}{prefix}[0m", prefix = self.prefix.unwrap_or_default());
         Ok(result)
     }
 }

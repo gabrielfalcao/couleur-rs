@@ -1,9 +1,6 @@
 #![allow(unused)]
 use clap::Parser;
-use couleur_rs::{
-    AnsiColorizer, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap,
-    dispatch::ParserDispatcher,
-};
+use couleur_rs::{AnsiColorizer, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap, dispatch::ParserDispatcher};
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]
 pub struct Cli {
@@ -35,14 +32,7 @@ impl ParserDispatcher<Error> for Cli {
         let prefix = self.prefix;
         let reset = self.reset.unwrap_or_default();
         let wrap = self.wrap.unwrap_or_default();
-        let colorizer = AnsiColorizer {
-            bg,
-            fg,
-            contrast,
-            prefix,
-            wrap,
-            reset,
-        };
+        let colorizer = AnsiColorizer { bg, fg, contrast, prefix, wrap, reset };
         let result = colorizer.colorize(self.text.join(" "))?;
         println!("{result}");
 

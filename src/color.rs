@@ -4,17 +4,28 @@ use regex::Regex;
 use thiserror::Error as ThisError;
 
 use crate::{
-    Contrast, ConversionToU8Error, Error, HEX_RGB_REGEX, Layer, Prefix, RESET, Reset, Result,
-    RgbTriple, Terminal, Value, Wrap, max_rgb, min_rgb,
+    Contrast,
+    ConversionToU8Error,
+    Error,
+    HEX_RGB_REGEX,
+    Layer,
+    Prefix,
+    RESET,
+    Reset,
+    Result,
+    RgbTriple,
+    Terminal,
+    Value,
+    Wrap,
+    max_rgb,
+    min_rgb,
 };
 
 /// static instance of [`Color`] which holds the absolute black RGB color.
-pub static BLACK: LazyLock<Color> =
-    LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
+pub static BLACK: LazyLock<Color> = LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
 
 /// static instance of [`Color`] which holds the absolute white RGB color.
-pub static WHITE: LazyLock<Color> =
-    LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
+pub static WHITE: LazyLock<Color> = LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
 
 use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
@@ -32,11 +43,7 @@ pub struct Color(
 impl Color {
     /// Creates a new color from the given red, green and blue values which should be of a type convertible [`Into<f32>`]
     pub fn new<T: Copy + Into<f32>>(red: T, green: T, blue: T) -> Result<Color> {
-        Ok(Color(
-            Value::new(red.into())?,
-            Value::new(green.into())?,
-            Value::new(blue.into())?,
-        ))
+        Ok(Color(Value::new(red.into())?, Value::new(green.into())?, Value::new(blue.into())?))
     }
 
     /// queries the [`Terminal`] for the background color,
@@ -56,7 +63,6 @@ impl Color {
     /// [`BLACK`]: crate::color::BLACK
     /// [`Terminal::background_color()`]: crate::Terminal::background_color
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
-    ///
 
     pub fn default_for_bg() -> Color {
         Terminal::background_color().unwrap_or_else(|_| *BLACK)
@@ -79,7 +85,6 @@ impl Color {
     /// [`WHITE`]: crate::color::WHITE
     /// [`Terminal::background_color()`]: crate::Terminal::background_color
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
-    ///
     pub fn default_for_fg() -> Color {
         Terminal::foreground_color().unwrap_or_else(|_| *WHITE)
     }
@@ -94,7 +99,6 @@ impl Color {
     /// [`Layer`]: crate::Layer
     /// [`Terminal::background_color()`]: crate::Terminal::background_color
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
-    ///
     pub fn default_for_layer(layer: Layer) -> Color {
         Terminal::layer_color(layer).unwrap_or_else(|_| match layer {
             Layer::BG => *BLACK,
@@ -106,7 +110,6 @@ impl Color {
     ///
     /// [`Color`]: crate::Color
     /// [`Value`]: crate::Value
-    ///
     pub fn red_value(&self) -> Value {
         self.0
     }
@@ -115,7 +118,6 @@ impl Color {
     ///
     /// [`Color`]: crate::Color
     /// [`Value`]: crate::Value
-    ///
     pub fn green_value(&self) -> Value {
         self.1
     }
@@ -124,7 +126,6 @@ impl Color {
     ///
     /// [`Color`]: crate::Color
     /// [`Value`]: crate::Value
-    ///
     pub fn blue_value(&self) -> Value {
         self.2
     }
@@ -133,7 +134,6 @@ impl Color {
     ///
     /// [`Color`]: crate::Color
     /// [`Value`]: crate::Value
-    ///
     pub fn red(&self) -> f32 {
         self.red_value().value()
     }
@@ -142,7 +142,6 @@ impl Color {
     ///
     /// [`Color`]: crate::Color
     /// [`Value`]: crate::Value
-    ///
     pub fn green(&self) -> f32 {
         self.green_value().value()
     }
@@ -151,7 +150,6 @@ impl Color {
     ///
     /// [`Color`]: crate::Color
     /// [`Value`]: crate::Value
-    ///
     pub fn blue(&self) -> f32 {
         self.blue_value().value()
     }
@@ -206,11 +204,7 @@ impl Color {
         let max_val = max_rgb(r, g, b);
         let min_val = min_rgb(r, g, b);
         let target = max_val + min_val;
-        Color(
-            (target - r).copysign(&1.0).into(),
-            (target - g).copysign(&1.0).into(),
-            (target - b).copysign(&1.0).into(),
-        )
+        Color((target - r).copysign(&1.0).into(), (target - g).copysign(&1.0).into(), (target - b).copysign(&1.0).into())
     }
 
     /// Returns the perceived brightness via WCAG (Web Content
@@ -241,11 +235,7 @@ impl Color {
     /// Returns either [`BLACK`] or [`WHITE`] as the contrast of the
     /// current color.
     pub fn get_accessible_contrast(&self) -> Color {
-        if self.get_wcag_luminance() > 0.175 {
-            *BLACK
-        } else {
-            *WHITE
-        }
+        if self.get_wcag_luminance() > 0.175 { *BLACK } else { *WHITE }
     }
 
     /// Returns a string which renders the current color as an ANSI sequence in the given [`Layer`].
@@ -255,21 +245,13 @@ impl Color {
 
     /// Returns a string which renders the current color as an ANSI sequence in the given [`Layer`] and [`Prefix`].
     pub fn to_ansi_with_prefix(&self, layer: Layer, prefix: Option<Prefix>) -> String {
-        let triple = self
-            .to_triple()
-            .iter()
-            .map(|v| v.to_string())
-            .collect::<Vec<String>>();
+        let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
         let color = triple.join(";");
         let mut parts = Vec::<String>::new();
         parts.push(layer.code().to_string());
         parts.push("2".to_string());
         parts.push(format!("{color}m"));
-        format!(
-            "{prefix}[{code}",
-            prefix = prefix.unwrap_or_default(),
-            code = parts.join(";")
-        )
+        format!("{prefix}[{code}", prefix = prefix.unwrap_or_default(), code = parts.join(";"))
     }
 
     pub fn wrap_ansi(
@@ -288,8 +270,7 @@ impl Color {
 
         let ansi_sequence = self.to_ansi_with_prefix(layer, prefix);
         let contrast = if contrast != Contrast::None {
-            self.contrast(contrast)
-                .to_ansi_with_prefix(layer.inverted(), prefix)
+            self.contrast(contrast).to_ansi_with_prefix(layer.inverted(), prefix)
         } else {
             String::new()
         };
@@ -360,7 +341,6 @@ impl Color {
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
     /// [`default_for_bg`]: crate::Color::default_for_bg
     /// [`default_for_fg`]: crate::Color::default_for_fg
-    ///
     pub fn contrasts_with_background(&self) -> bool {
         let terminal_background = Color::default_for_bg();
         self.contrasts_with_color(terminal_background)
@@ -385,7 +365,6 @@ impl Color {
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
     /// [`default_for_bg`]: crate::Color::default_for_bg
     /// [`default_for_fg`]: crate::Color::default_for_fg
-    ///
     pub fn contrasts_with_foreground(&self) -> bool {
         let terminal_foreground = Color::default_for_fg();
         self.contrasts_with_color(terminal_foreground)
@@ -393,11 +372,7 @@ impl Color {
 }
 impl From<RgbTriple> for Color {
     fn from(triple: RgbTriple) -> Color {
-        Color(
-            Value::from(triple.red()),
-            Value::from(triple.green()),
-            Value::from(triple.blue()),
-        )
+        Color(Value::from(triple.red()), Value::from(triple.green()), Value::from(triple.blue()))
     }
 }
 
@@ -433,39 +408,12 @@ impl FromStr for Color {
     fn from_str(s: &str) -> Result<Color> {
         match HEX_RGB_REGEX.captures(s) {
             Some(captures) => {
-                let red_value = captures
-                    .name("red")
-                    .map(|s| s.as_str().to_string())
-                    .expect("red");
-                let green_value = captures
-                    .name("green")
-                    .map(|s| s.as_str().to_string())
-                    .expect("green");
-                let blue_value = captures
-                    .name("blue")
-                    .map(|s| s.as_str().to_string())
-                    .expect("blue");
-                let red = u8::from_str_radix(
-                    &captures
-                        .name("red")
-                        .map(|s| s.as_str().to_string())
-                        .unwrap(),
-                    16,
-                )?;
-                let green = u8::from_str_radix(
-                    &captures
-                        .name("green")
-                        .map(|s| s.as_str().to_string())
-                        .unwrap(),
-                    16,
-                )?;
-                let blue = u8::from_str_radix(
-                    &captures
-                        .name("blue")
-                        .map(|s| s.as_str().to_string())
-                        .unwrap(),
-                    16,
-                )?;
+                let red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
+                let green_value = captures.name("green").map(|s| s.as_str().to_string()).expect("green");
+                let blue_value = captures.name("blue").map(|s| s.as_str().to_string()).expect("blue");
+                let red = u8::from_str_radix(&captures.name("red").map(|s| s.as_str().to_string()).unwrap(), 16)?;
+                let green = u8::from_str_radix(&captures.name("green").map(|s| s.as_str().to_string()).unwrap(), 16)?;
+                let blue = u8::from_str_radix(&captures.name("blue").map(|s| s.as_str().to_string()).unwrap(), 16)?;
                 let r = Value::from_u8(red)?;
                 let g = Value::from_u8(green)?;
                 let b = Value::from_u8(blue)?;
@@ -478,15 +426,7 @@ impl FromStr for Color {
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "#{}",
-            self.to_triple()
-                .iter()
-                .map(|c| format!("{:02X}", c.into_u8()))
-                .collect::<Vec<String>>()
-                .join("")
-        )
+        write!(f, "#{}", self.to_triple().iter().map(|c| format!("{:02X}", c.into_u8())).collect::<Vec<String>>().join(""))
     }
 }
 

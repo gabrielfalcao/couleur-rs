@@ -26,7 +26,6 @@ use crate::{Color, Error, Layer, Result, Value};
 /// application or library.
 ///
 /// [`Terminal::info()`]: crate::Terminal::info
-///
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
 pub struct Terminal;
 impl Terminal {
@@ -126,7 +125,6 @@ impl TerminalInfoError {
 /// Holds all terminal info obtained via [`Terminal::info()`]
 ///
 /// [`Terminal::info()`]: crate::Terminal::info
-///
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
 pub struct TerminalInfo {
     pub background: Color,
@@ -144,10 +142,7 @@ impl TerminalInfo {
         self.error.is_none()
     }
     pub fn invalid(layer: Layer, error: Error) -> TerminalInfo {
-        let error = TerminalInfoError::Details {
-            layer,
-            message: error.to_string().leak(),
-        };
+        let error = TerminalInfoError::Details { layer, message: error.to_string().leak() };
 
         let background = Color::default_for_bg();
         let foreground = Color::default_for_fg();

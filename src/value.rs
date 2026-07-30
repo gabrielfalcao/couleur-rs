@@ -1,14 +1,33 @@
 use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
     ops::{
-        Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Deref, Div,
-        DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign,
+        Add,
+        AddAssign,
+        BitAnd,
+        BitAndAssign,
+        BitOr,
+        BitOrAssign,
+        BitXor,
+        BitXorAssign,
+        Deref,
+        Div,
+        DivAssign,
+        Mul,
+        MulAssign,
+        Rem,
+        RemAssign,
+        Sub,
+        SubAssign,
     },
     str::FromStr,
 };
 
 use crate::{
-    ConversionToU8Error, Error, FloatMetadata, Result, SINGLE_BAND_DECIMAL_RGB_REGEX,
+    ConversionToU8Error,
+    Error,
+    FloatMetadata,
+    Result,
+    SINGLE_BAND_DECIMAL_RGB_REGEX,
     SINGLE_BAND_HEX_RGB_REGEX,
     float::{leading_zeros_exp, leading_zeros_fractional},
     impl_op,
@@ -26,11 +45,7 @@ pub struct Value(pub f32);
 impl Value {
     pub fn new<T: Copy + Into<f32> + std::string::ToString>(value: T) -> Result<Value> {
         let value = value.to_string();
-        let string = if value.contains(".") {
-            value
-        } else {
-            format!("{value}.0")
-        };
+        let string = if value.contains(".") { value } else { format!("{value}.0") };
         Ok(Value(string.parse::<f32>()?))
     }
 
@@ -92,10 +107,7 @@ impl Value {
     }
 
     pub fn into_u8(self) -> u8 {
-        self.to_u8().expect(&format!(
-            "RGB value to be within 0 and 255 but is {value}",
-            value = self.0
-        ))
+        self.to_u8().expect(&format!("RGB value to be within 0 and 255 but is {value}", value = self.0))
     }
 
     pub fn leading_zeros_fractional(&self) -> usize {
@@ -126,13 +138,7 @@ impl Value {
         let float_fract = self.fract().copysign(1.0);
         let exp = self.leading_zeros_exp();
 
-        (
-            negative,
-            float_round as i32,
-            float_fract as i32,
-            exp as i32,
-            self.leading_zeros_fractional(),
-        )
+        (negative, float_round as i32, float_fract as i32, exp as i32, self.leading_zeros_fractional())
     }
 }
 
@@ -160,9 +166,7 @@ impl FromStr for Value {
                 let parsed = u8::from_str_radix(band, 16)?;
                 Ok(Value(parsed as f32))
             }
-            None => Err(Error::ParseError(format!(
-                "cannot parse RGB value (number from 0 to 255) from {value:#?}"
-            ))),
+            None => Err(Error::ParseError(format!("cannot parse RGB value (number from 0 to 255) from {value:#?}"))),
             // None => match SINGLE_BAND_DECIMAL_RGB_REGEX.captures(value) {
             //
             //     Some(band) => match band.name("band") {

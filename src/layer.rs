@@ -63,12 +63,7 @@ impl Layer {
     }
 
     fn to_possible_strings(&self) -> [String; 4] {
-        [
-            self.variant_name_snake().to_string(),
-            self.variant_name_kebab(),
-            self.variant_name_pascal(),
-            self.variant_name_train(),
-        ]
+        [self.variant_name_snake().to_string(), self.variant_name_kebab(), self.variant_name_pascal(), self.variant_name_train()]
     }
 }
 
@@ -87,16 +82,9 @@ impl ValueEnum for Layer {
     }
 
     fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Layer, String> {
-        let val = if ignore_case {
-            val.to_lowercase()
-        } else {
-            val.to_string()
-        };
+        let val = if ignore_case { val.to_lowercase() } else { val.to_string() };
         let val = val.trim();
-        for (variant, possible_strings) in Layer::variants()
-            .iter()
-            .map(|variant| (variant, variant.to_possible_strings()))
-        {
+        for (variant, possible_strings) in Layer::variants().iter().map(|variant| (variant, variant.to_possible_strings())) {
             for pos in possible_strings {
                 if pos == val {
                     return Ok(*variant);

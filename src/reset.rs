@@ -56,12 +56,7 @@ impl Reset {
     }
 
     fn to_possible_strings(&self) -> [String; 4] {
-        [
-            self.variant_name_snake().to_string(),
-            self.variant_name_kebab(),
-            self.variant_name_pascal(),
-            self.variant_name_train(),
-        ]
+        [self.variant_name_snake().to_string(), self.variant_name_kebab(), self.variant_name_pascal(), self.variant_name_train()]
     }
 }
 
@@ -80,16 +75,9 @@ impl ValueEnum for Reset {
     }
 
     fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Reset, String> {
-        let val = if ignore_case {
-            val.to_lowercase()
-        } else {
-            val.to_string()
-        };
+        let val = if ignore_case { val.to_lowercase() } else { val.to_string() };
         let val = val.trim();
-        for (variant, possible_strings) in Reset::variants()
-            .iter()
-            .map(|variant| (variant, variant.to_possible_strings()))
-        {
+        for (variant, possible_strings) in Reset::variants().iter().map(|variant| (variant, variant.to_possible_strings())) {
             for pos in possible_strings {
                 if pos == val {
                     return Ok(*variant);

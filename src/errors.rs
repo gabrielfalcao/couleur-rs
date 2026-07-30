@@ -113,10 +113,7 @@ impl Display for ConversionToF32Error {
 }
 impl Into<Error> for ConversionToF32Error {
     fn into(self) -> Error {
-        Error::ConversionToU8Error(
-            ConversionToF32Error(self.0 as u8, format!("cannot convert {} to f32", self.0))
-                .to_string(),
-        )
+        Error::ConversionToU8Error(ConversionToF32Error(self.0 as u8, format!("cannot convert {} to f32", self.0)).to_string())
     }
 }
 
