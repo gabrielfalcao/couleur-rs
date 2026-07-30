@@ -1,9 +1,11 @@
 use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
+use serde::{Deserialize, Serialize};
 
 /// Utility struct to [`colorize()`] arbitrary text
 ///
 /// [`colorize()`]: crate::AnsiColorizer::colorize
-#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
+///
+#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AnsiColorizer {
     pub bg: Option<Color>,
     pub fg: Option<Color>,

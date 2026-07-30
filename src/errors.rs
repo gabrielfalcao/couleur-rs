@@ -15,6 +15,8 @@ pub enum Error {
     ConversionToU8Error(String),
     TerminalQueryError(String),
     RenderError(String),
+    YamlError(String),
+    JsonError(String),
 
     ClapError(String),
     ParseError(String),
@@ -31,6 +33,8 @@ impl Display for Error {
                 Error::ConversionToU8Error(value) => value,
                 Error::TerminalQueryError(value) => value,
                 Error::RenderError(value) => value,
+                Error::YamlError(value) => value,
+                Error::JsonError(value) => value,
 
                 Error::ClapError(value) => value,
                 Error::ParseError(value) => value,
@@ -47,6 +51,8 @@ impl Error {
             Error::ConversionToU8Error(value) => value.to_string(),
             Error::TerminalQueryError(value) => value.to_string(),
             Error::RenderError(value) => value.to_string(),
+            Error::YamlError(value) => value.to_string(),
+            Error::JsonError(value) => value.to_string(),
 
             Error::ClapError(value) => value.to_string(),
             Error::ParseError(value) => value.to_string(),
@@ -64,6 +70,16 @@ impl From<std::io::Error> for Error {
 impl From<iocore::Error> for Error {
     fn from(e: iocore::Error) -> Self {
         Error::IOError(e.to_string())
+    }
+}
+impl From<serde_yaml::Error> for Error {
+    fn from(e: serde_yaml::Error) -> Self {
+        Error::YamlError(e.to_string())
+    }
+}
+impl From<serde_json::Error> for Error {
+    fn from(e: serde_json::Error) -> Self {
+        Error::JsonError(e.to_string())
     }
 }
 impl From<terminal_colorsaurus::Error> for Error {

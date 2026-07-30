@@ -2,11 +2,12 @@ use std::fmt::Display;
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use serde::{Deserialize, Serialize};
 
 use crate::{Color, Error, Result};
 
 /// Represents the concept of "background" and "foreground" colors in a terminal
-#[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Layer {
     #[default]
     FG,

@@ -70,6 +70,14 @@ use std::sync::LazyLock;
 #[doc(inline)] pub use wrap::Wrap;
 
 #[doc(hidden)] pub mod util;
-#[doc(inline)] pub use util::{HEX_RGB_REGEX, RESET, SINGLE_BAND_DECIMAL_RGB_REGEX, SINGLE_BAND_HEX_RGB_REGEX, TRIPLE_RGB_REGEX};
+#[doc(inline)]
+pub use util::{
+    HEX_RGB_REGEX,
+    SINGLE_BAND_DECIMAL_RGB_REGEX,
+    SINGLE_BAND_HEX_RGB_REGEX,
+    TRIPLE_RGB_REGEX,
+    deserialize_string_to_str,
+    serialize_static_str_to_string,
+};
 
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());

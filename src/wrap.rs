@@ -2,10 +2,11 @@ use std::fmt::Display;
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use serde::{Deserialize, Serialize};
 
 /// Represents the intent of rendering a [`Color`] before, after or
 /// around the text being colored.
-#[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Wrap {
     #[default]
     Before,

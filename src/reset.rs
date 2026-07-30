@@ -2,12 +2,13 @@ use std::fmt::Display;
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use serde::{Deserialize, Serialize};
 
 use crate::{Prefix, ToAnsi};
 
 /// Represents the intent of adding an "ansi reset" sequence before,
 /// after or around an ANSI color sequence.
-#[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq)]
+#[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Reset {
     Before,
     #[default]
@@ -17,17 +18,21 @@ pub enum Reset {
 }
 impl ToAnsi for Reset {
     fn as_ansi_suffix(&self) -> String {
-        "[0m".to_string()
+        Reset::code().to_string()
     }
 }
+
 impl Display for Reset {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "reset {}", self.variant_name_snake())
     }
 }
 impl Reset {
+    pub fn code() -> &'static str {
+        "[0m"
+    }
     pub fn to_ansi(&self, prefix: Option<Prefix>) -> String {
-        format!("{prefix}[0m", prefix = prefix.unwrap_or_default())
+        format!("{prefix}{code}", prefix = prefix.unwrap_or_default(), code = self.as_ansi_suffix())
     }
 
     pub fn variant_name_snake(&self) -> &'static str {

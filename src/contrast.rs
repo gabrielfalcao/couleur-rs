@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use std::{
     cmp::{Ordering, PartialOrd},
     fmt::Display,
@@ -9,7 +10,7 @@ use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase
 use crate::{Color, Error, Layer, Result};
 
 /// Set of contrast algorithms applicable to [`Color`]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
 pub enum Contrast {
     None,
     Read,

@@ -18,6 +18,7 @@ authors = ["Gabriel DeMoura <gabrielteratos@gmail.com>"]
 categories = ["command-line-interface"]
 # default-run = "couleur"
 default-run = "hex-to-bin"
+# default-run = "terminal-info"
 
 # categories = [] # https://crates.io/category_slugs
 [dependencies]
@@ -31,6 +32,10 @@ serde = { version = "1.0.228", features = ["derive"] }
 supports-color = "3.0.2"
 terminal-colorsaurus = "1.0.3"
 thiserror = "2.0.18"
+serde_json = "1.0.150"
+serde_yaml = "0.9.34"
+pest = { version = "2.8.8", features = ["pretty-print"] }
+pest_derive = "2.8.8"
 
 
 [package.metadata]
@@ -63,6 +68,13 @@ bench = false
 doc = false
 test = false
 
+[[bin]]
+name = "terminal-info"
+path = "src/bin/terminal-info.rs"
+bench = false
+doc = false
+test = false
+
 [[test]]
 name = "test_terminal"
 path = "./tests/test_terminal.rs"
@@ -77,22 +89,25 @@ name = "test_float"
 path = "./tests/test_float.rs"
 
 # [[test]]
-# name = "test_rgb_color"
-# path = "./tests/test_rgb_color.rs"
-
-# [[test]]
-# name = "test_rgb_value"
-# path = "./tests/test_rgb_value.rs"
-
-# [[test]]
-# name = "test_rgb_value_ops"
-# path = "./tests/test_rgb_value_ops.rs"
+# name = "test_templating"
+# path = "./tests/test_templating.rs"
+#
+# # [[test]]
+# # name = "test_rgb_color"
+# # path = "./tests/test_rgb_color.rs"
+#
+# # [[test]]
+# # name = "test_rgb_value"
+# # path = "./tests/test_rgb_value.rs"
+#
+# # [[test]]
+# # name = "test_rgb_value_ops"
+# # path = "./tests/test_rgb_value_ops.rs"
 
 
 [dev-dependencies]
 k9 = "0.12.0"
 pretty_assertions = "1.4.1"
-serde_json = "1.0.150"
 
 [profile.release] # https://github.com/johnthagen/min-sized-rust
 strip = true  # Automatically strip symbols from the binary.

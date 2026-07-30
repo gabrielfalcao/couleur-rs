@@ -1,6 +1,15 @@
 use std::{ops::Deref, str::FromStr, sync::LazyLock};
 
 use regex::Regex;
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+    de::{self, Error as SerdeError, Visitor},
+};
+use std::fmt;
+
 use thiserror::Error as ThisError;
 
 use crate::{
@@ -10,11 +19,11 @@ use crate::{
     HEX_RGB_REGEX,
     Layer,
     Prefix,
-    RESET,
     Reset,
     Result,
     RgbTriple,
     Terminal,
+    ToAnsi,
     Value,
     Wrap,
     max_rgb,
@@ -176,7 +185,7 @@ impl Color {
     pub fn get_binary_luminance(&self) -> Value {
         let [r, g, b] = self.to_triple();
         let luminance = (0.299 * *r) + (0.587 * *g) + (0.114 * *b);
-        Value(luminance)
+        Value::from_f32(luminance).expect("value between 0 and 255 inclusive")
     }
 
     /// Returns either [`BLACK`] or [`WHITE`] as the contrasting color based on the [`binary luminance algorithm`](`crate::Color::get_binary_luminance`)
@@ -223,13 +232,13 @@ impl Color {
 
         for c in channels {
             if c <= 0.04045 {
-                linear.push(Value(*(c / 12.92)))
+                linear.push(Value::from_f32(*(c / 12.92)).expect("value between 0 and 255 inclusive"))
             } else {
-                linear.push(Value(*((c + 0.055) / 1.055) * 2.4))
+                linear.push(Value::from_f32(*((c + 0.055) / 1.055) * 2.4).expect("value between 0 and 255 inclusive"))
             }
         }
         let luminance = 0.2126 * *linear[0] + 0.7152 * *linear[1] + 0.0722 * *linear[2];
-        Value(luminance)
+        Value::from_f32(luminance).expect("value between 0 and 255 inclusive")
     }
 
     /// Returns either [`BLACK`] or [`WHITE`] as the contrast of the
@@ -281,9 +290,9 @@ impl Color {
             Wrap::Around => format!("{ansi_sequence}{text}{ansi_sequence}"),
         };
         let result = match reset {
-            Reset::Before => format!("{RESET}{colored}"),
-            Reset::After => format!("{colored}{RESET}"),
-            Reset::Around => format!("{RESET}{colored}{RESET}"),
+            Reset::Before => format!("{reset}{colored}", reset = Reset::code()),
+            Reset::After => format!("{colored}{reset}", reset = Reset::code()),
+            Reset::Around => format!("{reset}{colored}{reset}", reset = Reset::code()),
             Reset::None => colored,
         };
         return result;
@@ -379,7 +388,7 @@ impl From<RgbTriple> for Color {
 /// Represents a failure to parse a [`Color`] from strings.
 ///
 /// This enum is the `Err` error type used in the [`std::str::FromStr#required-associated-types`] implementation for [`Color`]
-#[derive(Clone, Debug, ThisError)]
+#[derive(Clone, Debug, ThisError, Serialize, Deserialize)]
 pub enum RGBParseError {
     #[error("failed to parse color {0}")]
     HexParseError(String),
@@ -429,6 +438,66 @@ impl std::fmt::Display for Color {
         write!(f, "#{}", self.to_triple().iter().map(|c| format!("{:02X}", c.into_u8())).collect::<Vec<String>>().join(""))
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  <<<  SSSSS   EEEEEEE  RRRRRR   DDDDD    EEEEEEE >>>
+// <<<  SS       EE       RR   RR  DD  DD   EE       >>>
+// <<<   SSSSS   EEEEE    RRRRRR   DD   DD  EEEEE    >>>
+// <<<       SS  EE       RR  RR   DD   DD  EE       >>>
+//  <<<  SSSSS   EEEEEEE  RR   RR  DDDDDD   EEEEEEE >>>
+
+impl Serialize for Color {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let value = self.to_hex_string();
+
+        serializer.serialize_str(&value)
+    }
+}
+
+struct ValueVisitor;
+
+impl<'de> Visitor<'de> for ValueVisitor {
+    type Value = Color;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a string representing a hexadecimal number of length 2")
+    }
+
+    fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+    where
+        E: SerdeError,
+    {
+        match Color::from_str(value) {
+            Ok(value) => Ok(value),
+            Err(error) => Err(E::custom(format!("{error}"))),
+        }
+    }
+
+    fn visit_string<E>(self, value: String) -> std::result::Result<Self::Value, E>
+    where
+        E: SerdeError,
+    {
+        self.visit_str(&value)
+    }
+}
+
+impl<'de> Deserialize<'de> for Color {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(ValueVisitor)
+    }
+}
+//  <<<     //  SSSSS   EEEEEEE  RRRRRR   DDDDD    EEEEEEE >>>
+// <<<     /// SS       EE       RR   RR  DD  DD   EE       >>>
+// <<<    ///   SSSSS   EEEEE    RRRRRR   DD   DD  EEEEE    >>>
+// <<<   ///        SS  EE       RR  RR   DD   DD  EE       >>>
+//  <<< ///     SSSSS   EEEEEEE  RR   RR  DDDDDD   EEEEEEE >>>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
 mod test {

@@ -1,6 +1,7 @@
 use crate::{Error, Prefix, Result};
+use serde::Serialize;
 
-pub trait ToAnsi: Sized {
+pub trait ToAnsi: Sized + Serialize {
     fn as_ansi_suffix(&self) -> String;
     fn to_ansi(&self) -> String {
         self.to_ansi_with_prefix(None)

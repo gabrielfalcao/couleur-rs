@@ -1,3 +1,12 @@
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+    de::{self, Error as SerdeError, Visitor},
+};
+use std::fmt;
+
 use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
     ops::{
@@ -40,7 +49,7 @@ use crate::{
 /// convert from [`f32`] to [`u8`] and vice-versa so that other items
 /// of this crate can calculate color luminance, contrast etc.
 #[derive(Clone, Copy, Debug)]
-pub struct Value(pub f32);
+pub struct Value(f32);
 
 impl Value {
     pub fn new<T: Copy + Into<f32> + std::string::ToString>(value: T) -> Result<Value> {
@@ -159,7 +168,7 @@ impl Deref for Value {
 impl FromStr for Value {
     type Err = Error;
 
-    fn from_str(value: &str) -> std::result::Result<Value, Error> {
+    fn from_str(value: &str) -> std::result::Result<Value, Self::Err> {
         match SINGLE_BAND_HEX_RGB_REGEX.captures(value) {
             Some(caps) => {
                 let band = caps.name("band").expect("rgb band").as_str();
@@ -313,3 +322,63 @@ impl_op!(Sub, sub, value, -);
 impl_op!(Div, div, value, /);
 impl_op!(Mul, mul, value, *);
 impl_op!(Rem, rem, value, %);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  <<<  SSSSS   EEEEEEE  RRRRRR   DDDDD    EEEEEEE >>>
+// <<<  SS       EE       RR   RR  DD  DD   EE       >>>
+// <<<   SSSSS   EEEEE    RRRRRR   DD   DD  EEEEE    >>>
+// <<<       SS  EE       RR  RR   DD   DD  EE       >>>
+//  <<<  SSSSS   EEEEEEE  RR   RR  DDDDDD   EEEEEEE >>>
+
+impl Serialize for Value {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let byte = self.into_u8();
+
+        serializer.serialize_str(&format!("{byte:02X}"))
+    }
+}
+
+struct ValueVisitor;
+
+impl<'de> Visitor<'de> for ValueVisitor {
+    type Value = Value;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a string representing a hexadecimal number of length 2")
+    }
+
+    fn visit_str<E>(self, value: &str) -> std::result::Result<Self::Value, E>
+    where
+        E: SerdeError,
+    {
+        match Value::from_str(value) {
+            Ok(value) => Ok(value),
+            Err(error) => Err(E::custom(format!("invalid hexadecimal string of length 2: {error}"))),
+        }
+    }
+
+    fn visit_string<E>(self, value: String) -> std::result::Result<Self::Value, E>
+    where
+        E: SerdeError,
+    {
+        self.visit_str(&value)
+    }
+}
+
+impl<'de> Deserialize<'de> for Value {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(ValueVisitor)
+    }
+}
+//  <<<     //  SSSSS   EEEEEEE  RRRRRR   DDDDD    EEEEEEE >>>
+// <<<     /// SS       EE       RR   RR  DD  DD   EE       >>>
+// <<<    ///   SSSSS   EEEEE    RRRRRR   DD   DD  EEEEE    >>>
+// <<<   ///        SS  EE       RR  RR   DD   DD  EE       >>>
+//  <<< ///     SSSSS   EEEEEEE  RR   RR  DDDDDD   EEEEEEE >>>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,7 @@
+use crate::{Color, Error, Layer, Result, Value, deserialize_string_to_str, serialize_static_str_to_string};
+use serde::{Deserialize, Serialize};
+use std::{borrow::Cow, marker::PhantomData};
 use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
-
-use crate::{Color, Error, Layer, Result, Value};
 
 /// Terminal is an abstraction to retrive information regarding the
 /// background and foreground colors of the terminal at runtime along
@@ -26,8 +27,9 @@ use crate::{Color, Error, Layer, Result, Value};
 /// application or library.
 ///
 /// [`Terminal::info()`]: crate::Terminal::info
-#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
+#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord, Serialize, Deserialize, Default)]
 pub struct Terminal;
+
 impl Terminal {
     /// returns the background color of the [`Terminal`]
     pub fn background_color() -> Result<Color> {
@@ -102,10 +104,10 @@ impl Terminal {
 }
 
 /// Holds error details which may occur while querying terminal colors via [`Terminal::background_color`] or  [`Terminal::foreground_color`].
-#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
+#[derive(Clone, Debug, PartialOrd, PartialEq, Eq, Ord, Serialize, Deserialize)]
 pub enum TerminalInfoError {
     None,
-    Details { layer: Layer, message: &'static str },
+    Details { layer: Layer, message: String },
 }
 impl TerminalInfoError {
     pub fn is_none(&self) -> bool {
@@ -125,7 +127,7 @@ impl TerminalInfoError {
 /// Holds all terminal info obtained via [`Terminal::info()`]
 ///
 /// [`Terminal::info()`]: crate::Terminal::info
-#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Eq, Ord)]
+#[derive(Clone, Debug, PartialOrd, PartialEq, Eq, Ord, Serialize, Deserialize)]
 pub struct TerminalInfo {
     pub background: Color,
     pub foreground: Color,
@@ -142,7 +144,9 @@ impl TerminalInfo {
         self.error.is_none()
     }
     pub fn invalid(layer: Layer, error: Error) -> TerminalInfo {
-        let error = TerminalInfoError::Details { layer, message: error.to_string().leak() };
+        let is_valid = false;
+
+        let error = TerminalInfoError::Details { layer, message: error.to_string() };
 
         let background = Color::default_for_bg();
         let foreground = Color::default_for_fg();
@@ -150,7 +154,6 @@ impl TerminalInfo {
         let is_light = bool::default();
         let binary_luminance = Value::default();
         let wcag_luminance = Value::default();
-        let is_valid = bool::default();
         TerminalInfo {
             background,
             foreground,
