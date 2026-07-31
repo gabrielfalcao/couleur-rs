@@ -63,6 +63,11 @@ use std::sync::LazyLock;
 #[doc(hidden)] pub mod triples;
 #[doc(inline)] pub use triples::{RgbTriple, U8Triple};
 
+#[doc(hidden)]
+pub mod state;
+// #[doc(inline)]
+pub use state::{ColorPalette, Context};
+
 #[doc(hidden)] pub mod value;
 #[doc(inline)] pub use value::Value;
 
