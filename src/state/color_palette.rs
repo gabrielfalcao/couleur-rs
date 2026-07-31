@@ -1,8 +1,8 @@
+use crate::{Color, Error, Result};
+use heck::ToTitleCase;
+use iocore::Path;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
-use iocore::Path;
-use crate::Color;
-use heck::ToTitleCase;
 
 /// [`ColorPalette`] is an object which stores a color palette based
 /// on a [`name`](`ColorPalette::name`), a set of [`RGB
@@ -19,7 +19,6 @@ use heck::ToTitleCase;
 /// [`ColorPalette::name`]: crate::state::ColorPalette::name
 /// [`Context`]: crate::state::Context
 /// [`Context::palettes`]: crate::state::Context::palettes
-///
 #[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Serialize, Deserialize)]
 pub struct ColorPalette {
     name: String,
@@ -28,9 +27,10 @@ pub struct ColorPalette {
 }
 
 impl ColorPalette {
-    pub fn from_lospec_hex_filename(path: Into<Path>) -> Result<ColorPalette> {
+    /// WIP
+    pub fn from_lospec_hex_filename<T: Into<Path>>(path: T) -> Result<ColorPalette> {
         let path = path.into();
         let name = path.without_extension().name().to_title_case();
-        /// WIP
+        Err(Error::RenderError(format!("{path} {name}")))
     }
 }
