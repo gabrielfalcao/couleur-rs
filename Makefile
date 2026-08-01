@@ -5,7 +5,8 @@ TEST_ROOT		:= $(PROJECT_ROOT)/tests
 
 
 # all: run test
-all: cls hex-to-bin
+# all: cls hex-to-bin
+all: test
 
 hex-to-bin:
 	cargo run --bin hex-to-bin ./palettes/cs108.hex

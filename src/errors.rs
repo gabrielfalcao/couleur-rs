@@ -103,6 +103,11 @@ impl From<RGBParseError> for Error {
         Error::ParseError(e.to_string())
     }
 }
+impl From<nom::Err<nom::error::Error<&str>>> for Error {
+    fn from(e: nom::Err<nom::error::Error<&str>>) -> Error {
+        Error::ParseError(e.to_string())
+    }
+}
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Contains information of errors which occur while converting RGB band values from [`f32`] to [`u8`].

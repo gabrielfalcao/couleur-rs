@@ -81,3 +81,5 @@ pub use util::{
 };
 
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
+
+pub mod templating;

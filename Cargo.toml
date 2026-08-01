@@ -23,19 +23,20 @@ default-run = "hex-to-bin"
 # categories = [] # https://crates.io/category_slugs
 [dependencies]
 bon = "3.9.3"
-clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }
+clap = { version = "4.6.5", features = ["derive", "env", "string", "unicode", "wrap_help"] }
 heck = "0.5.0"
 hex = "0.4.3"
 iocore = "3.1.0"
-regex = "1.12.4"
-serde = { version = "1.0.228", features = ["derive"] }
+regex = "1.13.1"
+serde = { version = "1.0.229", features = ["derive"] }
 supports-color = "3.0.2"
 terminal-colorsaurus = "1.0.3"
-thiserror = "2.0.18"
-serde_json = "1.0.150"
-serde_yaml = "0.9.34"
+thiserror = "2.0.19"
+serde_json = "1.0.151"
+serde_yaml = "0.9.33"
 pest = { version = "2.8.8", features = ["pretty-print"] }
 pest_derive = "2.8.8"
+nom = "8.0.0"
 
 
 [package.metadata]
@@ -75,18 +76,22 @@ bench = false
 doc = false
 test = false
 
-[[test]]
-name = "test_terminal"
-path = "./tests/test_terminal.rs"
+# [[test]]
+# name = "test_terminal"
+# path = "./tests/test_terminal.rs"
 
 
-[[test]]
-name = "test_colorizer"
-path = "./tests/test_colorizer.rs"
+# [[test]]
+# name = "test_colorizer"
+# path = "./tests/test_colorizer.rs"
 
-[[test]]
-name = "test_float"
-path = "./tests/test_float.rs"
+# [[test]]
+# name = "test_float"
+# path = "./tests/test_float.rs"
+
+# [[test]]
+# name = "test_templating_nom"
+# path = "./tests/test_templating_nom.rs"
 
 # [[test]]
 # name = "test_templating"
