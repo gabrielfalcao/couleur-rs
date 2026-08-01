@@ -3,7 +3,14 @@ use winnow::{
     ModalResult,
     Parser,
     Result,
-    ascii::{alpha1, alphanumeric1 as alphanumeric, float, take_escaped},
+    ascii::{
+        alpha1,
+        alphanumeric1 as alphanumeric,
+        float,
+        hex_digit0,
+        hex_digit1,
+        take_escaped,
+    },
     combinator::{
         alt,
         cut_err,
@@ -18,7 +25,7 @@ use winnow::{
     },
     error::{ContextError, ErrMode, ParserError, StrContext},
     prelude::*,
-    stream::{Offset, Stream},
+    stream::{AsChar, Offset, Stream},
     token::{literal, none_of, one_of, rest, take_till, take_while},
 };
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -34,31 +41,35 @@ pub enum Node {
 fn parse_str<'a, E: ParserError<&'a str>>(
     input: &mut &'a str,
 ) -> ModalResult<&'a str, E> {
-    alpha1.parse_next(input)
+    alt((
+        alpha1,
+        separated_pair(
+            "color",
+            ":",
+            alt((
+                preceded("#", repeat(6, hex_digit1)),
+                repeat(6, hex_digit1),
+            )),
+        ),
+    ))
+    .parse_next(input)
 }
-// fn markup_parser<I, Ignored, O, E, IgnoredParser, ParseNext>()
-// -> impl Parser<I, O, E>
-// where
-//     I: Stream,
-//     E: ParserError<I>,
-//     IgnoredParser: Parser<I, Ignored, E>,
-//     ParseNext: Parser<I, O, E>,
-// {
-//     preceded('{', cut_err(terminated(parse_str::<crate::ParseError>, '}')))
-//     //        .context(StrContext::Label("trying to parse markup wrapped by curly braces"))
-// }
 fn parse_markup<'a>(input: &mut &'a str) -> ModalResult<Node> {
     let original_input = input.to_string();
     let mut nodes = Vec::<Node>::new();
 
     while input.len() > 0 {
         if let Ok(markup) =
-            preceded('{', cut_err(terminated(parse_str::<crate::ParseError>, '}')))
-                .context(StrContext::Label(
-                    "trying to parse markup wrapped by curly braces",
-                ))
-                .parse_next(input)
-                .map(|value: &str| value.to_string())
+            // delimited('{', parse_str::<crate::ParseError>, '}')
+            preceded(
+                '{',
+                cut_err(terminated(parse_str::<crate::ParseError>, '}')),
+            )
+            .context(StrContext::Label(
+                "trying to parse markup wrapped by curly braces",
+            ))
+            .parse_next(input)
+            .map(|value: &str| value.to_string())
         {
             nodes.push(match markup.as_str() {
                 "reset" => Node::Reset,
