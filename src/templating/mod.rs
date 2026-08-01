@@ -1,6 +1,6 @@
 pub mod ast;
 
-pub use ast::{Token, Variable};
+pub use ast::{Node, Variable};
 
 pub mod resolve;
 
@@ -10,17 +10,17 @@ pub struct Definition;
 use pest::Parser;
 use pest_derive::Parser;
 
-pub fn parse_tokens(input: &str) -> Result<Vec<Token>> {
+pub fn parse_tokens(input: &str) -> Result<Vec<Node>> {
     let mut pairs = match Definition::parse(Rule::text, input)
         .map_err(|e| Error::ParseError(e.to_string()))
     {
         Ok(pairs) => pairs,
         Err(e) => {
             eprintln!("warning: {}", &e);
-            return Ok(Token::default_vec());
+            return Ok(Node::default_vec());
         },
     };
     let text = pairs.next().unwrap();
-    let tokens = Token::from_pair(text)?;
+    let tokens = Node::from_pair(text)?;
     Ok(tokens)
 }

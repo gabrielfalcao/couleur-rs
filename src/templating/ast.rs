@@ -4,7 +4,7 @@ use pest::iterators::Pair;
 use crate::color as colors;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Token {
+pub enum Node {
     Color(Color),
     Contrast(crate::contrast::Contrast),
     Layer(crate::layer::Layer),
@@ -185,7 +185,7 @@ impl Color {
 }
 use crate::{Error, Result, Rule};
 
-impl Token {
+impl Node {
     fn u8_from_pair<'a>(pair: Pair<'a, Rule>) -> Result<u8> {
         Ok(u8::from_str_radix(pair.as_span().as_str(), 10)
             .map_err(|e| Error::ParseError(format!("{} (expected number from 0 to 255: {:#?})", e, pair.clone())))?)
@@ -199,36 +199,36 @@ impl Token {
         pair.as_span().as_str().to_string()
     }
 
-    pub fn from_pair<'a>(pair: Pair<'a, Rule>) -> Result<Vec<Token>> {
-        let mut tokens = Vec::<Token>::new();
+    pub fn from_pair<'a>(pair: Pair<'a, Rule>) -> Result<Vec<Node>> {
+        let mut tokens = Vec::<Node>::new();
         tokens.extend(match pair.as_rule() {
-            Rule::token | Rule::ps1 | Rule::replacement => {
-                let mut tokens = Vec::<Token>::new();
-                for token in pair.clone().into_inner() {
-                    tokens.extend(Token::from_pair(token)?);
+            Rule::node | Rule::ps1 | Rule::replacement => {
+                let mut tokens = Vec::<Node>::new();
+                for node in pair.clone().into_inner() {
+                    tokens.extend(Node::from_pair(node)?);
                 }
                 tokens
             }
             Rule::unhandled => {
-                vec![Token::Unhandled(pair.as_span().as_str().to_string())]
+                vec![Node::Unhandled(pair.as_span().as_str().to_string())]
             }
             Rule::color => {
-                vec![Token::Color(Self::u8_from_pair(pair)?)]
+                vec![Node::Color(Self::u8_from_pair(pair)?)]
             }
             Rule::string => match pair.as_span().as_str() {
-                "reset" => vec![Token::AnsiReset],
+                "reset" => vec![Node::AnsiReset],
                 string => {
-                    vec![Token::Unhandled(format!("{{{}}}", string.to_string()))]
+                    vec![Node::Unhandled(format!("{{{}}}", string.to_string()))]
                 }
             },
             Rule::reset => {
-                vec![Token::AnsiReset]
+                vec![Node::AnsiReset]
             }
             Rule::fg_color => {
-                vec![Token::Color(Self::u8_from_inner_pair(pair)?)]
+                vec![Node::Color(Self::u8_from_inner_pair(pair)?)]
             }
             Rule::bg_color => {
-                vec![Token::BgColor(Self::u8_from_inner_pair(pair)?)]
+                vec![Node::BgColor(Self::u8_from_inner_pair(pair)?)]
             }
             Rule::vcs_param => {
                 let mut pairs = pair.into_inner();
@@ -236,16 +236,16 @@ impl Token {
                 let vcs = Self::string_from_pair(pairs.next().expect("vcs"));
                 let param = Self::string_from_pair(pairs.next().expect("branch"));
                 if vcs == "git" || vcs == "hg" {
-                    vec![Token::VcsParam(vcs, param)]
+                    vec![Node::VcsParam(vcs, param)]
                 } else {
-                    vec![Token::KeyValueParam(vcs, param)]
+                    vec![Node::KeyValueParam(vcs, param)]
                 }
             }
             Rule::key_value_param => {
                 let mut pairs = pair.into_inner();
                 let key = Self::string_from_pair(pairs.next().expect("key"));
                 let value = Self::string_from_pair(pairs.next().expect("param"));
-                vec![Token::KeyValueParam(key, value)]
+                vec![Node::KeyValueParam(key, value)]
             }
 
             Rule::vcs => {
@@ -258,12 +258,12 @@ impl Token {
                 let mut pairs = pair.into_inner();
                 let key = Self::string_from_pair(pairs.next().expect("key"));
                 let value = Self::string_from_pair(pairs.next().expect("param"));
-                vec![Token::Color(Color::Strftime(value))]
+                vec![Node::Color(Color::Strftime(value))]
             }
             Rule::variable => {
                 let pair = pair.into_inner().next().expect("variable");
                 let variable = Color::from_pair(pair)?;
-                vec![Token::Color(variable)]
+                vec![Node::Color(variable)]
             }
             Rule::variable_bell
             | Rule::variable_date_weekday
@@ -321,33 +321,33 @@ impl Token {
             | Rule::variable_code_end_nonprinting => {
                 unreachable!("{:#?}", pair)
             }
-            Rule::EOI | Rule::WHITESPACE => Vec::<Token>::new(),
+            Rule::EOI | Rule::WHITESPACE => Vec::<Node>::new(),
         });
         Ok(tokens)
     }
 
     pub fn to_str(&self) -> String {
         match self.clone() {
-            Token::AnsiReset => colors::wrap_np(colors::reset()),
-            Token::Color(color) => colors::wrap_np(colors::fg(color)),
-            Token::BgColor(color) => colors::wrap_np(colors::bg(color)),
-            Token::Color(var) => var.to_string(),
-            Token::VcsParam(vcs, param) => {
+            Node::AnsiReset => colors::wrap_np(colors::reset()),
+            Node::Color(color) => colors::wrap_np(colors::fg(color)),
+            Node::BgColor(color) => colors::wrap_np(colors::bg(color)),
+            Node::Color(var) => var.to_string(),
+            Node::VcsParam(vcs, param) => {
                 format!("`$(ps1 --resolve {}:{})`", vcs, param)
             }
-            Token::KeyValueParam(key, value) => {
+            Node::KeyValueParam(key, value) => {
                 format!("`$(ps1 --resolve {}:{})`", key, value)
             }
-            Token::Unhandled(string) => string.to_string(),
+            Node::Unhandled(string) => string.to_string(),
         }
     }
 }
-impl std::fmt::Display for Token {
+impl std::fmt::Display for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.to_str())
     }
 }
-// impl std::fmt::Debug for Token {
+// impl std::fmt::Debug for Node {
 //     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 //         write!(f, "{:#?}", self.to_str())
 //     }
