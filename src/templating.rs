@@ -49,8 +49,11 @@ fn parse_str<'a, E: ParserError<&'a str>>(
 fn parse_markup<'a>(input: &mut &'a str) -> ModalResult<Node> {
     let original_input = input.to_string();
     let mut nodes = Vec::<Node>::new();
-
+    let mut iterations = 0;
     while input.len() > 0 {
+        iterations += 1;
+
+        dbg!(iterations, &input);
         if let Ok(markup) =
             preceded('{', cut_err(terminated(parse_str::<crate::ParseError>, '}')))
                 .context(StrContext::Label(
@@ -63,7 +66,8 @@ fn parse_markup<'a>(input: &mut &'a str) -> ModalResult<Node> {
                 "reset" => Node::Reset,
                 other => Node::Unhandled(other.to_string()),
             });
-        } else if let Ok(anything_else) = take_till::<_, &str, ParseError>(0.., |c| c != '{').parse_next(input)
+        } else if let Ok(anything_else) =
+            take_while::<_, &str, ParseError>(0.., |c| c != '{').parse_next(input)
         {
             nodes.push(Node::String(anything_else.to_string()));
         } else {
@@ -75,8 +79,14 @@ fn parse_markup<'a>(input: &mut &'a str) -> ModalResult<Node> {
             ));
         }
     }
-
-    Err(ParserError::from_input(input))
+    let total = nodes.len();
+    if total > 1 {
+        Ok(Node::Sequence(nodes))
+    } else if total == 1 {
+        Ok(nodes.pop().unwrap())
+    } else {
+        Err(ParserError::from_input(input))
+    }
 }
 
 //
@@ -96,7 +106,7 @@ mod tests {
     fn test_parse_hardcoded_reset_keyword_wrapped_in_braces_markup() -> crate::Result<()>
     {
         let mut input = "{reset}";
-        let result = dbg!(parse_markup(&mut input));
+        let result = parse_markup(&mut input);
 
         assert_equal!(result, Ok(Node::Reset));
 
