@@ -1,0 +1,20 @@
+// examples:
+// {color:#FB6B1D,layer:bg}
+// {color:terminal_foreground,layer:bg}
+// {color:resurrect-64:cold_green_medium,layer:bg}
+text           = ${ SOI ~ node* ~ EOI}
+
+rgb_hex        = @{ ASCII_HEX_DIGIT{6} }
+
+color_rgb_hex  = _{ "#"? ~ rgb_hex }
+color_rgb      = @{ ("color:" ~ color_rgb_hex) }
+
+color          = ${ color_rgb }
+
+inner          = _{ color }
+markup         = ${ "{" ~ inner ~ ("," ~ inner)*  ~ "}"}
+
+unhandled      = ${ (!(markup)) ~ (WHITESPACE | ASCII_ALPHANUMERIC | ANY)+ }
+
+node           = _{ markup | unhandled }
+WHITESPACE     = _{ " " | "\t" | "\n" }

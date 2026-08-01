@@ -1,110 +1,66 @@
 use crate::{Error, Layer, Result, Rule};
-use pest::iterators::Pair;
+use pest::{Span, iterators::Pair};
+use from_pest::FromPest;
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Node {
-    Color(Color),
-    Contrast(crate::contrast::Contrast),
-    Layer(crate::layer::Layer),
-    Reset(crate::reset::Reset),
-    Unhandled(String),
-    UnhandledRule(String, String),
-    InvalidMarkup(InvalidMarkupToken),
+fn span_into_str<'a>(span: Span<'a>) -> &'a str {
+    span.as_str()
+}
+fn span_into_string(span: Span) -> String {
+    span_into_str(span).to_string()
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct PaletteColor {
-    pub palette_name: String,
-    pub color_name: String,
-}
-impl std::fmt::Display for PaletteColor {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{palette}: {color}", palette = &self.palette_name, color = &self.color_name)
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Color {
-    FromPalette(PaletteColor), // (palette_name: String, color_name: String)
-    Named(String),
-    Terminal(Layer),
-    Rgb(String),
-}
-impl std::fmt::Display for Color {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.to_str())
-    }
-}
-
-impl Color {
-    pub fn to_str(&self) -> String {
-        match self {
-            Color::FromPalette(value) => {
-                value.to_string() // PaletteColor
-            }
-            Color::Named(value) => {
-                value.to_string() // String
-            }
-            Color::Terminal(value) => {
-                value.to_string() // Layer
-            }
-            Color::Rgb(value) => {
-                value.to_string() // crate::color::Color
-            }
-        }
-    }
-}
-
-impl Node {
-    fn u8_from_pair<'a>(pair: Pair<'a, Rule>) -> Result<u8> {
-        Ok(u8::from_str_radix(pair.as_span().as_str(), 10)
-            .map_err(|e| Error::ParseError(format!("{} (expected number from 0 to 255: {:#?})", e, pair.clone())))?)
-    }
-
-    pub fn from_pair<'a>(pair: Pair<'a, Rule>) -> Result<Vec<Node>> {
-        let mut tokens = Vec::<Node>::new();
-        tokens.extend(match pair.as_rule() {
-            Rule::node | Rule::text | Rule::inner | Rule::color_rgb_hex => {
-                let mut tokens = Vec::<Node>::new();
-                for node in pair.clone().into_inner() {
-                    tokens.extend(Node::from_pair(node)?);
-                }
-                tokens
-            }
-            Rule::unhandled => {
-                vec![Node::Unhandled(pair.as_span().as_str().to_string())]
-            }
-            Rule::reset => {
-                vec![Node::Unhandled(pair.as_span().as_str().to_string())]
-            }
-            Rule::EOI | Rule::WHITESPACE => Vec::<Node>::new(),
-            unknown => {
-                vec![Node::UnhandledRule(format!("{unknown:#?}"), pair.as_span().as_str().to_string())]
-
-            }
-        });
-        Ok(tokens)
-    }
-
-    pub fn to_str(&self) -> String {
-        String::new()
-    }
-}
-impl std::fmt::Display for Node {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.to_str())
-    }
-}
-// impl std::fmt::Debug for Node {
-//     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-//         write!(f, "{:#?}", self.to_str())
-//     }
+// #[derive(Debug, FromPest)]
+// #[pest_ast(rule(Rule::field))]
+// pub struct Field {
+//     #[pest_ast(outer(with(span_into_str), with(str::parse), with(Result::unwrap)))]
+//     pub value: f64,
 // }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum InvalidMarkupToken {
-    InvalidMarkupAllButClose(String), // @{ (!("}"))+ }
-    InvalidMarkupDoubleClose(String), // @{ (!("}"))+ ~ (("}") ~ (!("}"))* }
-    InvalidMarkupDoubleOpen(String),  // @{ (!("}"))+ ~ (("{") ~ (!("}"))* }
-    InvalidMarkupAny(String),         // @{ ANY+ }
+#[derive(Debug, FromPest)]
+#[pest_ast(rule(Rule::rgb_hex))]
+pub struct RgbHex {
+    #[pest_ast(outer(with(span_into_string)))]
+    pub value: String,
 }
+
+#[derive(Debug, FromPest)]
+#[pest_ast(rule(Rule::color_rgb))]
+pub struct ColorRgb {
+    pub hex: RgbHex,
+}
+
+#[derive(Debug, FromPest)]
+#[pest_ast(rule(Rule::color))]
+pub struct Color {
+    pub rgb: ColorRgb,
+}
+
+#[derive(Debug, FromPest)]
+#[pest_ast(rule(Rule::markup))]
+pub struct Markup {
+    pub color: Color,
+}
+#[derive(Debug, FromPest)]
+#[pest_ast(rule(Rule::unhandled))]
+pub struct Unhandled {
+    #[pest_ast(outer(with(span_into_string)))]
+    pub string: String,
+}
+
+#[derive(Debug, FromPest)]
+#[pest_ast(rule(Rule::node))]
+pub enum Node {
+    Markup(Markup),
+    Unhandled(Unhandled),
+}
+
+#[derive(Debug, FromPest)]
+#[pest_ast(rule(Rule::text))]
+pub struct Text {
+    pub nodes: Vec<Node>,
+    _eoi: Eoi,
+}
+
+#[derive(Debug, FromPest)]
+#[pest_ast(rule(Rule::EOI))]
+struct Eoi;

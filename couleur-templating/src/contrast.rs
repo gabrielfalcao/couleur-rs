@@ -4,9 +4,8 @@ use std::{
     fmt::Display,
 };
 
-use crate::{Color, Error, Layer, Result};
+use crate::{Error, Layer, Result};
 
-/// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
 pub enum Contrast {
     None,

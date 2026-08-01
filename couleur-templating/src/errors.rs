@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
-
+use from_pest::{Void, ConversionError};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Error {
     IOError(String),
@@ -65,6 +65,11 @@ impl From<toml::de::Error> for Error {
 impl From<sanitation::Error<'_>> for Error {
     fn from(e: sanitation::Error<'_>) -> Self {
         Error::SafetyError(format!("{}", e))
+    }
+}
+impl From<ConversionError<Void>> for Error {
+    fn from(e: ConversionError<Void>) -> Self {
+        Error::ParseError(e.to_string())
     }
 }
 pub type Result<T> = std::result::Result<T, Error>;
