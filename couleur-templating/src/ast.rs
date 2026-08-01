@@ -1,5 +1,5 @@
 use crate::{Error, Layer, Result, Rule};
-use pest::iterators::Pair;
+use pest::iterators::{Pair, Pairs};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Node {
@@ -7,6 +7,7 @@ pub enum Node {
     Contrast(crate::contrast::Contrast),
     Layer(crate::layer::Layer),
     Reset(crate::reset::Reset),
+    Markup(Markup),
     Unhandled(String),
     UnhandledRule(String, String),
     InvalidMarkup(InvalidMarkupToken),
@@ -53,8 +54,50 @@ impl Color {
             }
         }
     }
+
+    pub fn from_pair<'a>(pair: Pair<'a, Rule>) -> Result<Color> {
+        match pair.as_rule() {
+            Rule::color_rgb => Ok(Color::Rgb(pair.as_span().as_str().to_string())),
+            rule => unreachable!("rule {rule:#?} should not reach this code"),
+        }
+    }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum MarkupContent {
+    Color(Color),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Markup {
+    Color(Color),
+    Content(Vec<Markup>),
+    Unhandled(String),
+}
+impl Markup {
+    pub fn from_pair<'a>(pair: Pair<'a, Rule>) -> Result<Vec<Markup>> {
+        let mut result = Vec::new();
+        match pair.as_rule() {
+            Rule::color => {
+                for pair in pair.clone().into_inner() {
+                    result.push(Markup::Color(Color::from_pair(pair)?));
+                }
+            }
+            Rule::rgb_hex => {
+                result.push(Markup::Color(Color::from_pair(pair)?));
+            },
+            rule => unreachable!("rule {rule:#?} should not reach this code"),
+        }
+        Ok(result)
+    }
+    pub fn from_pairs<'a>(pairs: Pairs<'a, Rule>) -> Result<Vec<Markup>> {
+        let mut result = Vec::<Markup>::new();
+        for pair in pairs {
+            result.extend(Markup::from_pair(pair)?);
+        }
+        Ok(result)
+    }
+}
 impl Node {
     fn u8_from_pair<'a>(pair: Pair<'a, Rule>) -> Result<u8> {
         Ok(u8::from_str_radix(pair.as_span().as_str(), 10)
@@ -71,13 +114,15 @@ impl Node {
                 }
                 tokens
             }
+            Rule::markup => {
+                Markup::from_pairs(pair.clone().into_inner())?.into_iter().map(|markup| Node::Markup(markup)).collect::<Vec<Node>>()
+            }
             Rule::unhandled => {
                 vec![Node::Unhandled(pair.as_span().as_str().to_string())]
             }
             Rule::EOI | Rule::WHITESPACE => Vec::<Node>::new(),
             unknown => {
                 vec![Node::UnhandledRule(format!("{unknown:#?}"), pair.as_span().as_str().to_string())]
-
             }
         });
         Ok(tokens)
