@@ -1,16 +1,26 @@
-// use crate::{Error, Result};
+use crate::ParseError;
 use winnow::{
     ModalResult,
     Parser,
     Result,
     ascii::{alpha1, alphanumeric1 as alphanumeric, float, take_escaped},
-    combinator::{alt, cut_err, delimited, preceded, repeat, repeat_till, separated, separated_pair, terminated},
-    error::{ContextError, ParserError, StrContext},
+    combinator::{
+        alt,
+        cut_err,
+        delimited,
+        impls::Context,
+        preceded,
+        repeat,
+        repeat_till,
+        separated,
+        separated_pair,
+        terminated,
+    },
+    error::{ContextError, ErrMode, ParserError, StrContext},
     prelude::*,
     stream::{Offset, Stream},
-    token::{literal, none_of, one_of, rest, take_until, take_while},
+    token::{literal, none_of, one_of, rest, take_till, take_while},
 };
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Node {
     Sequence(Vec<Node>),
@@ -20,50 +30,56 @@ pub enum Node {
     None,
 }
 
-fn parse_str<'a, E: ParserError<&'a str>>(input: &mut &'a str) -> ModalResult<&'a str, E> {
+fn parse_str<'a, E: ParserError<&'a str>>(
+    input: &mut &'a str,
+) -> ModalResult<&'a str, E> {
     alpha1.parse_next(input)
 }
-
+// fn markup_parser<I, Ignored, O, E, IgnoredParser, ParseNext>()
+// -> impl Parser<I, O, E>
+// where
+//     I: Stream,
+//     E: ParserError<I>,
+//     IgnoredParser: Parser<I, Ignored, E>,
+//     ParseNext: Parser<I, O, E>,
+// {
+//     preceded('{', cut_err(terminated(parse_str::<crate::ParseError>, '}')))
+//     //        .context(StrContext::Label("trying to parse markup wrapped by curly braces"))
+// }
 fn parse_markup<'a>(input: &mut &'a str) -> ModalResult<Node> {
-    // // preceded('{', cut_err(terminated(alpha1, '}'))).context(StrContext::Label("markup")).parse_next(input)
-    // delimited("{", alpha1, "}").parse_next(&mut input)
-    let start = input.checkpoint();
+    let original_input = input.to_string();
+    let mut nodes = Vec::<Node>::new();
 
-    // alt((
-    //     alph
-    //         preceded('{', cut_err(terminated(parse_str, '}')))
-    //             .context(StrContext::Label("trying to parse markup wrapped by curly braces"))
-    //             ))
-    //     .parse_next(input)
-    if let Ok(markup) = preceded('{', cut_err(terminated(parse_str::<crate::ParseError>, '}')))
-        .context(StrContext::Label("trying to parse markup wrapped by curly braces"))
-        .parse_next(input)
-        .map(|value| value.to_string())
-    {
-        return Ok(match markup.as_str() {
-            "reset" => Node::Reset,
-            other => Node::Unhandled(other.to_string()),
-        });
-    }
-    input.reset(&start);
-
-    if let Ok(anything_else) = rest::<&str, ContextError>.parse_next(input) {
-        return Ok(Node::String(anything_else.to_string()));
+    while input.len() > 0 {
+        if let Ok(markup) =
+            preceded('{', cut_err(terminated(parse_str::<crate::ParseError>, '}')))
+                .context(StrContext::Label(
+                    "trying to parse markup wrapped by curly braces",
+                ))
+                .parse_next(input)
+                .map(|value: &str| value.to_string())
+        {
+            nodes.push(match markup.as_str() {
+                "reset" => Node::Reset,
+                other => Node::Unhandled(other.to_string()),
+            });
+        } else if let Ok(anything_else) = take_till::<_, &str, ParseError>(0.., |c| c != '{').parse_next(input)
+        {
+            nodes.push(Node::String(anything_else.to_string()));
+        } else {
+            return Err(ErrMode::Cut(
+                ParseError::new("unexpected case")
+                    .with_input(original_input.to_string())
+                    .with_context("trying to parse markup")
+                    .into(),
+            ));
+        }
     }
 
     Err(ParserError::from_input(input))
 }
 
-// fn parse_nodes<'a>(input: &mut &'a str) -> Result<Node<'a>> {
-//     let result = delimited("{", none_of(['}', '{']), "}");.parse_next(input)
 //
-//     // let actual = input.next_slice(expected.len());
-//     // if actual != expected {
-//     //     return Err(ParserError::from_input(input));
-//     // }
-//     // Ok(actual)
-//     Ok(Node::None)
-// }
 
 #[cfg(test)]
 mod tests {
@@ -77,7 +93,8 @@ mod tests {
     use k9::assert_equal;
 
     #[test]
-    fn test_parse_hardcoded_reset_keyword_wrapped_in_braces_markup() -> crate::Result<()> {
+    fn test_parse_hardcoded_reset_keyword_wrapped_in_braces_markup() -> crate::Result<()>
+    {
         let mut input = "{reset}";
         let result = dbg!(parse_markup(&mut input));
 
@@ -86,6 +103,20 @@ mod tests {
         Ok(())
     }
 
-//
-//
+    #[test]
+    fn test_parse_reset_surrounded_by_arbitrary_strings() -> crate::Result<()> {
+        let mut input = "hello {reset} world";
+        let result = dbg!(parse_markup(&mut input));
+
+        assert_equal!(
+            result,
+            Ok(Node::Sequence(vec![
+                Node::String("hello ".to_string()),
+                Node::Reset,
+                Node::String(" world".to_string())
+            ]))
+        );
+
+        Ok(())
+    }
 }

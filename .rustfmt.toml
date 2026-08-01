@@ -1,9 +1,9 @@
 # https://rust-lang.github.io/rustfmt/?version=main&search=
-max_width =  137
+max_width =  88
 
-array_width =  137
+array_width =  88
 attr_fn_like_width =  137
-chain_width =  137
+chain_width =  88
 comment_width =  137
 doc_comment_code_block_width =  137
 fn_call_width =  137
