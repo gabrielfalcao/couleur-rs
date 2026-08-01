@@ -1,6 +1,6 @@
 use crate::{Error, Layer, Result, Rule};
 use pest::{Span, iterators::Pair};
-use from_pest::FromPest;
+use pest_ast::FromPest;
 
 fn span_into_str<'a>(span: Span<'a>) -> &'a str {
     span.as_str()

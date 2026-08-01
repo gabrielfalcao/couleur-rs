@@ -1,9 +1,5 @@
 #![allow(unused)]
 
-#[macro_use] extern crate pest_derive;
-extern crate from_pest;
-#[macro_use] extern crate pest_ast;
-extern crate pest;
 use from_pest::FromPest;
 
 pub mod errors;
