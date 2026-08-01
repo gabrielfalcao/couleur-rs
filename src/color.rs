@@ -1,4 +1,4 @@
-use std::{ops::Deref, str::FromStr, sync::LazyLock};
+use std::{fmt::Display, ops::Deref, str::FromStr, sync::LazyLock};
 
 use regex::Regex;
 use serde::{
@@ -22,6 +22,7 @@ use crate::{
     Reset,
     Result,
     RgbTriple,
+    TRIPLE_RGB_REGEX,
     Terminal,
     ToAnsi,
     Value,
@@ -31,10 +32,12 @@ use crate::{
 };
 
 /// static instance of [`Color`] which holds the absolute black RGB color.
-pub static BLACK: LazyLock<Color> = LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
+pub static BLACK: LazyLock<Color> =
+    LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
 
 /// static instance of [`Color`] which holds the absolute white RGB color.
-pub static WHITE: LazyLock<Color> = LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
+pub static WHITE: LazyLock<Color> =
+    LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
 
 use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
@@ -52,7 +55,11 @@ pub struct Color(
 impl Color {
     /// Creates a new color from the given red, green and blue values which should be of a type convertible [`Into<f32>`]
     pub fn new<T: Copy + Into<f32>>(red: T, green: T, blue: T) -> Result<Color> {
-        Ok(Color(Value::new(red.into())?, Value::new(green.into())?, Value::new(blue.into())?))
+        Ok(Color(
+            Value::new(red.into())?,
+            Value::new(green.into())?,
+            Value::new(blue.into())?,
+        ))
     }
 
     /// queries the [`Terminal`] for the background color,
@@ -174,6 +181,78 @@ impl Color {
         format!("#{red:X}{green:X}{blue:X}")
     }
 
+    /// Attempts to parse a [`Color`] from a string containing hex RGB representation of color
+    pub fn from_hex_string<T: Display>(input: T) -> Result<Color> {
+        let s = input.to_string();
+        match HEX_RGB_REGEX.captures(&s) {
+            Some(captures) => {
+                let red_value =
+                    captures.name("red").map(|s| s.as_str().to_string()).expect("red");
+                let green_value = captures
+                    .name("green")
+                    .map(|s| s.as_str().to_string())
+                    .expect("green");
+                let blue_value = captures
+                    .name("blue")
+                    .map(|s| s.as_str().to_string())
+                    .expect("blue");
+                let red = u8::from_str_radix(
+                    &captures.name("red").map(|s| s.as_str().to_string()).unwrap(),
+                    16,
+                )?;
+                let green = u8::from_str_radix(
+                    &captures.name("green").map(|s| s.as_str().to_string()).unwrap(),
+                    16,
+                )?;
+                let blue = u8::from_str_radix(
+                    &captures.name("blue").map(|s| s.as_str().to_string()).unwrap(),
+                    16,
+                )?;
+                let r = Value::from_u8(red)?;
+                let g = Value::from_u8(green)?;
+                let b = Value::from_u8(blue)?;
+                Ok(Color(r, g, b))
+            }
+            None => Err(RGBParseError::HexParseError(s.to_string()).into()),
+        }
+    }
+    /// Attempts to parse a [`Color`] from a string containing 3 numbers between 0 and 255 separated by commas and, optionally, spaces.
+    pub fn from_triple_string<T: Display>(input: T) -> Result<Color> {
+        let s = input.to_string();
+        match TRIPLE_RGB_REGEX.captures(&s) {
+            Some(captures) => {
+                let red_value =
+                    captures.name("red").map(|s| s.as_str().to_string()).expect("red");
+                let green_value = captures
+                    .name("green")
+                    .map(|s| s.as_str().to_string())
+                    .expect("green");
+                let blue_value = captures
+                    .name("blue")
+                    .map(|s| s.as_str().to_string())
+                    .expect("blue");
+                let red = u8::from_str_radix(
+                    &captures.name("red").map(|s| s.as_str().to_string()).unwrap(),
+                    10,
+                ).map_err(|e| RGBParseError::TripleParseError(format!("the red band should be a real number between 0 and 255 but instead got {red_value}")))?;
+                let green = u8::from_str_radix(
+                    &captures.name("green").map(|s| s.as_str().to_string()).unwrap(),
+                    10,
+                ).map_err(|e| RGBParseError::TripleParseError(format!("the green band should be a real number between 0 and 255 but instead got {green_value}")))?;
+                let blue = u8::from_str_radix(
+                    &captures.name("blue").map(|s| s.as_str().to_string()).unwrap(),
+                    10,
+                ).map_err(|e| RGBParseError::TripleParseError(format!("the blue band should be a real number between 0 and 255 but instead got {blue_value}")))?;
+
+                let r = Value::from_u8(red)?;
+                let g = Value::from_u8(green)?;
+                let b = Value::from_u8(blue)?;
+                Ok(Color(r, g, b))
+            }
+            None => Err(RGBParseError::TripleParseError(s.to_string()).into()),
+        }
+    }
+
     /// Returns a [`Color`] from three [`Value`] values representing red, green and blue.
     pub fn from_triple(red: Value, green: Value, blue: Value) -> Color {
         Color(red, green, blue)
@@ -213,7 +292,11 @@ impl Color {
         let max_val = max_rgb(r, g, b);
         let min_val = min_rgb(r, g, b);
         let target = max_val + min_val;
-        Color((target - r).copysign(&1.0).into(), (target - g).copysign(&1.0).into(), (target - b).copysign(&1.0).into())
+        Color(
+            (target - r).copysign(&1.0).into(),
+            (target - g).copysign(&1.0).into(),
+            (target - b).copysign(&1.0).into(),
+        )
     }
 
     /// Returns the perceived brightness via WCAG (Web Content
@@ -232,9 +315,15 @@ impl Color {
 
         for c in channels {
             if c <= 0.04045 {
-                linear.push(Value::from_f32(*(c / 12.92)).expect("value between 0 and 255 inclusive"))
+                linear.push(
+                    Value::from_f32(*(c / 12.92))
+                        .expect("value between 0 and 255 inclusive"),
+                )
             } else {
-                linear.push(Value::from_f32(*((c + 0.055) / 1.055) * 2.4).expect("value between 0 and 255 inclusive"))
+                linear.push(
+                    Value::from_f32(*((c + 0.055) / 1.055) * 2.4)
+                        .expect("value between 0 and 255 inclusive"),
+                )
             }
         }
         let luminance = 0.2126 * *linear[0] + 0.7152 * *linear[1] + 0.0722 * *linear[2];
@@ -254,13 +343,18 @@ impl Color {
 
     /// Returns a string which renders the current color as an ANSI sequence in the given [`Layer`] and [`Prefix`].
     pub fn to_ansi_with_prefix(&self, layer: Layer, prefix: Option<Prefix>) -> String {
-        let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
+        let triple =
+            self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
         let color = triple.join(";");
         let mut parts = Vec::<String>::new();
         parts.push(layer.code().to_string());
         parts.push("2".to_string());
         parts.push(format!("{color}m"));
-        format!("{prefix}[{code}", prefix = prefix.unwrap_or_default(), code = parts.join(";"))
+        format!(
+            "{prefix}[{code}",
+            prefix = prefix.unwrap_or_default(),
+            code = parts.join(";")
+        )
     }
 
     pub fn wrap_ansi(
@@ -381,7 +475,11 @@ impl Color {
 }
 impl From<RgbTriple> for Color {
     fn from(triple: RgbTriple) -> Color {
-        Color(Value::from(triple.red()), Value::from(triple.green()), Value::from(triple.blue()))
+        Color(
+            Value::from(triple.red()),
+            Value::from(triple.green()),
+            Value::from(triple.blue()),
+        )
     }
 }
 
@@ -390,8 +488,13 @@ impl From<RgbTriple> for Color {
 /// This enum is the `Err` error type used in the [`std::str::FromStr#required-associated-types`] implementation for [`Color`]
 #[derive(Clone, Debug, ThisError, Serialize, Deserialize)]
 pub enum RGBParseError {
-    #[error("failed to parse color {0}")]
+    #[error("failed to parse RGB color from hexadecimal representation {0}")]
     HexParseError(String),
+    #[error("failed to parse RGB color {0} from triple of decimals between 0 and 255")]
+    TripleParseError(String),
+
+    #[error("could not parse color at all because {hex:#?} and {triple:#?}")]
+    ParseError { hex: String, triple: String },
 }
 
 impl<T> From<(T, T, T)> for Color
@@ -412,30 +515,32 @@ where
 }
 
 impl FromStr for Color {
-    type Err = Error;
+    type Err = RGBParseError;
 
-    fn from_str(s: &str) -> Result<Color> {
-        match HEX_RGB_REGEX.captures(s) {
-            Some(captures) => {
-                let red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
-                let green_value = captures.name("green").map(|s| s.as_str().to_string()).expect("green");
-                let blue_value = captures.name("blue").map(|s| s.as_str().to_string()).expect("blue");
-                let red = u8::from_str_radix(&captures.name("red").map(|s| s.as_str().to_string()).unwrap(), 16)?;
-                let green = u8::from_str_radix(&captures.name("green").map(|s| s.as_str().to_string()).unwrap(), 16)?;
-                let blue = u8::from_str_radix(&captures.name("blue").map(|s| s.as_str().to_string()).unwrap(), 16)?;
-                let r = Value::from_u8(red)?;
-                let g = Value::from_u8(green)?;
-                let b = Value::from_u8(blue)?;
-                Ok(Color(r, g, b))
-            }
-            None => Err(RGBParseError::HexParseError(s.to_string()).into()),
-        }
+    fn from_str(s: &str) -> std::result::Result<Color, RGBParseError> {
+        Ok(Color::from_hex_string(s).or_else(|hex| {
+            Color::from_triple_string(s).map_err(|triple| {
+                RGBParseError::ParseError {
+                    hex: hex.to_string(),
+                    triple: triple.to_string(),
+                }
+                .into()
+            })
+        })?)
     }
 }
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "#{}", self.to_triple().iter().map(|c| format!("{:02X}", c.into_u8())).collect::<Vec<String>>().join(""))
+        write!(
+            f,
+            "#{}",
+            self.to_triple()
+                .iter()
+                .map(|c| format!("{:02X}", c.into_u8()))
+                .collect::<Vec<String>>()
+                .join("")
+        )
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::ParseError;
+use crate::{Color, ParseError};
 use winnow::{
     ModalResult,
     Parser,
@@ -25,6 +25,7 @@ use winnow::{
 pub enum Node {
     Sequence(Vec<Node>),
     String(String),
+    Color(Color),
     Unhandled(String),
     Reset,
     None,
@@ -49,11 +50,8 @@ fn parse_str<'a, E: ParserError<&'a str>>(
 fn parse_markup<'a>(input: &mut &'a str) -> ModalResult<Node> {
     let original_input = input.to_string();
     let mut nodes = Vec::<Node>::new();
-    let mut iterations = 0;
-    while input.len() > 0 {
-        iterations += 1;
 
-        dbg!(iterations, &input);
+    while input.len() > 0 {
         if let Ok(markup) =
             preceded('{', cut_err(terminated(parse_str::<crate::ParseError>, '}')))
                 .context(StrContext::Label(
@@ -124,6 +122,24 @@ mod tests {
                 Node::String("hello ".to_string()),
                 Node::Reset,
                 Node::String(" world".to_string())
+            ]))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_color_rgb_hex_with_hash_prefix() -> crate::Result<()> {
+        let mut input = "hello {color:#1EBC73} world{reset}";
+        let result = dbg!(parse_markup(&mut input));
+
+        assert_equal!(
+            result,
+            Ok(Node::Sequence(vec![
+                Node::String("hello ".to_string()),
+                Node::Color("#1EBC73".parse::<crate::Color>()?),
+                Node::String(" world".to_string()),
+                Node::Reset,
             ]))
         );
 

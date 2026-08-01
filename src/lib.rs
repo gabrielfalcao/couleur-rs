@@ -6,7 +6,10 @@
 //! let light_pink = "#FCA790".parse::<Color>()?;
 //! let lightest_pink = "#FDCBB0".parse::<Color>()?;
 //!
-//! assert_eq!(dark_pink.to_triple(), (Value::from_u8(0xC3)?, Value::from_u8(0x24)?, Value::from_u8(0x54)?));
+//! assert_eq!(
+//!     dark_pink.to_triple(),
+//!     (Value::from_u8(0xC3)?, Value::from_u8(0x24)?, Value::from_u8(0x54)?)
+//! );
 //!
 //! assert_eq!(lightest_pink.get_adobe_complementary().to_hex_string(), "#B0E2FD");
 //! assert_eq!(lightest_pink.get_accessible_contrast().to_hex_string(), "#000000");
@@ -34,14 +37,22 @@ use std::sync::LazyLock;
 #[doc(inline)] pub use contrast::Contrast;
 
 #[doc(hidden)] pub mod dispatch;
-#[doc(inline)] pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
+#[doc(inline)]
+pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
 
 #[doc(hidden)] pub mod errors;
 #[doc(hidden)] pub use errors::Exit;
-#[doc(inline)] pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, Result};
+#[doc(inline)] pub use errors::{
+    ConversionToF32Error,
+    ConversionToU8Error,
+    Error,
+    ParseError,
+    Result,
+};
 
 #[doc(hidden)] pub mod float;
-#[doc(inline)] pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
+#[doc(inline)]
+pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
 
 #[doc(hidden)] pub mod layer;
 #[doc(inline)] pub use layer::Layer;
