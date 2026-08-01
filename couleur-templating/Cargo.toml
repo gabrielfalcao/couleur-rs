@@ -17,3 +17,13 @@ toml = "1.1.4"
 
 [dev-dependencies]
 k9 = "0.12.0"
+
+
+[lib]
+name = "couleur_templating"
+path = "src/lib.rs"
+
+
+[[bin]]
+name = "couleur-templating"
+path = "src/main.rs"
