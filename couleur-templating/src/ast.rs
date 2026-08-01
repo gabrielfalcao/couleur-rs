@@ -74,9 +74,6 @@ impl Node {
             Rule::unhandled => {
                 vec![Node::Unhandled(pair.as_span().as_str().to_string())]
             }
-            Rule::reset => {
-                vec![Node::Unhandled(pair.as_span().as_str().to_string())]
-            }
             Rule::EOI | Rule::WHITESPACE => Vec::<Node>::new(),
             unknown => {
                 vec![Node::UnhandledRule(format!("{unknown:#?}"), pair.as_span().as_str().to_string())]

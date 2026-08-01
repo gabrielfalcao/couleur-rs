@@ -14,7 +14,6 @@ pub use reset::Reset;
 pub mod ast;
 pub use ast::{Color, InvalidMarkupToken, Node, PaletteColor};
 
-
 #[derive(Parser, Debug, Clone)]
 #[grammar = "src/grammar.pest"]
 pub struct Definition;
@@ -26,7 +25,7 @@ pub fn parse_tokens(input: &str) -> Result<Vec<Node>> {
         Ok(pairs) => pairs,
         Err(e) => {
             log::warn!("{e}");
-            return Err(Error::ParseError(e.to_string()))
+            return Err(Error::ParseError(e.to_string()));
         }
     };
     let text = pairs.next().unwrap();

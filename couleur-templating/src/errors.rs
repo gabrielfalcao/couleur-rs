@@ -52,19 +52,4 @@ impl From<iocore::Error> for Error {
         Error::IOError(format!("{}", e))
     }
 }
-impl From<toml::ser::Error> for Error {
-    fn from(e: toml::ser::Error) -> Self {
-        Error::ConfigError(format!("{}", e))
-    }
-}
-impl From<toml::de::Error> for Error {
-    fn from(e: toml::de::Error) -> Self {
-        Error::ConfigError(format!("{}", e))
-    }
-}
-impl From<sanitation::Error<'_>> for Error {
-    fn from(e: sanitation::Error<'_>) -> Self {
-        Error::SafetyError(format!("{}", e))
-    }
-}
 pub type Result<T> = std::result::Result<T, Error>;
