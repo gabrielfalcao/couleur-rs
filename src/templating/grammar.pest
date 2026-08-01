@@ -2,7 +2,7 @@
 // {color:#FB6B1D,layer:bg}
 // {color:terminal_foreground,layer:bg}
 // {color:resurrect-64:cold_green_medium,layer:bg}
-text                                             = ${ SOI ~ token* ~ EOI}
+text                                             = ${ SOI ~ node* ~ EOI}
 
 rgb_hex                                          = @{ ASCII_HEX_DIGIT{6} }
 
@@ -11,6 +11,7 @@ color_rgb                                        = @{ ("color:" ~ color_rgb_hex)
 
 reset                                            = @{ "reset" }
 color_name                                       = @{ ASCII_ALPHANUMERIC+ ~ ("_"+ ~ ASCII_ALPHANUMERIC+)* }
+palette_name                                     = @{ ASCII_ALPHANUMERIC+ ~ (("_" | "-")+ ~ ASCII_ALPHANUMERIC+)* }
 
 color_from_palette                               = ${ ("color:" ~ palette_name ~ ":" ~ color_name) }
 color_named                                      = ${ ("color:" ~ color_name) }
@@ -37,14 +38,14 @@ contrast                                         = ${ "contrast:" ~ (contrast_no
 inner                                            = _{ color | layer | reset | contrast }
 markup                                           = ${ "{" ~ inner ~ ("," ~ inner)*  ~ "}"}
 
-invalid_markup_all_but_close                     = @{ (!("}"))+ }
-invalid_markup_double_close                      = @{ (!("}"))+ ~ (("}") ~ (!("}"))* }
-invalid_markup_double_open                       = @{ (!("}"))+ ~ (("{") ~ (!("}"))* }
+invalid_markup_all_but_close                     = @{ (!("}")+) }
+invalid_markup_double_close                      = @{ (!("}")+) ~ (("}") ~ (!("}")))* }
+invalid_markup_double_open                       = @{ (!("}")+) ~ (("{") ~ (!("}")))* }
 invalid_markup_any                               = @{ ANY+ }
-invalid_markup_inner                             = ${ (invalid_markup_all_but_close | invalid_markup_double_close | invalid_markup_double_open | invalid_markup_any)}
-invalid_markup                                   = ${ "{" ~ invalid_markup_inner*  ~ "}"}
+invalid_markup_inner                             = ${ (invalid_markup_all_but_close | invalid_markup_double_close | invalid_markup_double_open | invalid_markup_any) }
+invalid_markup                                   = ${ "{" ~ invalid_markup_inner?  ~ "}"}
 
 unhandled                                        = ${ (!(markup) ~ !(invalid_markup)) ~ (WHITESPACE | ASCII_ALPHANUMERIC | ANY)+ }
 
-token                                            = _{ markup | invalid_markup | unhandled }
+node                                             = _{ markup | invalid_markup | unhandled }
 WHITESPACE                                       = _{ " " | "\t" | "\n" }
