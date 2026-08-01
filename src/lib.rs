@@ -38,7 +38,7 @@ use std::sync::LazyLock;
 
 #[doc(hidden)] pub mod errors;
 #[doc(hidden)] pub use errors::Exit;
-#[doc(inline)] pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Result};
+#[doc(inline)] pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, Result};
 
 #[doc(hidden)] pub mod float;
 #[doc(inline)] pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
@@ -63,8 +63,7 @@ use std::sync::LazyLock;
 #[doc(hidden)] pub mod triples;
 #[doc(inline)] pub use triples::{RgbTriple, U8Triple};
 
-#[doc(hidden)]
-pub mod state;
+#[doc(hidden)] pub mod state;
 // #[doc(inline)]
 pub use state::{ColorPalette, Context};
 
@@ -86,3 +85,5 @@ pub use util::{
 };
 
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
+
+pub mod templating;
