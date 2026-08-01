@@ -1,0 +1,51 @@
+// examples:
+// {color:#FB6B1D,layer:bg}
+// {color:terminal_foreground,layer:bg}
+// {color:resurrect-64:cold_green_medium,layer:bg}
+text                                             = ${ SOI ~ node* ~ EOI}
+
+rgb_hex                                          = @{ ASCII_HEX_DIGIT{6} }
+
+color_rgb_hex                                    = _{ "#"? ~ rgb_hex }
+color_rgb                                        = @{ ("color:" ~ color_rgb_hex) }
+
+reset                                            = @{ "reset" }
+color_name                                       = @{ ASCII_ALPHANUMERIC+ ~ ("_"+ ~ ASCII_ALPHANUMERIC+)* }
+palette_name                                     = @{ ASCII_ALPHANUMERIC+ ~ (("_" | "-")+ ~ ASCII_ALPHANUMERIC+)* }
+
+color_from_palette                               = ${ ("color:" ~ palette_name ~ ":" ~ color_name) }
+color_named                                      = ${ ("color:" ~ color_name) }
+
+
+layer_bg                                         = @{ (^"bg" | ^"background") }
+layer_fg                                         = @{ (^"fg" | ^"foreground") }
+layer_inner                                      = ${ layer_bg | layer_fg }
+
+layer                                            = ${ ("layer:" ~ (layer_bg | layer_fg)) }
+terminal_layer                                   = ${ ("terminal_" ~ layer_inner)}
+
+color_terminal                                   = ${ ("color:" ~ terminal_layer) }
+color                                            = ${ color_rgb | color_from_palette | color_named }
+
+
+contrast_none                                    = @{ (^"none") }
+contrast_read                                    = @{ (^"read") }
+contrast_high_bit                                = @{ (^"high_bit") }
+contrast_harmonic                                = @{ (^"harmonic") }
+contrast_web                                     = @{ (^"web") }
+
+contrast                                         = ${ "contrast:" ~ (contrast_none | contrast_read | contrast_high_bit | contrast_harmonic | contrast_web) }
+inner                                            = _{ color | layer | reset | contrast }
+markup                                           = ${ "{" ~ inner ~ ("," ~ inner)*  ~ "}"}
+
+invalid_markup_all_but_close                     = @{ (!("}")+) }
+invalid_markup_double_close                      = @{ (!("}")+) ~ (("}") ~ (!("}")))* }
+invalid_markup_double_open                       = @{ (!("}")+) ~ (("{") ~ (!("}")))* }
+invalid_markup_any                               = @{ ANY+ }
+invalid_markup_inner                             = ${ (invalid_markup_all_but_close | invalid_markup_double_close | invalid_markup_double_open | invalid_markup_any) }
+invalid_markup                                   = ${ "{" ~ invalid_markup_inner?  ~ "}"}
+
+unhandled                                        = ${ (!(markup) ~ !(invalid_markup)) ~ (WHITESPACE | ASCII_ALPHANUMERIC | ANY)+ }
+
+node                                             = _{ markup | invalid_markup | unhandled }
+WHITESPACE                                       = _{ " " | "\t" | "\n" }
