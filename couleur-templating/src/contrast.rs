@@ -23,16 +23,6 @@ impl Display for Contrast {
 }
 
 impl Contrast {
-    pub fn apply(&self, color: Color, layer: Layer) -> Color {
-        match self {
-            Contrast::None => layer.default_color(),
-            Contrast::Read => color.get_accessible_contrast(),
-            Contrast::HighBit => color.get_binary_contrast(),
-            Contrast::Harmonic => color.get_adobe_complementary(),
-            Contrast::Web => color.get_msb_invert_contrast(),
-        }
-    }
-
     pub fn is_none(self) -> bool {
         self == Contrast::None
     }
@@ -59,7 +49,7 @@ impl Contrast {
         &[Contrast::Read, Contrast::HighBit, Contrast::Harmonic, Contrast::Web]
     }
 
-    fn to_possible_strings(&self) -> [String; 4] {
+    fn to_possible_strings(&self) -> [String; 1] {
         [self.variant_name_snake().to_string()]
     }
 }

@@ -1,4 +1,4 @@
-use crate::{Error, Layer, Result};
+use crate::{Error, Layer, Result, Rule};
 use pest::iterators::Pair;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -8,6 +8,7 @@ pub enum Node {
     Layer(crate::layer::Layer),
     Reset(crate::reset::Reset),
     Unhandled(String),
+    UnhandledRule(String, String),
     InvalidMarkup(InvalidMarkupToken),
 }
 
@@ -15,6 +16,11 @@ pub enum Node {
 pub struct PaletteColor {
     pub palette_name: String,
     pub color_name: String,
+}
+impl std::fmt::Display for PaletteColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{palette}: {color}", palette = &self.palette_name, color = &self.color_name)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -58,7 +64,7 @@ impl Node {
     pub fn from_pair<'a>(pair: Pair<'a, Rule>) -> Result<Vec<Node>> {
         let mut tokens = Vec::<Node>::new();
         tokens.extend(match pair.as_rule() {
-            Rule::node | Rule::ps1 | Rule::replacement => {
+            Rule::node | Rule::text | Rule::inner | Rule::color_rgb_hex => {
                 let mut tokens = Vec::<Node>::new();
                 for node in pair.clone().into_inner() {
                     tokens.extend(Node::from_pair(node)?);
@@ -69,9 +75,13 @@ impl Node {
                 vec![Node::Unhandled(pair.as_span().as_str().to_string())]
             }
             Rule::reset => {
-                vec![Node::AnsiReset]
+                vec![Node::Unhandled(pair.as_span().as_str().to_string())]
             }
             Rule::EOI | Rule::WHITESPACE => Vec::<Node>::new(),
+            unknown => {
+                vec![Node::UnhandledRule(format!("{unknown:#?}"), pair.as_span().as_str().to_string())]
+
+            }
         });
         Ok(tokens)
     }

@@ -44,7 +44,7 @@ impl Layer {
         &[Layer::BG, Layer::FG]
     }
 
-    fn to_possible_strings(&self) -> [String; 4] {
+    fn to_possible_strings(&self) -> [String; 1] {
         [self.variant_name_snake().to_string()]
     }
 }
