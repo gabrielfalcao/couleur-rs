@@ -4,8 +4,10 @@ SRC_ROOT		:= $(PROJECT_ROOT)/src
 TEST_ROOT		:= $(PROJECT_ROOT)/tests
 
 
-# all: run test
-all: cls hex-to-bin
+# # all: run test
+# all: cls hex-to-bin
+all: test
+
 
 hex-to-bin:
 	cargo run --bin hex-to-bin ./palettes/cs108.hex
@@ -24,7 +26,7 @@ run: cls
 	cargo run -q -- --contrast web --bg 333333 --detect test foreground
 
 test: cls
-	cargo test -q
+	cargo test
 
 nextest: cls
 	cargo nextest run
