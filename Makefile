@@ -12,6 +12,9 @@ all: test
 hex-to-bin:
 	cargo run --bin hex-to-bin ./palettes/cs108.hex
 
+contrast:
+	cargo run --bin contrast web "#E83B3B" "Hello World"
+
 run: cls
 	@printf "testing background\n\n"
 	cargo run -q -- --bg FFCC00  --fg CCCCCC --detect test background

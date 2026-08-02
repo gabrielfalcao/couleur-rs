@@ -18,7 +18,22 @@ pub enum Reset {
 }
 impl ToAnsi for Reset {
     fn as_ansi_suffix(&self) -> String {
-        Reset::code().to_string()
+        Self::ansi_suffix().unwrap()
+    }
+    fn ansi_suffix() -> Option<String> {
+        Some(Reset::code().to_string())
+    }
+    fn render_ansi<T: Display>(&self, text: T, prefix: Option<Prefix>) -> String {
+        let text = text.to_string();
+        let mut output_parts = Vec::<String>::new();
+        if *self == Reset::Before || *self == Reset::Around {
+            output_parts.push(Self::to_ansi(prefix));
+        }
+        output_parts.push(text);
+        if *self == Reset::After || *self == Reset::Around {
+            output_parts.push(Self::to_ansi(prefix));
+        }
+        output_parts.join("")
     }
 }
 
@@ -31,8 +46,8 @@ impl Reset {
     pub fn code() -> &'static str {
         "[0m"
     }
-    pub fn to_ansi(&self, prefix: Option<Prefix>) -> String {
-        format!("{prefix}{code}", prefix = prefix.unwrap_or_default(), code = self.as_ansi_suffix())
+    pub fn to_ansi(prefix: Option<Prefix>) -> String {
+        format!("{prefix}{code}", prefix = prefix.unwrap_or_default(), code = Self::ansi_suffix().unwrap())
     }
 
     pub fn variant_name_snake(&self) -> &'static str {
