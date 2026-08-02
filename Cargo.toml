@@ -16,9 +16,10 @@ repository = "https://github.com/gabrielfalcao/couleur-rs"
 keywords = ["color", "ansi", "unix", "system"]
 authors = ["Gabriel DeMoura <gabrielteratos@gmail.com>"]
 categories = ["command-line-interface"]
-# default-run = "couleur"
-default-run = "hex-to-bin"
-# default-run = "terminal-info"
+# # default-run = "couleur"
+# default-run = "hex-to-bin"
+# # default-run = "terminal-info"
+default-run = "contrast"
 
 # categories = [] # https://crates.io/category_slugs
 [dependencies]
@@ -34,8 +35,7 @@ terminal-colorsaurus = "1.0.3"
 thiserror = "2.0.18"
 serde_json = "1.0.150"
 serde_yaml = "0.9.34"
-pest = { version = "2.8.8", features = ["pretty-print"] }
-pest_derive = "2.8.8"
+winnow = "1.0.4"
 
 
 [package.metadata]
@@ -71,6 +71,13 @@ test = false
 [[bin]]
 name = "terminal-info"
 path = "src/bin/terminal-info.rs"
+bench = false
+doc = false
+test = false
+
+[[bin]]
+name = "contrast"
+path = "src/bin/contrast.rs"
 bench = false
 doc = false
 test = false
