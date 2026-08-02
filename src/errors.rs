@@ -1,13 +1,12 @@
+use crate::color::RGBParseError;
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::Display,
     num::{ParseFloatError, ParseIntError},
 };
+use winnow::stream::Stream;
+use winnow::error::{AddContext, ContextError, ErrMode, ParserError};
 
-use serde::{Deserialize, Serialize};
-
-use crate::color::RGBParseError;
-
-/// Main error enum used across the crate. All errors are cast into this enum throughout the crate.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     IOError(String),
@@ -19,7 +18,7 @@ pub enum Error {
     JsonError(String),
 
     ClapError(String),
-    ParseError(String),
+    ParseError(ParseError),
 }
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -28,16 +27,16 @@ impl Display for Error {
             "{}: {}",
             self.variant(),
             match self {
-                Error::IOError(value) => value,
-                Error::RuntimeError(value) => value,
-                Error::ConversionToU8Error(value) => value,
-                Error::TerminalQueryError(value) => value,
-                Error::RenderError(value) => value,
-                Error::YamlError(value) => value,
-                Error::JsonError(value) => value,
+                Error::IOError(value) => value.to_string(),
+                Error::RuntimeError(value) => value.to_string(),
+                Error::ConversionToU8Error(value) => value.to_string(),
+                Error::TerminalQueryError(value) => value.to_string(),
+                Error::RenderError(value) => value.to_string(),
+                Error::YamlError(value) => value.to_string(),
+                Error::JsonError(value) => value.to_string(),
 
-                Error::ClapError(value) => value,
-                Error::ParseError(value) => value,
+                Error::ClapError(value) => value.to_string(),
+                Error::ParseError(value) => value.to_string(),
             }
         )
     }
@@ -90,20 +89,117 @@ impl From<terminal_colorsaurus::Error> for Error {
 
 impl From<ParseIntError> for Error {
     fn from(e: ParseIntError) -> Self {
-        Error::ParseError(e.to_string())
+        Error::ParseError(Into::<ParseError>::into(e.to_string()))
     }
 }
 impl From<ParseFloatError> for Error {
     fn from(e: ParseFloatError) -> Self {
-        Error::ParseError(e.to_string())
+        Error::ParseError(Into::<ParseError>::into(e.to_string()))
     }
 }
 impl From<RGBParseError> for Error {
     fn from(e: RGBParseError) -> Self {
-        Error::ParseError(e.to_string())
+        Error::ParseError(Into::<ParseError>::into(e.to_string()))
     }
 }
+impl From<ErrMode<ContextError>> for Error {
+    fn from(e: ErrMode<ContextError>) -> Error {
+        Error::ParseError(Into::<ParseError>::into(e.to_string()))
+    }
+}
+
+impl ParserError<&str> for Error {
+    type Inner = ParseError;
+
+    // Required methods
+    fn from_input(input: &&str) -> Self {
+        Error::ParseError(input.to_string().into())
+    }
+    fn into_inner(self) -> std::result::Result<Self::Inner, Self> {
+        Err(self.clone())
+    }
+}
+// impl<T> From<T> for Error
+// where
+//     T: std::error::Error + std::fmt::Display + Sized,
+// {
+//     fn from(e: T) -> Error {
+//         Error::ParseError(Into::<ParseError>::into(e.to_string()))
+//     }
+// }
+
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ParseError {
+    message: String,
+    input: Option<String>,
+    context: Option<String>,
+}
+impl ParseError {
+    pub fn new<T: Display>(message: T) -> ParseError {
+        ParseError { message: message.to_string(), input: None, context: None }
+    }
+    pub fn with_input<T: Display>(mut self, input: T) -> ParseError {
+        self.input = Some(input.to_string());
+        self
+    }
+    pub fn with_context<T: Display>(mut self, context: T) -> ParseError {
+        self.context = Some(context.to_string());
+        self
+    }
+
+    /// replaces the `ParseError::input` field with the given text and
+    /// returns the previous value of the `input` field.
+    pub fn replace_input<T: Display>(&mut self, input: T) -> Option<String> {
+        let result = self.input.clone();
+        self.input = Some(input.to_string());
+        result
+    }
+
+    /// replaces the `ParseError::context` field with the given text and
+    /// returns the previous value of the `context` field.
+    pub fn replace_context<T: Display>(&mut self, context: T) -> Option<String> {
+        let result = self.context.clone();
+        self.context = Some(context.to_string());
+        result
+    }
+}
+impl std::error::Error for ParseError {}
+impl ParserError<&str> for ParseError {
+    type Inner = ParseError;
+
+    fn from_input(input: &&str) -> Self {
+        ParseError::new::<String>(input.to_string().into()).with_input(input.to_string())
+    }
+    fn into_inner(self) -> std::result::Result<Self::Inner, Self> {
+        Err(self.clone())
+    }
+}
+impl<I, C> AddContext<I, C> for ParseError
+where
+    I: Display + Stream,
+    C: Display,
+{
+    fn add_context(self, input: &I, token_start: &<I as Stream>::Checkpoint, context: C) -> Self {
+        self.with_input(input.to_string()).with_context(context.to_string())
+    }
+}
+impl From<String> for ParseError {
+    fn from(message: String) -> ParseError {
+        ParseError { message, context: None, input: None }
+    }
+}
+impl Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let message = &self.message;
+        if let Some(context) = &self.context {
+            write!(f, "parse error: {message} (context: {context})")
+        } else {
+            write!(f, "parse error: {message}")
+        }
+    }
+}
 
 /// Contains information of errors which occur while converting RGB band values from [`f32`] to [`u8`].
 #[derive(Debug, Clone, Serialize, Deserialize)]

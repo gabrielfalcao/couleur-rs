@@ -35,6 +35,7 @@ use crate::{
     ConversionToU8Error,
     Error,
     FloatMetadata,
+    ParseError,
     Result,
     SINGLE_BAND_DECIMAL_RGB_REGEX,
     SINGLE_BAND_HEX_RGB_REGEX,
@@ -175,7 +176,9 @@ impl FromStr for Value {
                 let parsed = u8::from_str_radix(band, 16)?;
                 Ok(Value(parsed as f32))
             }
-            None => Err(Error::ParseError(format!("cannot parse RGB value (number from 0 to 255) from {value:#?}"))),
+            None => Err(Error::ParseError(
+                ParseError::new(format!("cannot parse RGB value (number from 0 to 255) from {value:#?}")).with_input(value.to_string()),
+            )),
             // None => match SINGLE_BAND_DECIMAL_RGB_REGEX.captures(value) {
             //
             //     Some(band) => match band.name("band") {
