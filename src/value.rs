@@ -320,11 +320,15 @@ impl Ord for Value {
 }
 
 impl_op!(Add, add, value, +);
-// impl_op!(AddAssign, add_assign, value, +=);
+impl_op!(AddAssign, add_assign, value, +=);
 impl_op!(Sub, sub, value, -);
+impl_op!(SubAssign, sub_assign, value, -=);
 impl_op!(Div, div, value, /);
+impl_op!(DivAssign, div_assign, value, /=);
 impl_op!(Mul, mul, value, *);
+impl_op!(MulAssign, mul_assign, value, *=);
 impl_op!(Rem, rem, value, %);
+impl_op!(RemAssign, rem_assign, value, %=);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  <<<  SSSSS   EEEEEEE  RRRRRR   DDDDD    EEEEEEE >>>
