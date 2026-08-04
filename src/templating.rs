@@ -4,7 +4,7 @@ use std::{collections::HashMap, str, str::FromStr};
 
 use winnow::{
     ascii::{dec_uint, digit1, float, hex_digit1},
-    combinator::{alt, cut_err, delimited, preceded, repeat, separated, separated_pair, seq, terminated},
+    combinator::{alt, cut_err, delimited, eof, preceded, repeat, separated, separated_pair, seq, terminated},
     error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
     prelude::*,
     token::{any, none_of, take, take_while},
@@ -12,10 +12,27 @@ use winnow::{
 
 pub(crate) type Stream<'i> = &'i str;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Node {
     Reset(Reset),
     Color(Color),
+    Text(String),
+    Array(Vec<Node>),
+}
+impl Node {
+    pub fn to_array(&self) -> Vec<Node> {
+        match self {
+            Node::Reset(_) => vec![self.clone()],
+            Node::Color(_) => vec![self.clone()],
+            Node::Text(_) => vec![self.clone()],
+            Node::Array(items) => items.to_vec(),
+        }
+    }
+    pub fn extend(&self, node: Node) -> Node {
+        let mut items = self.to_array();
+        items.extend(node.to_array());
+        Node::Array(items)
+    }
 }
 impl From<Reset> for Node {
     fn from(reset: Reset) -> Node {
@@ -28,7 +45,12 @@ impl From<Color> for Node {
     }
 }
 pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Node, E> {
-    alt((reset.map(Node::Reset), color.map(Node::Color))).parse_next(input)
+    alt((
+        reset::<E>.map(Node::Reset), // Reset
+        color::<E>.map(Node::Color), // Color
+        text::<E>.map(Node::Text),   // Text
+    ))
+    .parse_next(input)
 }
 
 fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Reset, E> {
@@ -60,6 +82,11 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
     .parse_next(input)
 }
 
+fn text<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<String, E> {
+    alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("string".into())), eof))
+        .parse_next(input)
+        .map(|s| s.to_string())
+}
 fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<u8, E> {
     dec_uint::<Stream<'i>, u8, ErrMode<E>>(input)
 }
@@ -172,4 +199,21 @@ mod tests {
         );
         Ok(())
     }
+    #[test]
+    fn test_parse_text_single_node() -> Result<()> {
+        assert_eq!(parse_node::<Error>.parse_peek("hello world"), Ok(("", Node::Text("hello world".to_string()))));
+        Ok(())
+    }
+    // #[test]
+    // fn test_parse_text_node_array() -> Result<()> {
+    //     assert_eq!(
+    //         parse_node::<Error>.parse_peek("hello {reset} world"),
+    //         Ok((
+    //             "",
+    //             Node::Array(vec![Node::Text("hello ".to_string()), Node::Reset(Reset::default()), Node::Text(" world".to_string())])
+    //         ))
+    //     );
+    //
+    //     Ok(())
+    // }
 }
