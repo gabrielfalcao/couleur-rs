@@ -4,7 +4,7 @@ use std::{collections::HashMap, str, str::FromStr};
 
 use winnow::{
     ascii::{digit1, float, hex_digit1},
-    combinator::{alt, cut_err, delimited, preceded, repeat, separated, separated_pair, terminated},
+    combinator::{alt, seq, cut_err, delimited, preceded, repeat, separated, separated_pair, terminated},
     error::{AddContext, ErrMode, ParserError, StrContext},
     prelude::*,
     token::{any, none_of, take, take_while},
@@ -64,16 +64,16 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
 }
 fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<Vec<String>, E> {
-    repeat(..2, cut_err(terminated(repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")), ",")))
-        .fold(
-            || Vec::<String>::new(),
-            |mut acc, next| {
-                acc.push(next);
-                acc
-            },
-        )
-        .parse_next(input)
+) -> ModalResult<(String, String, String), E> {
+    seq!(
+        repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")),
+        _: ",",
+        repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")),
+        _: ",",
+        repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")),
+        _: ",",
+    )
+    .parse_next(input)
 }
 
 #[cfg(test)]
@@ -121,7 +121,7 @@ mod tests {
     fn test_parse_triple() {
         assert_eq!(
             parse_triple::<Error>.parse_peek("127,255,355"),
-            Ok(("", vec!["127".to_string(), "255".to_string(), "355".to_string()]))
+            Ok(("", ("127".to_string(), "255".to_string(), "355".to_string())))
         );
     }
 
