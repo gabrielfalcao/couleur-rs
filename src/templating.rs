@@ -4,7 +4,7 @@ use std::{collections::HashMap, str, str::FromStr};
 
 use winnow::{
     ascii::{digit1, float, hex_digit1},
-    combinator::{alt, seq, cut_err, delimited, preceded, repeat, separated, separated_pair, terminated},
+    combinator::{alt, cut_err, delimited, preceded, repeat, separated, separated_pair, seq, terminated},
     error::{AddContext, ErrMode, ParserError, StrContext},
     prelude::*,
     token::{any, none_of, take, take_while},
@@ -65,15 +65,15 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
 fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<(String, String, String), E> {
-    seq!(
-        repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")),
-        _: ",",
-        repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")),
-        _: ",",
-        repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")),
-        _: ",",
+    (
+        terminated(repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")), ","),
+        terminated(repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")), ","),
+        alt((
+            terminated(repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")), ","),
+            repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")),
+        )),
     )
-    .parse_next(input)
+        .parse_next(input)
 }
 
 #[cfg(test)]
@@ -120,8 +120,12 @@ mod tests {
     #[test]
     fn test_parse_triple() {
         assert_eq!(
-            parse_triple::<Error>.parse_peek("127,255,355"),
+            parse_triple::<Error>.parse_peek("127,255,355,"),
             Ok(("", ("127".to_string(), "255".to_string(), "355".to_string())))
+        );
+        assert_eq!(
+            parse_triple::<Error>.parse_peek("127,255,123"),
+            Ok(("", ("127".to_string(), "255".to_string(), "123".to_string())))
         );
     }
 
