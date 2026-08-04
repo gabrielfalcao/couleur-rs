@@ -40,12 +40,17 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
         terminated(
             preceded(
                 "color:",
-                preceded(
-                    "#",
+                alt((
+                    preceded(
+                        "#",
+                        repeat(0..5, hex_digit1)
+                            .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
+                            .map(|string| string.parse::<Color>().expect("6 hex digits")),
+                    ),
                     repeat(0..5, hex_digit1)
                         .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
                         .map(|string| string.parse::<Color>().expect("6 hex digits")),
-                ),
+                )),
             ),
             '}',
         ),
@@ -62,7 +67,7 @@ mod tests {
     ///
     ///  - [x] parse "{reset}" to `Node::Reset` *DONE:
     ///  - [x] 2. parse "{color:#F04F78}" to `Node::Color(crate::Color)`
-    ///  - [ ] 3. parse "{color:F04F78}" to `Node::Color(crate::Color)`
+    ///  - [x] 3. parse "{color:F04F78}" to `Node::Color(crate::Color)`
     ///  - [ ] 4. parse "{color:240,79,120}" to `Node::Color(crate::Color)`
     ///  - [ ] 5. parse "{color:240,  79, 120 , }" to `Node::Color(crate::Color)`
     ///
@@ -102,10 +107,19 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_color_rgb() -> Result<()> {
+    fn test_parse_color_rgb_hex_prefixed_hash() -> Result<()> {
         assert_eq!(color::<Error>.parse_peek("{color:#F04F78}"), Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color"))));
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:#F04F78}"),
+            Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_color_rgb_hex() -> Result<()> {
+        assert_eq!(color::<Error>.parse_peek("{color:F04F78}"), Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color"))));
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{color:F04F78}"),
             Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
         );
         Ok(())
