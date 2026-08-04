@@ -54,7 +54,7 @@ mod tests {
     ///
     /// ### first set of red -> green -> refactor rounds:
     ///
-    /// - [x] parse "{reset}" to `Node::Reset` *DONE:
+    ///  - [x] parse "{reset}" to `Node::Reset` *DONE:
     ///  - [ ] 2. parse "{color:#F04F78}" to `Node::Color(crate::Color)`
     ///  - [ ] 3. parse "{color:F04F78}" to `Node::Color(crate::Color)`
     ///  - [ ] 4. parse "{color:240,79,120}" to `Node::Color(crate::Color)`
