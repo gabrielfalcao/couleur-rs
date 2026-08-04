@@ -3,7 +3,7 @@ use crate::{Color, Contrast, Error, Layer, Reset, Result};
 use std::{collections::HashMap, str, str::FromStr};
 
 use winnow::{
-    ascii::{digit1, float, hex_digit1, dec_uint},
+    ascii::{dec_uint, digit1, float, hex_digit1},
     combinator::{alt, cut_err, delimited, preceded, repeat, separated, separated_pair, seq, terminated},
     error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
     prelude::*,
@@ -63,35 +63,13 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
     .parse_next(input)
 }
 
-fn parse_u8<'i, E: ParserError<Stream<'i>> + std::fmt::Debug + AddContext<Stream<'i>, StrContext>>(
-    input: &mut Stream<'i>,
-) -> ModalResult<u8, E> {
+fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<u8, E> {
     dec_uint::<Stream<'i>, u8, ErrMode<E>>(input)
-    // let val =
-    //     repeat(0..2, digit1::<Stream<'i>, E>).fold(|| String::new(), |acc, next| format!("{acc}{next}")).parse_next(input).unwrap();
-
-    // match val.parse::<u8>() {
-    //     Ok(val) => Ok(val),
-    //     Err(error) => {
-    //         // let mut err = ContextError::new();
-    //         // err.push(StrContext::Label("digit"));
-    //         // err.push(StrContext::Expected("number between 0 and 255".into()));
-    //         Err(ErrMode::Cut(ParserError::from_input(input)))
-    //     }
-    // }
 }
 fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<(String, String, String), E> {
-    (
-        terminated(repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")), ","),
-        terminated(repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")), ","),
-        alt((
-            terminated(repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")), ","),
-            repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")),
-        )),
-    )
-        .parse_next(input)
+) -> ModalResult<(u8, u8, u8), E> {
+    (terminated(parse_u8, ","), terminated(parse_u8, ","), alt((terminated(parse_u8, ","), parse_u8))).parse_next(input)
 }
 
 #[cfg(test)]
@@ -143,16 +121,13 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_triple_to_string() {
-        assert_eq!(parse_triple::<ContextError>.parse_peek("127,255,71,"), Ok(("", ("127".to_string(), "255".to_string(), "71".to_string()))));
-        assert_eq!(parse_triple::<ContextError>.parse_peek("127,255,63"), Ok(("", ("127".to_string(), "255".to_string(), "63".to_string()))));
+    fn test_parse_triple_trailing_comma() {
+        assert_eq!(parse_triple::<ContextError>.parse_peek("127,255,71,"), Ok(("", (127u8, 255u8, 71u8))));
     }
-
-    // #[test]
-    // fn test_parse_triple() {
-    //     assert_eq!(parse_triple::<ContextError>.parse_peek("127,255,71,"), Ok(("", (127u8, 255u8, 71u8))));
-    //     assert_eq!(parse_triple::<ContextError>.parse_peek("127,255,63"), Ok(("", (127u8, 255u8, 63u8))));
-    // }
+    #[test]
+    fn test_parse_triple() {
+        assert_eq!(parse_triple::<ContextError>.parse_peek("127,255,63"), Ok(("", (127u8, 255u8, 63u8))));
+    }
 
     #[test]
     fn test_parse_reset() -> Result<()> {
