@@ -41,7 +41,7 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
             preceded(
                 "color:",
                 alt((
-                    parse_triple.map(|(red, green, blue)|Color::from_triple(red.into(), green.into(), blue.into())),
+                    parse_triple.map(|(red, green, blue)| Color::from_triple(red.into(), green.into(), blue.into())),
                     preceded(
                         "#",
                         repeat(0..5, hex_digit1)
@@ -66,7 +66,11 @@ fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>
 fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<(u8, u8, u8), E> {
-    (terminated(parse_u8, ","), terminated(parse_u8, ","), alt((terminated(parse_u8, ","), parse_u8))).parse_next(input)
+    (terminated(parse_u8, (ws, ',', ws)), terminated(parse_u8, (ws, ',', ws)), alt((terminated(parse_u8, (ws, ',', ws)), parse_u8)))
+        .parse_next(input)
+}
+fn ws<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
+    take_while(0.., &[' ', '\t', '\r', '\n']).parse_next(input)
 }
 
 #[cfg(test)]
@@ -79,7 +83,7 @@ mod tests {
     ///  - [x] 2. parse "{color:#F04F78}" to `Node::Color(crate::Color)`
     ///  - [x] 3. parse "{color:F04F78}" to `Node::Color(crate::Color)`
     ///  - [x] 4. parse "{color:240,79,120}" to `Node::Color(crate::Color)`
-    ///  - [ ] 5. parse "{color:240,  79, 120 , }" to `Node::Color(crate::Color)`
+    ///  - [x] 5. parse "{color:240,  79, 120 , }" to `Node::Color(crate::Color)`
     ///
     /// ### second set of red -> green -> refactor rounds:
     ///
@@ -153,10 +157,18 @@ mod tests {
     }
     #[test]
     fn test_parse_color_rgb_u8_triple() -> Result<()> {
-        assert_eq!(color::<Error>.parse_peek("{color:240,79,120}"), Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color"))));
+        assert_eq!(color::<Error>.parse_peek("{color:240,79,120,}"), Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color"))));
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:240,79,120}"),
             Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_color_rgb_u8_triple_with_extra_spaces_and_trailing_comma() -> Result<()> {
+        assert_eq!(
+            color::<Error>.parse_peek("{color:240,  79, 120 , }"),
+            Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color")))
         );
         Ok(())
     }
