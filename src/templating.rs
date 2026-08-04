@@ -3,7 +3,7 @@ use crate::{Color, Contrast, Error, Layer, Reset, Result};
 use std::{collections::HashMap, str, str::FromStr};
 
 use winnow::{
-    ascii::{float, hex_digit1},
+    ascii::{digit1, float, hex_digit1},
     combinator::{alt, cut_err, delimited, preceded, repeat, separated, separated_pair, terminated},
     error::{AddContext, ErrMode, ParserError, StrContext},
     prelude::*,
@@ -41,6 +41,10 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
             preceded(
                 "color:",
                 alt((
+                    // separated(0..2, repeat(0..2, digit1), ",").map(|val: String| {
+                    //     dbg!(&val);
+                    //     val.parse::<Color>().expect("3 decimal numbers")
+                    // }),
                     preceded(
                         "#",
                         repeat(0..5, hex_digit1)
@@ -57,6 +61,19 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
     )
     .context(StrContext::Expected("rgb color".into()))
     .parse_next(input)
+}
+fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Vec<String>, E> {
+    repeat(..2, cut_err(terminated(repeat(0..2, digit1).fold(|| String::new(), |acc, next| format!("{acc}{next}")), ",")))
+        .fold(
+            || Vec::<String>::new(),
+            |mut acc, next| {
+                acc.push(next);
+                acc
+            },
+        )
+        .parse_next(input)
 }
 
 #[cfg(test)]
@@ -99,6 +116,15 @@ mod tests {
     use winnow::error::ContextError as Error;
     type Result<T> = std::result::Result<T, Error>;
     use std::str::FromStr;
+
+    #[test]
+    fn test_parse_triple() {
+        assert_eq!(
+            parse_triple::<Error>.parse_peek("127,255,355"),
+            Ok(("", vec!["127".to_string(), "255".to_string(), "355".to_string()]))
+        );
+    }
+
     #[test]
     fn test_parse_reset() -> Result<()> {
         assert_eq!(reset::<Error>.parse_peek("{reset}"), Ok(("", Reset::default())));
@@ -124,4 +150,13 @@ mod tests {
         );
         Ok(())
     }
+    // #[test]
+    // fn test_parse_color_rgb_u8_triple() -> Result<()> {
+    //     assert_eq!(color::<Error>.parse_peek("{color:240,79,120}"), Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color"))));
+    //     assert_eq!(
+    //         parse_node::<Error>.parse_peek("{color:240,79,120}"),
+    //         Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
+    //     );
+    //     Ok(())
+    // }
 }
