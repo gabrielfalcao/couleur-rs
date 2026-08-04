@@ -49,6 +49,7 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         reset::<E>.map(Node::Reset), // Reset
         color::<E>.map(Node::Color), // Color
         text::<E>.map(Node::Text),   // Text
+        nodes::<E>.map(Node::Array), // Text
     ))
     .parse_next(input)
 }
@@ -98,6 +99,16 @@ fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrConte
 }
 fn ws<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
     take_while(0.., &[' ', '\t', '\r', '\n']).parse_next(input)
+}
+fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Vec<Node>, E> {
+    let mut nodes = Vec::<Node>::new();
+    for node in parse_node::<E>.parse_iter(input) {
+        match node {
+            Ok(node) => nodes.push(node),
+            Err(error) => return Err(ErrMode::Backtrack(error.into_inner())),
+        }
+    }
+    Ok(nodes)
 }
 
 #[cfg(test)]
