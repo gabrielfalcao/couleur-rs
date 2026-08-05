@@ -29,8 +29,8 @@ pub(crate) type Stream<'i> = &'i str;
 pub enum Node {
     Reset(Reset),
     Color(Color),
-    Text(String),
     Layer(Layer),
+    Text(String),
     Array(Vec<Node>),
 }
 impl From<Reset> for Node {
@@ -56,6 +56,7 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
     alt((
         reset::<E>.map(Node::Reset), // Reset
         color::<E>.map(Node::Color), // Color
+        layer::<E>.map(Node::Layer), // Layer
         text::<E>.map(Node::Text),   // Text
         nodes::<E>,                  // Array
     ))
@@ -87,6 +88,19 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
         ),
     )
     .context(StrContext::Expected("rgb color".into()))
+    .parse_next(input)
+}
+#[instrument]
+fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Layer, E> {
+    span!(Level::TRACE, "input", input);
+
+    preceded(
+        '{',
+        terminated(preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))), '}'),
+    )
+    .context(StrContext::Expected("ansi rendering layer".into()))
     .parse_next(input)
 }
 
@@ -181,7 +195,7 @@ mod tests {
     ///
     /// ### third set of red -> green -> refactor rounds:
     ///
-    ///  - [ ] 1. parse "{layer:bg}" to `Node::Layer(crate::Layer::BG)`
+    ///  - [x] 1. parse "{layer:bg}" to `Node::Layer(crate::Layer::BG)`
     ///  - [ ] 2. parse "{layer:fg}" to `Node::Layer(crate::Layer::FG)`
     ///  - [ ] 3. parse "{color:#F9C22B@layer:bg}" to `Node::AnsiLayered(Node::Layer(crate::Layer::FG), Node::Color("#F9C22B".parse<crate::Color>()?))`
     ///
@@ -324,6 +338,17 @@ mod tests {
                     Node::Reset(Reset::default())
                 ])
             ))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_layer_bg() -> Result<()> {
+        global_setup();
+        assert_eq!(parse_node::<Error>.parse_peek("{layer:bg}"), Ok(("", Node::Layer(Layer::BG))));
+        assert_eq!(
+            nodes::<Error>.parse_peek("{layer:bg}"),
+            Ok(("", Node::Array(vec![Node::Layer(Layer::BG)])))
         );
 
         Ok(())
