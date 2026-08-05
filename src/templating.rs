@@ -62,12 +62,16 @@ impl From<Color> for Node {
 pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Node, E> {
+    if input.is_empty() {
+        return Err(ErrMode::Cut(ParserError::from_input(input)))
+    }
     span!(Level::TRACE, "input", input);
     // log::debug!("parse_node called with input: {input:#?}", &input);
     alt((
         reset::<E>.map(Node::Reset), // Reset
         color::<E>.map(Node::Color), // Color
         text::<E>.map(Node::Text),   // Text
+                                     // eof::<E>.map(Node::Text),
     ))
     .parse_next(input)
 }
@@ -105,13 +109,9 @@ fn text<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<String, E> {
     span!(Level::TRACE, "input", input);
-    alt((
-        take_while(0.., |c: char| c != '{').context(StrContext::Expected("text".into())),
-        // eof,
-        // rest,
-    ))
-    .parse_next(input)
-    .map(|s| s.to_string())
+    alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("text".into())),))
+        .parse_next(input)
+        .map(|s| s.to_string())
 }
 #[instrument]
 fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -172,7 +172,8 @@ fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     let mut winnow_it = iterator(input, parse_node::<E>);
     let res = winnow_it
         .map(|node| {
-            dbg!(&node);
+            span!(target: "nodes", Level::TRACE, "winnow::iterator.map", node = format!("{node:#?}"));
+
             node
         })
         .collect::<Vec<Node>>();
@@ -237,8 +238,7 @@ mod tests {
         assert_eq!(parse_u8::<Error>.parse_peek("127"), Ok(("", 127u8)));
         assert_eq!(parse_u8::<Error>.parse_peek("255"), Ok(("", 255u8)));
         let mut context = ContextError::new();
-        context
-            .push(StrContext::Expected(StringLiteral("unsigned number between 0 and 255")).into());
+        context.push(StrContext::Expected("unsigned number between 0 and 255".into()));
         assert_eq!(parse_u8::<Error>.parse_peek("300"), Err(ErrMode::Backtrack(context)));
     }
 
