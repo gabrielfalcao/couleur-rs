@@ -54,8 +54,7 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         reset::<E>.map(Node::Reset), // Reset
         color::<E>.map(Node::Color), // Color
         text::<E>.map(Node::Text),   // Text
-        nodes::<E>, // Array
-
+        nodes::<E>,                  // Array
     ))
     .parse_next(input)
 }
@@ -120,7 +119,7 @@ mod tests {
     /// ### second set of red -> green -> refactor rounds:
     ///
     ///  - [x] 1. parse "hello {reset} world" to `Node::Array(vec![Node::Text("hello "), Node::Reset, Node::Text(" world")])`
-    ///  - [ ] 2. parse "{color:#4D9BE6}hello {color:#91DB69}world{reset}" to something like `Node::Array(vec![Node::Color("#4D9BE6".parse::<crate::Color>()?), Node::Text("hello "), Node::Color("#91DB69".parse::<crate::Color>()?), Node::Text("world"), Node::Reset])`
+    ///  - [x] 2. parse "{color:#4D9BE6}hello {color:#91DB69}world{reset}" to something like `Node::Array(vec![Node::Color("#4D9BE6".parse::<crate::Color>()?), Node::Text("hello "), Node::Color("#91DB69".parse::<crate::Color>()?), Node::Text("world"), Node::Reset])`
     ///
     /// ### third set of red -> green -> refactor rounds:
     ///
@@ -143,7 +142,7 @@ mod tests {
     use super::*;
     use winnow::error::{ContextError as Error, ErrMode};
     type Result<T> = std::result::Result<T, ContextError>;
-    use std::{str::FromStr};
+    use std::str::FromStr;
     use winnow::error::StrContextValue::StringLiteral;
 
     #[test]
@@ -215,7 +214,29 @@ mod tests {
     fn test_parse_text_node_array() -> Result<()> {
         assert_eq!(
             nodes::<Error>.parse_peek("hello {reset} world"),
-            Ok(("", Node::Array(vec![Node::Text("hello ".to_string()), Node::Reset(Reset::default()), Node::Text(" world".to_string())])))
+            Ok((
+                "",
+                Node::Array(vec![Node::Text("hello ".to_string()), Node::Reset(Reset::default()), Node::Text(" world".to_string())])
+            ))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_text_node_array_color_text_and_reset() -> Result<()> {
+        assert_eq!(
+            nodes::<Error>.parse_peek("{color:#4D9BE6}hello {color:#91DB69}world{reset}"),
+            Ok((
+                "",
+                Node::Array(vec![
+                    Node::Color("#4D9BE6".parse::<crate::Color>().unwrap()),
+                    Node::Text("hello ".to_string()),
+                    Node::Color("#91DB69".parse::<crate::Color>().unwrap()),
+                    Node::Text("world".to_string()),
+                    Node::Reset(Reset::default())
+                ])
+            ))
         );
 
         Ok(())
