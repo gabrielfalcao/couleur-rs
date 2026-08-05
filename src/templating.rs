@@ -58,47 +58,38 @@ fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(in
     preceded('{', terminated("reset".value(Reset::default()), '}')).context(StrContext::Expected("reset".into())).parse_next(input)
 }
 fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Color, E> {
-    preceded(
-        '{',
-        terminated(
-            preceded(
-                "color:",
-                alt((
-                    parse_triple.map(|(red, green, blue)| Color::from_triple(red.into(), green.into(), blue.into())),
-                    preceded(
-                        "#",
-                        repeat(0..5, hex_digit1)
-                            .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
-                            .map(|string| string.parse::<Color>().expect("6 hex digits")),
-                    ),
-                    repeat(0..5, hex_digit1)
-                        .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
-                        .map(|string| string.parse::<Color>().expect("6 hex digits")),
-                )),
-            ),
-            '}',
-        ),
-    )
-    .context(StrContext::Expected("rgb color".into()))
-    .parse_next(input)
+    preceded('{', terminated(preceded("color:", alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex))), '}'))
+        .context(StrContext::Expected("rgb color".into()))
+        .parse_next(input)
 }
 
 fn text<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<String, E> {
-    alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("string".into())), eof))
-        .parse_next(input)
-        .map(|s| s.to_string())
+    alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("text".into())), eof)).parse_next(input).map(|s| s.to_string())
 }
 fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<u8, E> {
-    dec_uint::<Stream<'i>, u8, ErrMode<E>>(input)
+    dec_uint::<Stream<'i>, u8, ErrMode<E>>.context(StrContext::Expected("unsigned number between 0 and 255".into())).parse_next(input)
+}
+fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Color, E> {
+    repeat(0..5, hex_digit1)
+        .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
+        .context(StrContext::Expected("6 hex digits".into()))
+        .map(|string| string.parse::<Color>().expect("6 hex digits"))
+        .parse_next(input)
+}
+fn parse_rgb_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Color, E> {
+    parse_triple.map(|(red, green, blue)| Color::from_triple(red.into(), green.into(), blue.into())).parse_next(input)
 }
 fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<(u8, u8, u8), E> {
     (terminated(parse_u8, (ws, ',', ws)), terminated(parse_u8, (ws, ',', ws)), alt((terminated(parse_u8, (ws, ',', ws)), parse_u8)))
+        .context(StrContext::Expected("three comma-separated unsigned numbers".into()))
         .parse_next(input)
 }
-fn ws<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
-    take_while(0.., &[' ', '\t', '\r', '\n']).parse_next(input)
+fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
+    take_while(0.., &[' ', '\t', '\r', '\n']).context(StrContext::Expected("white space".into())).parse_next(input)
 }
 fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Vec<Node>, E> {
     let mut nodes = Vec::<Node>::new();
@@ -151,12 +142,15 @@ mod tests {
     use winnow::error::{ContextError as Error, ErrMode};
     type Result<T> = std::result::Result<T, ContextError>;
     use std::str::FromStr;
+    use winnow::error::StrContextValue::StringLiteral;
 
     #[test]
     fn test_parse_u8() {
         assert_eq!(parse_u8::<Error>.parse_peek("127"), Ok(("", 127u8)));
         assert_eq!(parse_u8::<Error>.parse_peek("255"), Ok(("", 255u8)));
-        assert_eq!(parse_u8::<Error>.parse_peek("300"), Err(ErrMode::Backtrack(ContextError::new())));
+        let mut context = ContextError::new();
+        context.push(StrContext::Expected(StringLiteral("unsigned number between 0 and 255")).into());
+        assert_eq!(parse_u8::<Error>.parse_peek("300"), Err(ErrMode::Backtrack(context)));
     }
 
     #[test]
