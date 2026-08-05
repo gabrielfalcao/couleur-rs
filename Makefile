@@ -29,7 +29,7 @@ run: cls
 	cargo run -q -- --contrast web --bg 333333 --detect test foreground
 
 test: cls
-	cargo test
+	cargo test --offline
 
 nextest: cls
 	cargo nextest run

@@ -1,6 +1,7 @@
 // use crate::{Error, Result};
-use crate::{Color, Contrast, Error, Layer, Reset, Result, Value};
-use std::{collections::HashMap, str, str::FromStr};
+use crate::{Color, Contrast, Error, Layer, Reset, Result, Value, setup_logging};
+use std::str::FromStr;
+use tracing::{Level, event, instrument, span};
 
 use winnow::{
     ascii::{dec_uint, digit1, float, hex_digit1},
@@ -29,6 +30,7 @@ pub enum Node {
     Reset(Reset),
     Color(Color),
     Text(String),
+    Layer(Layer),
     Array(Vec<Node>),
 }
 impl From<Reset> for Node {
@@ -42,9 +44,11 @@ impl From<Color> for Node {
     }
 }
 
+#[instrument]
 pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Node, E> {
+    span!(Level::TRACE, "input", input);
     if input.is_empty() {
         return Err(ErrMode::Cut(ParserError::from_input(input)));
     }
@@ -58,16 +62,20 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
     .parse_next(input)
 }
 
+#[instrument]
 fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Reset, E> {
+    span!(Level::TRACE, "input", input);
     preceded('{', terminated("reset".value(Reset::default()), '}'))
         .context(StrContext::Expected("reset".into()))
         .parse_next(input)
 }
+#[instrument]
 fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Color, E> {
+    span!(Level::TRACE, "input", input);
     preceded(
         '{',
         terminated(
@@ -82,39 +90,49 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     .parse_next(input)
 }
 
+#[instrument]
 fn text<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<String, E> {
+    span!(Level::TRACE, "input", input);
     alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("text".into())),))
         .parse_next(input)
         .map(|s| s.to_string())
 }
+#[instrument]
 fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<u8, E> {
+    span!(Level::TRACE, "input", input);
     dec_uint::<Stream<'i>, u8, ErrMode<E>>
         .context(StrContext::Expected("unsigned number between 0 and 255".into()))
         .parse_next(input)
 }
+#[instrument]
 fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Color, E> {
+    span!(Level::TRACE, "input", input);
     repeat(0..5, hex_digit1)
         .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
         .context(StrContext::Expected("6 hex digits".into()))
         .map(|string| string.parse::<Color>().expect("6 hex digits"))
         .parse_next(input)
 }
+#[instrument]
 fn parse_rgb_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Color, E> {
+    span!(Level::TRACE, "input", input);
     parse_triple
         .map(|(red, green, blue)| Color::from_triple(red.into(), green.into(), blue.into()))
         .parse_next(input)
 }
+#[instrument]
 fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<(u8, u8, u8), E> {
+    span!(Level::TRACE, "input", input);
     (
         terminated(parse_u8, (ws, ',', ws)),
         terminated(parse_u8, (ws, ',', ws)),
@@ -123,16 +141,20 @@ fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrConte
         .context(StrContext::Expected("three comma-separated unsigned numbers".into()))
         .parse_next(input)
 }
+#[instrument]
 fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<&'i str, E> {
+    span!(Level::TRACE, "input", input);
     take_while(0.., &[' ', '\t', '\r', '\n'])
         .context(StrContext::Expected("white space".into()))
         .parse_next(input)
 }
+#[instrument]
 fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     mut input: &mut Stream<'i>,
 ) -> ModalResult<Node, E> {
+    span!(Level::TRACE, "input", input);
     let mut winnow_it = iterator(input, parse_node::<E>);
     let res = winnow_it.map(|node| node).collect::<Vec<Node>>();
 
@@ -176,10 +198,20 @@ mod tests {
     ///  - [ ] 3. parse "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World" to `Node::Array(vec![Node::Color(Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text("Hello"), Node::ContrastedColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text(" World")])`
     ///    - [ ] 3.1 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
     use super::*;
+    use crate::{setup_logging, setup_tracing};
     use winnow::error::{ContextError as Error, ErrMode};
     type Result<T> = std::result::Result<T, ContextError>;
-    use std::str::FromStr;
+    use std::{str::FromStr, sync::Once};
     use winnow::error::StrContextValue::StringLiteral;
+
+    static INIT: Once = Once::new();
+
+    fn global_setup() {
+        INIT.call_once(|| {
+            setup_logging().expect("setup logging");
+            // setup_tracing().expect("setup tracing");
+        });
+    }
 
     #[test]
     fn test_parse_u8() {
@@ -279,7 +311,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_text_node_array_color_text_and_reset() -> Result<()> {
+    fn test_parse_node_array_color_text_and_reset() -> Result<()> {
         assert_eq!(
             nodes::<Error>.parse_peek("{color:#4D9BE6}hello {color:#91DB69}world{reset}"),
             Ok((

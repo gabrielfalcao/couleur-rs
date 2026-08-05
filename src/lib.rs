@@ -91,3 +91,6 @@ pub use util::{
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
 
 pub mod templating;
+
+pub(crate) mod logging;
+pub use logging::{setup_logging, setup_tracing};

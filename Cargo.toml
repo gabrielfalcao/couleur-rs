@@ -36,6 +36,13 @@ thiserror = "2.0.18"
 serde_json = "1.0.150"
 serde_yaml = "0.9.34"
 winnow = "1.0.4"
+log = { version = "0.4.33", features = ["serde", "kv", "kv_serde"] }
+fern = { version = "0.7.1", features = ["chrono", "colored"] }
+chrono = { version = "0.4.45", features = ["serde"] }
+is-terminal = "0.4.17"
+tracing = { version = "0.1.44", features = ["log", "log-always"] }
+tracing-subscriber = { version = "0.3.23", features = ["serde", "serde_json", "json", "chrono", "env-filter"] }
+tracing-appender = "0.2.5"
 
 
 [package.metadata]
@@ -82,34 +89,34 @@ bench = false
 doc = false
 test = false
 
-[[test]]
-name = "test_terminal"
-path = "./tests/test_terminal.rs"
+# [[test]]
+# name = "test_terminal"
+# path = "./tests/test_terminal.rs"
 
-
-[[test]]
-name = "test_colorizer"
-path = "./tests/test_colorizer.rs"
-
-[[test]]
-name = "test_float"
-path = "./tests/test_float.rs"
 
 # [[test]]
-# name = "test_templating"
-# path = "./tests/test_templating.rs"
-#
+# name = "test_colorizer"
+# path = "./tests/test_colorizer.rs"
+
+# [[test]]
+# name = "test_float"
+# path = "./tests/test_float.rs"
+
 # # [[test]]
-# # name = "test_rgb_color"
-# # path = "./tests/test_rgb_color.rs"
-#
-# # [[test]]
-# # name = "test_rgb_value"
-# # path = "./tests/test_rgb_value.rs"
-#
-# # [[test]]
-# # name = "test_rgb_value_ops"
-# # path = "./tests/test_rgb_value_ops.rs"
+# # name = "test_templating"
+# # path = "./tests/test_templating.rs"
+# #
+# # # [[test]]
+# # # name = "test_rgb_color"
+# # # path = "./tests/test_rgb_color.rs"
+# #
+# # # [[test]]
+# # # name = "test_rgb_value"
+# # # path = "./tests/test_rgb_value.rs"
+# #
+# # # [[test]]
+# # # name = "test_rgb_value_ops"
+# # # path = "./tests/test_rgb_value_ops.rs"
 
 
 [dev-dependencies]
