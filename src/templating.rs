@@ -196,7 +196,7 @@ mod tests {
     /// ### third set of red -> green -> refactor rounds:
     ///
     ///  - [x] 1. parse "{layer:bg}" to `Node::Layer(crate::Layer::BG)`
-    ///  - [ ] 2. parse "{layer:fg}" to `Node::Layer(crate::Layer::FG)`
+    ///  - [x] 2. parse "{layer:fg}" to `Node::Layer(crate::Layer::FG)`
     ///  - [ ] 3. parse "{color:#F9C22B@layer:bg}" to `Node::AnsiLayered(Node::Layer(crate::Layer::FG), Node::Color("#F9C22B".parse<crate::Color>()?))`
     ///
     /// ### forth set of red -> green -> refactor rounds:
@@ -349,6 +349,17 @@ mod tests {
         assert_eq!(
             nodes::<Error>.parse_peek("{layer:bg}"),
             Ok(("", Node::Array(vec![Node::Layer(Layer::BG)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_layer_fg() -> Result<()> {
+        global_setup();
+        assert_eq!(parse_node::<Error>.parse_peek("{layer:fg}"), Ok(("", Node::Layer(Layer::FG))));
+        assert_eq!(
+            nodes::<Error>.parse_peek("{layer:fg}"),
+            Ok(("", Node::Array(vec![Node::Layer(Layer::FG)])))
         );
 
         Ok(())
