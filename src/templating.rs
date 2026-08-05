@@ -31,21 +31,6 @@ pub enum Node {
     Text(String),
     Array(Vec<Node>),
 }
-impl Node {
-    pub fn to_array(&self) -> Vec<Node> {
-        match self {
-            Node::Reset(_) => vec![self.clone()],
-            Node::Color(_) => vec![self.clone()],
-            Node::Text(_) => vec![self.clone()],
-            Node::Array(items) => items.to_vec(),
-        }
-    }
-    pub fn extend(&self, node: Node) -> Node {
-        let mut items = self.to_array();
-        items.extend(node.to_array());
-        Node::Array(items)
-    }
-}
 impl From<Reset> for Node {
     fn from(reset: Reset) -> Node {
         Node::Reset(reset)
