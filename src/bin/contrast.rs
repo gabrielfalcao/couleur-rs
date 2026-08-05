@@ -1,10 +1,29 @@
 #![allow(unused)]
 use clap::Parser;
-use couleur_rs::{BLACK, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, TERMINAL, WHITE, Wrap, dispatch::ParserDispatcher};
+use couleur_rs::{
+    BLACK,
+    Color,
+    Contrast,
+    Error,
+    Exit,
+    Layer,
+    Prefix,
+    Reset,
+    Result,
+    TERMINAL,
+    WHITE,
+    Wrap,
+    dispatch::ParserDispatcher,
+};
 use iocore::Path;
 
 #[derive(Parser, Debug, Clone)]
-#[command(author, version, about, long_about = "command-line tool to explore the variants of contrast against a color")]
+#[command(
+    author,
+    version,
+    about,
+    long_about = "command-line tool to explore the variants of contrast against a color"
+)]
 pub struct Cli {
     /// which contrast to use in the background (or foreground if `--invert-layer` is active)
     #[arg()]
@@ -29,7 +48,8 @@ impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let color = self.color;
         let contrast = self.contrast;
-        let (color_layer, contrast_layer) = if !self.invert_layer { (Layer::FG, Layer::BG) } else { (Layer::BG, Layer::FG) };
+        let (color_layer, contrast_layer) =
+            if !self.invert_layer { (Layer::FG, Layer::BG) } else { (Layer::BG, Layer::FG) };
         let contrast_color = contrast.apply(color, contrast_layer);
         let reset = Reset::to_ansi(None);
 

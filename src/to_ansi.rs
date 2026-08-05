@@ -45,7 +45,6 @@ pub trait ToAnsi: Sized + Serialize {
     /// Happily, I do not vibe code at all and, frankly, I think that
     /// I would never even waste my time asking any given A.I. model
     /// for anything like this.
-    ///
     fn ansi_suffix() -> Option<String> {
         None
     }

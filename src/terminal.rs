@@ -1,4 +1,12 @@
-use crate::{Color, Error, Layer, Result, Value, deserialize_string_to_str, serialize_static_str_to_string};
+use crate::{
+    Color,
+    Error,
+    Layer,
+    Result,
+    Value,
+    deserialize_string_to_str,
+    serialize_static_str_to_string,
+};
 use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, marker::PhantomData};
 use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};

@@ -21,7 +21,10 @@ fn test_parse_and_get_accessible_contrast() -> Result<()> {
     // #8FF8E2  \x1b[38;2;143;248;226m  143, 248, 226
     let lightest: Color = "#8FF8E2".parse()?;
     let darkest: Color = "#0B5E65".parse()?;
-    assert_equal!(lightest.get_accessible_contrast(), Color::from_triple(0.into(), 0.into(), 0.into()));
+    assert_equal!(
+        lightest.get_accessible_contrast(),
+        Color::from_triple(0.into(), 0.into(), 0.into())
+    );
     Ok(())
 }
 #[test]

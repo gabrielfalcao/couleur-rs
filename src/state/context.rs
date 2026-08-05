@@ -24,8 +24,9 @@ pub struct Context {
     /// [`Iterator<Item=ColoPalette>`] with:
     ///
     /// ```
-    /// let palettes: BTreeMap<String, ColorPalette> =
-    ///     BTreeMap::from_iter(palettes_iter.map(|palette| (palette.name.to_string(), palette.clone())));
+    /// let palettes: BTreeMap<String, ColorPalette> = BTreeMap::from_iter(
+    ///     palettes_iter.map(|palette| (palette.name.to_string(), palette.clone())),
+    /// );
     /// ```
     pub palettes: BTreeMap<String, ColorPalette>,
 }

@@ -31,10 +31,12 @@ use crate::{
 };
 
 /// static instance of [`Color`] which holds the absolute black RGB color.
-pub static BLACK: LazyLock<Color> = LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
+pub static BLACK: LazyLock<Color> =
+    LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
 
 /// static instance of [`Color`] which holds the absolute white RGB color.
-pub static WHITE: LazyLock<Color> = LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
+pub static WHITE: LazyLock<Color> =
+    LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
 
 use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
@@ -213,7 +215,11 @@ impl Color {
         let max_val = max_rgb(r, g, b);
         let min_val = min_rgb(r, g, b);
         let target = max_val + min_val;
-        Color((target - r).copysign(&1.0).into(), (target - g).copysign(&1.0).into(), (target - b).copysign(&1.0).into())
+        Color(
+            (target - r).copysign(&1.0).into(),
+            (target - g).copysign(&1.0).into(),
+            (target - b).copysign(&1.0).into(),
+        )
     }
 
     /// Returns the perceived brightness via WCAG (Web Content
@@ -232,9 +238,13 @@ impl Color {
 
         for c in channels {
             if c <= 0.04045 {
-                linear.push(Value::from_f32(*(c / 12.92)).expect("value between 0 and 255 inclusive"))
+                linear
+                    .push(Value::from_f32(*(c / 12.92)).expect("value between 0 and 255 inclusive"))
             } else {
-                linear.push(Value::from_f32(*((c + 0.055) / 1.055) * 2.4).expect("value between 0 and 255 inclusive"))
+                linear.push(
+                    Value::from_f32(*((c + 0.055) / 1.055) * 2.4)
+                        .expect("value between 0 and 255 inclusive"),
+                )
             }
         }
         let luminance = 0.2126 * *linear[0] + 0.7152 * *linear[1] + 0.0722 * *linear[2];
@@ -418,11 +428,22 @@ impl FromStr for Color {
         match HEX_RGB_REGEX.captures(s) {
             Some(captures) => {
                 let red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
-                let green_value = captures.name("green").map(|s| s.as_str().to_string()).expect("green");
-                let blue_value = captures.name("blue").map(|s| s.as_str().to_string()).expect("blue");
-                let red = u8::from_str_radix(&captures.name("red").map(|s| s.as_str().to_string()).unwrap(), 16)?;
-                let green = u8::from_str_radix(&captures.name("green").map(|s| s.as_str().to_string()).unwrap(), 16)?;
-                let blue = u8::from_str_radix(&captures.name("blue").map(|s| s.as_str().to_string()).unwrap(), 16)?;
+                let green_value =
+                    captures.name("green").map(|s| s.as_str().to_string()).expect("green");
+                let blue_value =
+                    captures.name("blue").map(|s| s.as_str().to_string()).expect("blue");
+                let red = u8::from_str_radix(
+                    &captures.name("red").map(|s| s.as_str().to_string()).unwrap(),
+                    16,
+                )?;
+                let green = u8::from_str_radix(
+                    &captures.name("green").map(|s| s.as_str().to_string()).unwrap(),
+                    16,
+                )?;
+                let blue = u8::from_str_radix(
+                    &captures.name("blue").map(|s| s.as_str().to_string()).unwrap(),
+                    16,
+                )?;
                 let r = Value::from_u8(red)?;
                 let g = Value::from_u8(green)?;
                 let b = Value::from_u8(blue)?;
@@ -435,7 +456,15 @@ impl FromStr for Color {
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "#{}", self.to_triple().iter().map(|c| format!("{:02X}", c.into_u8())).collect::<Vec<String>>().join(""))
+        write!(
+            f,
+            "#{}",
+            self.to_triple()
+                .iter()
+                .map(|c| format!("{:02X}", c.into_u8()))
+                .collect::<Vec<String>>()
+                .join("")
+        )
     }
 }
 

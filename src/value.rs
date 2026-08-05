@@ -117,7 +117,8 @@ impl Value {
     }
 
     pub fn into_u8(self) -> u8 {
-        self.to_u8().expect(&format!("RGB value to be within 0 and 255 but is {value}", value = self.0))
+        self.to_u8()
+            .expect(&format!("RGB value to be within 0 and 255 but is {value}", value = self.0))
     }
 
     pub fn leading_zeros_fractional(&self) -> usize {
@@ -148,7 +149,13 @@ impl Value {
         let float_fract = self.fract().copysign(1.0);
         let exp = self.leading_zeros_exp();
 
-        (negative, float_round as i32, float_fract as i32, exp as i32, self.leading_zeros_fractional())
+        (
+            negative,
+            float_round as i32,
+            float_fract as i32,
+            exp as i32,
+            self.leading_zeros_fractional(),
+        )
     }
 }
 
@@ -177,7 +184,10 @@ impl FromStr for Value {
                 Ok(Value(parsed as f32))
             }
             None => Err(Error::ParseError(
-                ParseError::new(format!("cannot parse RGB value (number from 0 to 255) from {value:#?}")).with_input(value.to_string()),
+                ParseError::new(format!(
+                    "cannot parse RGB value (number from 0 to 255) from {value:#?}"
+                ))
+                .with_input(value.to_string()),
             )),
             // None => match SINGLE_BAND_DECIMAL_RGB_REGEX.captures(value) {
             //
@@ -359,7 +369,9 @@ impl<'de> Visitor<'de> for ValueVisitor {
     {
         match Value::from_str(value) {
             Ok(value) => Ok(value),
-            Err(error) => Err(E::custom(format!("invalid hexadecimal string of length 2: {error}"))),
+            Err(error) => {
+                Err(E::custom(format!("invalid hexadecimal string of length 2: {error}")))
+            }
         }
     }
 

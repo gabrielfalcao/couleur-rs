@@ -4,7 +4,19 @@ use std::{collections::HashMap, str, str::FromStr};
 
 use winnow::{
     ascii::{dec_uint, digit1, float, hex_digit1},
-    combinator::{alt, cut_err, delimited, eof, iterator, preceded, repeat, separated, separated_pair, seq, terminated},
+    combinator::{
+        alt,
+        cut_err,
+        delimited,
+        eof,
+        iterator,
+        preceded,
+        repeat,
+        separated,
+        separated_pair,
+        seq,
+        terminated,
+    },
     error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
     prelude::*,
     token::{any, none_of, rest, take, take_while},
@@ -45,7 +57,9 @@ impl From<Color> for Node {
     }
 }
 
-pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Node, E> {
+pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Node, E> {
     if input.is_empty() {
         return Err(ErrMode::Cut(ParserError::from_input(input)));
     }
@@ -59,22 +73,47 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
     .parse_next(input)
 }
 
-fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Reset, E> {
-    preceded('{', terminated("reset".value(Reset::default()), '}')).context(StrContext::Expected("reset".into())).parse_next(input)
-}
-fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Color, E> {
-    preceded('{', terminated(preceded("color:", alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex))), '}'))
-        .context(StrContext::Expected("rgb color".into()))
+fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Reset, E> {
+    preceded('{', terminated("reset".value(Reset::default()), '}'))
+        .context(StrContext::Expected("reset".into()))
         .parse_next(input)
 }
+fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Color, E> {
+    preceded(
+        '{',
+        terminated(
+            preceded(
+                "color:",
+                alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
+            ),
+            '}',
+        ),
+    )
+    .context(StrContext::Expected("rgb color".into()))
+    .parse_next(input)
+}
 
-fn text<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<String, E> {
-    alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("text".into())),)).parse_next(input).map(|s| s.to_string())
+fn text<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<String, E> {
+    alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("text".into())),))
+        .parse_next(input)
+        .map(|s| s.to_string())
 }
-fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<u8, E> {
-    dec_uint::<Stream<'i>, u8, ErrMode<E>>.context(StrContext::Expected("unsigned number between 0 and 255".into())).parse_next(input)
+fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<u8, E> {
+    dec_uint::<Stream<'i>, u8, ErrMode<E>>
+        .context(StrContext::Expected("unsigned number between 0 and 255".into()))
+        .parse_next(input)
 }
-fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<Color, E> {
+fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Color, E> {
     repeat(0..5, hex_digit1)
         .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
         .context(StrContext::Expected("6 hex digits".into()))
@@ -84,19 +123,31 @@ fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCont
 fn parse_rgb_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Color, E> {
-    parse_triple.map(|(red, green, blue)| Color::from_triple(red.into(), green.into(), blue.into())).parse_next(input)
+    parse_triple
+        .map(|(red, green, blue)| Color::from_triple(red.into(), green.into(), blue.into()))
+        .parse_next(input)
 }
 fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<(u8, u8, u8), E> {
-    (terminated(parse_u8, (ws, ',', ws)), terminated(parse_u8, (ws, ',', ws)), alt((terminated(parse_u8, (ws, ',', ws)), parse_u8)))
+    (
+        terminated(parse_u8, (ws, ',', ws)),
+        terminated(parse_u8, (ws, ',', ws)),
+        alt((terminated(parse_u8, (ws, ',', ws)), parse_u8)),
+    )
         .context(StrContext::Expected("three comma-separated unsigned numbers".into()))
         .parse_next(input)
 }
-fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
-    take_while(0.., &[' ', '\t', '\r', '\n']).context(StrContext::Expected("white space".into())).parse_next(input)
+fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<&'i str, E> {
+    take_while(0.., &[' ', '\t', '\r', '\n'])
+        .context(StrContext::Expected("white space".into()))
+        .parse_next(input)
 }
-fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(mut input: &mut Stream<'i>) -> ModalResult<Node, E> {
+fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    mut input: &mut Stream<'i>,
+) -> ModalResult<Node, E> {
     let mut winnow_it = iterator(input, parse_node::<E>);
     let res = winnow_it.map(|node| node).collect::<Vec<Node>>();
 
@@ -166,13 +217,19 @@ mod tests {
     #[test]
     fn test_parse_reset() -> Result<()> {
         assert_eq!(reset::<Error>.parse_peek("{reset}"), Ok(("", Reset::default())));
-        assert_eq!(parse_node::<Error>.parse_peek("{reset}"), Ok(("", Node::Reset(Reset::default()))));
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{reset}"),
+            Ok(("", Node::Reset(Reset::default())))
+        );
         Ok(())
     }
 
     #[test]
     fn test_parse_color_rgb_hex_prefixed_hash() -> Result<()> {
-        assert_eq!(color::<Error>.parse_peek("{color:#F04F78}"), Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color"))));
+        assert_eq!(
+            color::<Error>.parse_peek("{color:#F04F78}"),
+            Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color")))
+        );
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:#F04F78}"),
             Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
@@ -181,7 +238,10 @@ mod tests {
     }
     #[test]
     fn test_parse_color_rgb_hex() -> Result<()> {
-        assert_eq!(color::<Error>.parse_peek("{color:F04F78}"), Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color"))));
+        assert_eq!(
+            color::<Error>.parse_peek("{color:F04F78}"),
+            Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color")))
+        );
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:F04F78}"),
             Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
@@ -190,7 +250,10 @@ mod tests {
     }
     #[test]
     fn test_parse_color_rgb_u8_triple() -> Result<()> {
-        assert_eq!(color::<Error>.parse_peek("{color:240,79,120,}"), Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color"))));
+        assert_eq!(
+            color::<Error>.parse_peek("{color:240,79,120,}"),
+            Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color")))
+        );
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:240,79,120}"),
             Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
@@ -207,7 +270,10 @@ mod tests {
     }
     #[test]
     fn test_parse_text_single_node() -> Result<()> {
-        assert_eq!(parse_node::<Error>.parse_peek("hello world"), Ok(("", Node::Text("hello world".to_string()))));
+        assert_eq!(
+            parse_node::<Error>.parse_peek("hello world"),
+            Ok(("", Node::Text("hello world".to_string())))
+        );
         Ok(())
     }
     #[test]
@@ -216,7 +282,11 @@ mod tests {
             nodes::<Error>.parse_peek("hello {reset} world"),
             Ok((
                 "",
-                Node::Array(vec![Node::Text("hello ".to_string()), Node::Reset(Reset::default()), Node::Text(" world".to_string())])
+                Node::Array(vec![
+                    Node::Text("hello ".to_string()),
+                    Node::Reset(Reset::default()),
+                    Node::Text(" world".to_string())
+                ])
             ))
         );
 
