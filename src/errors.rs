@@ -127,6 +127,11 @@ impl ParserError<&str> for Error {
 //         Error::ParseError(Into::<ParseError>::into(e.to_string()))
 //     }
 // }
+impl From<log::SetLoggerError> for Error {
+    fn from(e: log::SetLoggerError) -> Error {
+        Error::RuntimeError(e.to_string())
+    }
+}
 
 pub type Result<T> = std::result::Result<T, Error>;
 
