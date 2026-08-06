@@ -1,6 +1,6 @@
 use crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
 use serde::{Deserialize, Serialize};
-use tracing::{Level, event, instrument, span};
+#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
@@ -13,7 +13,7 @@ impl RenderableColor {
     pub fn new(color: Color) -> RenderableColor {
         RenderableColor { color, prefix: None, layer: None, contrast: None }
     }
-    #[instrument]
+    #[cfg_attr(feature = "tracing", instrument)]
     pub fn render(&self) -> String {
         let prefix = self.prefix.unwrap_or_default().render();
         let layer = self.layer.unwrap_or_default().render();
@@ -23,16 +23,17 @@ impl RenderableColor {
             self.color
         }
         .render();
+        #[cfg(feature = "tracing")]
         span!(Level::TRACE, "rendered params", prefix = prefix, layer = layer, color = color);
 
         [prefix, layer, color].iter().map(|value| value.to_string()).collect::<String>()
     }
-    #[instrument]
+    #[cfg_attr(feature = "tracing", instrument)]
     pub fn set_layer(&mut self, layer: Layer) {
         self.layer = Some(layer);
     }
 
-    #[instrument]
+    #[cfg_attr(feature = "tracing", instrument)]
     pub fn with_layer(mut self, layer: Layer) -> Self {
         self.set_layer(layer);
         self

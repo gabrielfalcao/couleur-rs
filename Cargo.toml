@@ -22,8 +22,22 @@ categories = ["command-line-interface"]
 default-run = "contrast"
 
 # categories = [] # https://crates.io/category_slugs
+
+[features]
+tracing = [
+    "dep:tracing",
+    "dep:tracing-subscriber",
+    "dep:tracing-appender",
+]
+logging = [
+    "dep:log",
+    "dep:fern",
+    "dep:chrono",
+]
+dirs = ["dep:dirs"]
+
 [dependencies]
-bon = "3.9.3"
+# bon = "3.9.3"
 clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }
 heck = "0.5.0"
 hex = "0.4.3"
@@ -36,13 +50,17 @@ thiserror = "2.0.18"
 serde_json = "1.0.150"
 serde_yaml = "0.9.34"
 winnow = "1.0.4"
-log = { version = "0.4.33", features = ["serde", "kv", "kv_serde"] }
-fern = { version = "0.7.1", features = ["chrono", "colored"] }
-chrono = { version = "0.4.45", features = ["serde"] }
+log = { version = "0.4.33", features = ["serde", "kv", "kv_serde"], optional = true }
+fern = { version = "0.7.1", features = ["chrono", "colored"], optional = true }
+chrono = { version = "0.4.45", features = ["serde"], optional = true }
 is-terminal = "0.4.17"
-tracing = { version = "0.1.44", features = ["log", "log-always"] }
-tracing-subscriber = { version = "0.3.23", features = ["serde", "serde_json", "json", "chrono", "env-filter"] }
-tracing-appender = "0.2.5"
+tracing = { version = "0.1.44", features = ["log", "log-always"], optional = true }
+tracing-subscriber = { version = "0.3.23", features = ["serde", "serde_json", "json", "chrono", "env-filter"], optional = true }
+tracing-appender = { version = "0.2.5", optional = true }
+dirs = { version = "6.0.0", optional = true }
+
+
+# cargo add --optional tracing tracing-subscriber tracing-appender
 
 
 [package.metadata]
@@ -129,4 +147,6 @@ opt-level = "z"  # Optimize for size. https://doc.rust-lang.org/cargo/reference/
 lto = true
 panic = "abort"
 codegen-units = 1
+
+
 # https://github.com/johnthagen/min-sized-rust?tab=readme-ov-file#remove-fmtdebug

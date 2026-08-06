@@ -12,7 +12,7 @@ use crate::{
     setup_logging,
 };
 use std::str::FromStr;
-use tracing::{Level, event, instrument, span};
+#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
 use winnow::{
     ascii::{dec_uint, digit1, float, hex_digit1},
@@ -56,39 +56,42 @@ impl From<Color> for Node {
     }
 }
 
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Node, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     if input.is_empty() {
         return Err(ErrMode::Cut(ParserError::from_input(input)));
     }
     // log::debug!("parse_node called with input: {input:#?}", &input);
     alt((
-        reset::<E>.map(Node::Reset), // Reset
-        color::<E>.map(Node::Color), // Color
-        layer::<E>.map(Node::Layer), // Layer
+        reset::<E>.map(Node::Reset),                      // Reset
+        color::<E>.map(Node::Color),                      // Color
+        layer::<E>.map(Node::Layer),                      // Layer
         renderable_color::<E>.map(Node::RenderableColor), // Layer
-        text::<E>.map(Node::Text),   // Text
-        nodes::<E>,                  // Array
+        text::<E>.map(Node::Text),                        // Text
+        nodes::<E>,                                       // Array
     ))
     .parse_next(input)
 }
 
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Reset, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     preceded('{', terminated("reset".value(Reset::default()), '}'))
         .context(StrContext::Expected("reset".into()))
         .parse_next(input)
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Color, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     preceded(
         '{',
@@ -103,10 +106,11 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     .context(StrContext::Expected("rgb color".into()))
     .parse_next(input)
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<RenderableColor, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     preceded(
         '{',
@@ -126,10 +130,11 @@ fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrC
     .parse_next(input)
     .map(|(color, layer): (Color, Layer)| RenderableColor::new(color).with_layer(layer))
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Layer, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
 
     preceded(
@@ -140,28 +145,31 @@ fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     .parse_next(input)
 }
 
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn text<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<String, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("text".into())),))
         .parse_next(input)
         .map(|s| s.to_string())
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<u8, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     dec_uint::<Stream<'i>, u8, ErrMode<E>>
         .context(StrContext::Expected("unsigned number between 0 and 255".into()))
         .parse_next(input)
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Color, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     repeat(0..5, hex_digit1)
         .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
@@ -169,19 +177,21 @@ fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCont
         .map(|string| string.parse::<Color>().expect("6 hex digits"))
         .parse_next(input)
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn parse_rgb_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Color, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     parse_triple
         .map(|(red, green, blue)| Color::from_triple(red.into(), green.into(), blue.into()))
         .parse_next(input)
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<(u8, u8, u8), E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     (
         terminated(parse_u8, (ws, ',', ws)),
@@ -191,19 +201,21 @@ fn parse_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrConte
         .context(StrContext::Expected("three comma-separated unsigned numbers".into()))
         .parse_next(input)
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<&'i str, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     take_while(0.., &[' ', '\t', '\r', '\n'])
         .context(StrContext::Expected("white space".into()))
         .parse_next(input)
 }
-#[instrument]
+#[cfg_attr(feature = "tracing", instrument)]
 fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     mut input: &mut Stream<'i>,
 ) -> ModalResult<Node, E> {
+    #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     let mut winnow_it = iterator(input, parse_node::<E>);
     let res = winnow_it.map(|node| node).collect::<Vec<Node>>();

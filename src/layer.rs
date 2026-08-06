@@ -1,6 +1,6 @@
 use crate::AnsiRenderable;
 use std::fmt::Display;
-use tracing::{Level, event, instrument, span};
+#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
@@ -16,12 +16,12 @@ pub enum Layer {
     BG,
 }
 impl Layer {
-    #[instrument]
+    #[cfg_attr(feature = "tracing", instrument)]
     pub fn default_color(self) -> Color {
         Color::default_for_layer(self)
     }
 
-    #[instrument]
+    #[cfg_attr(feature = "tracing", instrument)]
     pub fn inverted(self) -> Layer {
         match self {
             Layer::BG => Layer::FG,
@@ -29,12 +29,13 @@ impl Layer {
         }
     }
 
-    #[instrument]
+    #[cfg_attr(feature = "tracing", instrument)]
     pub fn code(self) -> i32 {
         let code = match self {
             Layer::BG => 48,
             Layer::FG => 38,
         };
+        #[cfg(feature = "tracing")]
         span!(Level::TRACE, "code", code);
         code
     }

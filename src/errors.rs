@@ -4,8 +4,10 @@ use std::{
     fmt::Display,
     num::{ParseFloatError, ParseIntError},
 };
-use winnow::stream::Stream;
-use winnow::error::{AddContext, ContextError, ErrMode, ParserError};
+use winnow::{
+    error::{AddContext, ContextError, ErrMode, ParserError},
+    stream::Stream,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
@@ -16,7 +18,8 @@ pub enum Error {
     RenderError(String),
     YamlError(String),
     JsonError(String),
-
+    InitializationError(String),
+    ConfigurationError(String),
     ClapError(String),
     ParseError(ParseError),
 }
@@ -34,6 +37,8 @@ impl Display for Error {
                 Error::RenderError(value) => value.to_string(),
                 Error::YamlError(value) => value.to_string(),
                 Error::JsonError(value) => value.to_string(),
+                Error::InitializationError(value) => value.to_string(),
+                Error::ConfigurationError(value) => value.to_string(),
 
                 Error::ClapError(value) => value.to_string(),
                 Error::ParseError(value) => value.to_string(),
@@ -52,7 +57,8 @@ impl Error {
             Error::RenderError(value) => value.to_string(),
             Error::YamlError(value) => value.to_string(),
             Error::JsonError(value) => value.to_string(),
-
+            Error::InitializationError(value) => value.to_string(),
+            Error::ConfigurationError(value) => value.to_string(),
             Error::ClapError(value) => value.to_string(),
             Error::ParseError(value) => value.to_string(),
         }
@@ -107,6 +113,12 @@ impl From<ErrMode<ContextError>> for Error {
         Error::ParseError(Into::<ParseError>::into(e.to_string()))
     }
 }
+#[cfg(any(feature = "logging", feature = "tracing"))]
+impl From<log::SetLoggerError> for Error {
+    fn from(e: log::SetLoggerError) -> Error {
+        Error::ConfigurationError(e.to_string())
+    }
+}
 
 impl ParserError<&str> for Error {
     type Inner = ParseError;
@@ -127,11 +139,6 @@ impl ParserError<&str> for Error {
 //         Error::ParseError(Into::<ParseError>::into(e.to_string()))
 //     }
 // }
-impl From<log::SetLoggerError> for Error {
-    fn from(e: log::SetLoggerError) -> Error {
-        Error::RuntimeError(e.to_string())
-    }
-}
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -230,7 +237,10 @@ impl Display for ConversionToF32Error {
 }
 impl Into<Error> for ConversionToF32Error {
     fn into(self) -> Error {
-        Error::ConversionToU8Error(ConversionToF32Error(self.0 as u8, format!("cannot convert {} to f32", self.0)).to_string())
+        Error::ConversionToU8Error(
+            ConversionToF32Error(self.0 as u8, format!("cannot convert {} to f32", self.0))
+                .to_string(),
+        )
     }
 }
 

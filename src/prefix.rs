@@ -1,8 +1,8 @@
-use std::fmt::{Debug, Display};
-use crate::{AnsiRenderable};
+use crate::AnsiRenderable;
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Debug, Display};
 
 /// Represents the intent to use an specific type of ANSI sequence
 /// prefix such as `\x1b`, `\033` or `\E` so as to allow rendering
