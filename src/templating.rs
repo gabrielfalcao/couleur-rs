@@ -160,10 +160,10 @@ fn contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>
                 "contrast:",
                 alt((
                     "none".value(Contrast::None),
-                    // "read".value(Contrast::Read),
-                    // "high_bit".value(Contrast::HighBit))),
-                    // "harmonic".value(Contrast::Harmonic),
-                    // "web".value(Contrast::Web),
+                    "read".value(Contrast::Read),
+                    "high_bit".value(Contrast::HighBit),
+                    "harmonic".value(Contrast::Harmonic),
+                    "web".value(Contrast::Web),
                 )),
             ),
             '}',
@@ -277,12 +277,12 @@ mod tests {
     ///
     /// ### fourth set of red -> green -> refactor rounds:
     ///
-    ///  - [ ] 1. parse "{contrast:*VARIANT*}" for each of **variant** of the `crate::Contrast` enum, that is:
+    ///  - [x] 1. parse "{contrast:*VARIANT*}" for each of **variant** of the `crate::Contrast` enum, that is:
     ///    - [x] 1.1 "{contrast:none}" should parse to `Node::Contrast(Contrast::None)`
-    ///    - [ ] 1.2 "{contrast:read}" should parse to `Node::Contrast(Contrast::Read)`
-    ///    - [ ] 1.3 "{contrast:high_bit}" should parse to `Node::Contrast(Contrast::HighBit)`
-    ///    - [ ] 1.4 "{contrast:harmonic}" should parse to `Node::Contrast(Contrast::Harmonic)`
-    ///    - [ ] 1.5 "{contrast:web}" should parse to `Node::Contrast(Contrast::Web)`
+    ///    - [x] 1.2 "{contrast:read}" should parse to `Node::Contrast(Contrast::Read)`
+    ///    - [x] 1.3 "{contrast:high_bit}" should parse to `Node::Contrast(Contrast::HighBit)`
+    ///    - [x] 1.4 "{contrast:harmonic}" should parse to `Node::Contrast(Contrast::Harmonic)`
+    ///    - [x] 1.5 "{contrast:web}" should parse to `Node::Contrast(Contrast::Web)`
     ///
     ///  - [ ] 2. parse "{color:#E83B3B%contrast:web}" to `Node::ContrastedColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?))`
     ///  - [ ] 3. parse "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World" to `Node::Array(vec![Node::Color(Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text("Hello"), Node::ContrastedColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text(" World")])`
@@ -468,17 +468,57 @@ mod tests {
 
         Ok(())
     }
-    // #[test]
-    // fn test_parse_contrast_read() -> Result<()> {
-    //     assert_eq!(
-    //         parse_node::<Error>.parse_peek("{contrast:read}"),
-    //         Ok(("", Node::Contrast(Contrast::Read)))
-    //     );
-    //     assert_eq!(
-    //         nodes::<Error>.parse_peek("{contrast:read}"),
-    //         Ok(("", Node::Array(vec![Node::Contrast(Contrast::Read)])))
-    //     );
-    //
-    //     Ok(())
-    // }
+    #[test]
+    fn test_parse_contrast_read() -> Result<()> {
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{contrast:read}"),
+            Ok(("", Node::Contrast(Contrast::Read)))
+        );
+        assert_eq!(
+            nodes::<Error>.parse_peek("{contrast:read}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::Read)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_contrast_high_bit() -> Result<()> {
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{contrast:high_bit}"),
+            Ok(("", Node::Contrast(Contrast::HighBit)))
+        );
+        assert_eq!(
+            nodes::<Error>.parse_peek("{contrast:high_bit}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::HighBit)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_contrast_harmonic() -> Result<()> {
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{contrast:harmonic}"),
+            Ok(("", Node::Contrast(Contrast::Harmonic)))
+        );
+        assert_eq!(
+            nodes::<Error>.parse_peek("{contrast:harmonic}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::Harmonic)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_contrast_web() -> Result<()> {
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{contrast:web}"),
+            Ok(("", Node::Contrast(Contrast::Web)))
+        );
+        assert_eq!(
+            nodes::<Error>.parse_peek("{contrast:web}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::Web)])))
+        );
+
+        Ok(())
+    }
+
 }
