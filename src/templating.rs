@@ -1,5 +1,5 @@
 // use crate::{Error, Result};
-use crate::{
+pub(self) use crate::{
     AnsiRenderable,
     Color,
     Contrast,
@@ -11,10 +11,10 @@ use crate::{
     Value,
     setup_logging,
 };
-use std::str::FromStr;
-#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
+pub(self) use std::str::FromStr;
+#[cfg(feature = "tracing")] pub(self) use tracing::{Level, event, instrument, span};
 
-use winnow::{
+pub(self) use winnow::{
     ascii::{dec_uint, digit1, float, hex_digit1},
     combinator::{
         alt,
@@ -95,18 +95,9 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 ) -> ModalResult<Color, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
-    preceded(
-        '{',
-        terminated(
-            preceded(
-                "color:",
-                alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
-            ),
-            '}',
-        ),
-    )
-    .context(StrContext::Expected("rgb color".into()))
-    .parse_next(input)
+    preceded('{', terminated(within_curly_braces::parse_color::<E>, '}'))
+        .context(StrContext::Expected("rgb color".into()))
+        .parse_next(input)
 }
 #[cfg_attr(feature = "tracing", instrument)]
 fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -120,42 +111,26 @@ fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrC
             alt((
                 (
                     // Color + Layer
-                    preceded(
-                        "color:",
-                        alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
-                    ),
-                    preceded(
-                        "@",
-                        preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))),
-                    ),
-                ).map(|(color, layer): (Color, Layer)| RenderableColor::new(color).with_layer(layer)),
+                    within_curly_braces::parse_color::<E>,
+                    preceded("@", within_curly_braces::parse_layer::<E>),
+                )
+                    .map(|(color, layer): (Color, Layer)| {
+                        RenderableColor::new(color).with_layer(layer)
+                    }),
                 (
                     // Color + Contrast
-                    preceded(
-                        "color:",
-                        alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
-                    ),
-                    preceded(
-                        "%",
-                        preceded(
-                            "contrast:",
-                            alt((
-                                "none".value(Contrast::None),
-                                "read".value(Contrast::Read),
-                                "high_bit".value(Contrast::HighBit),
-                                "harmonic".value(Contrast::Harmonic),
-                                "web".value(Contrast::Web),
-                            )),
-                        ),
-                    ),
-                ).map(|(color, contrast): (Color, Contrast)| RenderableColor::new(color).with_contrast(contrast)),
+                    within_curly_braces::parse_color::<E>,
+                    preceded("%", within_curly_braces::parse_contrast::<E>),
+                )
+                    .map(|(color, contrast): (Color, Contrast)| {
+                        RenderableColor::new(color).with_contrast(contrast)
+                    }),
             )),
             '}',
         ),
     )
     .context(StrContext::Expected("rgb color".into()))
     .parse_next(input)
-
 }
 #[cfg_attr(feature = "tracing", instrument)]
 fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -164,12 +139,9 @@ fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
 
-    preceded(
-        '{',
-        terminated(preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))), '}'),
-    )
-    .context(StrContext::Expected("ansi rendering layer".into()))
-    .parse_next(input)
+    preceded('{', terminated(within_curly_braces::parse_layer::<E>, "}"))
+        .context(StrContext::Expected("ansi rendering layer".into()))
+        .parse_next(input)
 }
 #[cfg_attr(feature = "tracing", instrument)]
 fn contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -178,24 +150,51 @@ fn contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
 
-    preceded(
-        '{',
-        terminated(
-            preceded(
-                "contrast:",
-                alt((
-                    "none".value(Contrast::None),
-                    "read".value(Contrast::Read),
-                    "high_bit".value(Contrast::HighBit),
-                    "harmonic".value(Contrast::Harmonic),
-                    "web".value(Contrast::Web),
-                )),
-            ),
-            '}',
-        ),
-    )
-    .context(StrContext::Expected("ansi rendering contrast".into()))
-    .parse_next(input)
+    preceded('{', terminated(within_curly_braces::parse_contrast::<E>, '}'))
+        .context(StrContext::Expected("ansi rendering contrast".into()))
+        .parse_next(input)
+}
+
+mod within_curly_braces {
+    use super::*;
+    #[cfg_attr(feature = "tracing", instrument)]
+    pub fn parse_contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+        input: &mut Stream<'i>,
+    ) -> ModalResult<Contrast, E> {
+        use super::*;
+        #[cfg(feature = "tracing")]
+        span!(Level::TRACE, "input", input);
+        preceded(
+            "contrast:",
+            alt((
+                "none".value(Contrast::None),
+                "read".value(Contrast::Read),
+                "high_bit".value(Contrast::HighBit),
+                "harmonic".value(Contrast::Harmonic),
+                "web".value(Contrast::Web),
+            )),
+        )
+        .parse_next(input)
+    }
+    #[cfg_attr(feature = "tracing", instrument)]
+    pub fn parse_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+        input: &mut Stream<'i>,
+    ) -> ModalResult<Color, E> {
+        use super::*;
+        #[cfg(feature = "tracing")]
+        span!(Level::TRACE, "input", input);
+        preceded("color:", alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)))
+            .parse_next(input)
+    }
+    #[cfg_attr(feature = "tracing", instrument)]
+    pub fn parse_layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+        input: &mut Stream<'i>,
+    ) -> ModalResult<Layer, E> {
+        use super::*;
+        #[cfg(feature = "tracing")]
+        span!(Level::TRACE, "input", input);
+        preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))).parse_next(input)
+    }
 }
 
 #[cfg_attr(feature = "tracing", instrument)]
