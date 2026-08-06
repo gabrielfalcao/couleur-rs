@@ -1,5 +1,16 @@
 // use crate::{Error, Result};
-use crate::{Color, Contrast, Error, Layer, Reset, Result, Value, setup_logging};
+use crate::{
+    AnsiRenderable,
+    Color,
+    Contrast,
+    Error,
+    Layer,
+    RenderableColor,
+    Reset,
+    Result,
+    Value,
+    setup_logging,
+};
 use std::str::FromStr;
 use tracing::{Level, event, instrument, span};
 
@@ -31,7 +42,7 @@ pub enum Node {
     Color(Color),
     Layer(Layer),
     Text(String),
-    AnsiLayered((Layer, Color)),
+    RenderableColor(RenderableColor),
     Array(Vec<Node>),
 }
 impl From<Reset> for Node {
@@ -58,6 +69,7 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         reset::<E>.map(Node::Reset), // Reset
         color::<E>.map(Node::Color), // Color
         layer::<E>.map(Node::Layer), // Layer
+        renderable_color::<E>.map(Node::RenderableColor), // Layer
         text::<E>.map(Node::Text),   // Text
         nodes::<E>,                  // Array
     ))
@@ -92,22 +104,27 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     .parse_next(input)
 }
 #[instrument]
-fn ansi_layered<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<(Layer, Color), E> {
+) -> ModalResult<RenderableColor, E> {
     span!(Level::TRACE, "input", input);
     preceded(
         '{',
         terminated(
-            preceded(
-                "color:",
-                alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
+            separated_pair(
+                preceded(
+                    "color:",
+                    alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
+                ),
+                "@",
+                preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))),
             ),
             '}',
         ),
     )
     .context(StrContext::Expected("rgb color".into()))
     .parse_next(input)
+    .map(|(color, layer): (Color, Layer)| RenderableColor::new(color).with_layer(layer))
 }
 #[instrument]
 fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -216,7 +233,7 @@ mod tests {
     ///
     ///  - [x] 1. parse "{layer:bg}" to `Node::Layer(crate::Layer::BG)`
     ///  - [x] 2. parse "{layer:fg}" to `Node::Layer(crate::Layer::FG)`
-    ///  - [ ] 3. parse "{color:#F9C22B@layer:bg}" to `Node::AnsiLayered(Node::Layer(crate::Layer::FG), Node::Color("#F9C22B".parse<crate::Color>()?))`
+    ///  - [x] 3. parse "{color:#F9C22B@layer:bg}" to something like `Node::AnsiLayered(Node::Layer(crate::Layer::FG), Node::Color("#F9C22B".parse<crate::Color>()?))`
     ///
     /// ### forth set of red -> green -> refactor rounds:
     ///
@@ -382,13 +399,16 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn test_parse_ansi_layered() -> Result<()> {
+    fn test_parse_renderable_color() -> Result<()> {
         global_setup();
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:#F9C22B@layer:bg}"),
             Ok((
                 "",
-                Node::AnsiLayered((crate::Layer::FG, "#F9C22B".parse::<crate::Color>().unwrap()))
+                Node::RenderableColor(
+                    RenderableColor::new("#F9C22B".parse::<crate::Color>().unwrap())
+                        .with_layer(Layer::BG)
+                )
             ))
         );
 

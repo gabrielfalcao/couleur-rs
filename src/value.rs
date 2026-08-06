@@ -5,10 +5,10 @@ use serde::{
     Serializer,
     de::{self, Error as SerdeError, Visitor},
 };
-use std::fmt;
-
 use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
+    fmt,
+    hash::{Hash, Hasher},
     ops::{
         Add,
         AddAssign,
@@ -224,6 +224,13 @@ impl std::fmt::UpperHex for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let value = self.into_u8();
         write!(f, "{value:02X}")
+    }
+}
+
+impl Hash for Value {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.to_string().hash(state);
+        self.to_u8().unwrap().hash(state);
     }
 }
 

@@ -1,3 +1,4 @@
+use crate::AnsiRenderable;
 use std::fmt::Display;
 
 use clap::{ValueEnum, builder::PossibleValue};

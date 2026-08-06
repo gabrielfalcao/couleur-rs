@@ -77,6 +77,12 @@ pub use state::{ColorPalette, Context};
 #[doc(hidden)] pub mod wrap;
 #[doc(inline)] pub use wrap::Wrap;
 
+#[doc(hidden)] pub mod ansi_renderable;
+#[doc(inline)] pub use ansi_renderable::AnsiRenderable;
+
+#[doc(hidden)] pub mod renderable_color;
+#[doc(inline)] pub use renderable_color::RenderableColor;
+
 #[doc(hidden)] pub mod util;
 #[doc(inline)]
 pub use util::{
@@ -94,3 +100,6 @@ pub mod templating;
 
 pub(crate) mod logging;
 pub use logging::{setup_logging, setup_tracing};
+
+pub(crate) mod testing;
+pub(crate) use testing::global_setup;
