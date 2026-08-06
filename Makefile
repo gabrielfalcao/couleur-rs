@@ -40,6 +40,7 @@ format:
 clean: format
 	cargo clean
 cls:
-	1>&2 printf "\x1b[2J\x1b[3J\x1b[H"
+	@1>&2 printf "\x1b[2J\x1b[3J\x1b[H"
+	@rm -f couleur.log
 
 .PHONY: run test format cls all clean nextest hex-to-bin

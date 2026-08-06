@@ -31,6 +31,7 @@ pub enum Node {
     Color(Color),
     Layer(Layer),
     Text(String),
+    AnsiLayered((Layer, Color)),
     Array(Vec<Node>),
 }
 impl From<Reset> for Node {
@@ -76,6 +77,24 @@ fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Color, E> {
+    span!(Level::TRACE, "input", input);
+    preceded(
+        '{',
+        terminated(
+            preceded(
+                "color:",
+                alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
+            ),
+            '}',
+        ),
+    )
+    .context(StrContext::Expected("rgb color".into()))
+    .parse_next(input)
+}
+#[instrument]
+fn ansi_layered<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<(Layer, Color), E> {
     span!(Level::TRACE, "input", input);
     preceded(
         '{',
@@ -344,7 +363,6 @@ mod tests {
     }
     #[test]
     fn test_parse_layer_bg() -> Result<()> {
-        global_setup();
         assert_eq!(parse_node::<Error>.parse_peek("{layer:bg}"), Ok(("", Node::Layer(Layer::BG))));
         assert_eq!(
             nodes::<Error>.parse_peek("{layer:bg}"),
@@ -355,11 +373,23 @@ mod tests {
     }
     #[test]
     fn test_parse_layer_fg() -> Result<()> {
-        global_setup();
         assert_eq!(parse_node::<Error>.parse_peek("{layer:fg}"), Ok(("", Node::Layer(Layer::FG))));
         assert_eq!(
             nodes::<Error>.parse_peek("{layer:fg}"),
             Ok(("", Node::Array(vec![Node::Layer(Layer::FG)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_ansi_layered() -> Result<()> {
+        global_setup();
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{color:#F9C22B@layer:bg}"),
+            Ok((
+                "",
+                Node::AnsiLayered((crate::Layer::FG, "#F9C22B".parse::<crate::Color>().unwrap()))
+            ))
         );
 
         Ok(())
