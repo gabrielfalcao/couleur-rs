@@ -1,5 +1,5 @@
 use std::fmt::{Debug, Display};
-
+use crate::{AnsiRenderable};
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
@@ -30,6 +30,11 @@ impl Display for Prefix {
                 Prefix::Escape => r"\E",
             }
         )
+    }
+}
+impl AnsiRenderable for Prefix {
+    fn render(self) -> String {
+        format!("{self}[")
     }
 }
 

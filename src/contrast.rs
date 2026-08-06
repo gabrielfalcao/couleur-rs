@@ -7,7 +7,7 @@ use std::{
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 
-use crate::{Color, Error, Layer, Result};
+use crate::{Color, Error, Layer, Result, Terminal, TerminalInfo};
 
 /// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]

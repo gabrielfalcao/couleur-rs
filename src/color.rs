@@ -1,5 +1,4 @@
-use std::{ops::Deref, str::FromStr, sync::LazyLock};
-
+use crate::AnsiRenderable;
 use regex::Regex;
 use serde::{
     Deserialize,
@@ -8,7 +7,13 @@ use serde::{
     Serializer,
     de::{self, Error as SerdeError, Visitor},
 };
-use std::fmt;
+use std::{
+    fmt,
+    hash::{Hash, Hasher},
+    ops::Deref,
+    str::FromStr,
+    sync::LazyLock,
+};
 
 use thiserror::Error as ThisError;
 
@@ -30,19 +35,11 @@ use crate::{
     min_rgb,
 };
 
-/// static instance of [`Color`] which holds the absolute black RGB color.
-pub static BLACK: LazyLock<Color> =
-    LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
-
-/// static instance of [`Color`] which holds the absolute white RGB color.
-pub static WHITE: LazyLock<Color> =
-    LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
-
 use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
 /// Represents an RGB color, providing methods to obtain color
 /// information and render the color in ANSI terminals supporting true-color.
-#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq)]
+#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct Color(
     /// The **red** band
     pub Value,
@@ -52,9 +49,28 @@ pub struct Color(
     pub Value,
 );
 impl Color {
+    pub const BLACK: Color = Color(Value(0.0_f32), Value(0.0_f32), Value(0.0_f32));
+    pub const WHITE: Color = Color(Value(255.0_f32), Value(255.0_f32), Value(255.0_f32));
+
     /// Creates a new color from the given red, green and blue values which should be of a type convertible [`Into<f32>`]
     pub fn new<T: Copy + Into<f32>>(red: T, green: T, blue: T) -> Result<Color> {
         Ok(Color(Value::new(red.into())?, Value::new(green.into())?, Value::new(blue.into())?))
+    }
+
+    /// Retrieves the terminal background color from the
+    /// [`TerminalBackground`] value cached in [`couleur::TERMINAL`]
+    /// falling back to the configurable global runtime value stored in [`couleur::SETTINGS`]
+    ///
+    /// ## Learn More
+    ///
+    /// - See [`Terminal::info()`] for information on how [`couleur::TERMINAL`] is computed
+    /// - See [`RuntimeSettings`] for information on how to customize the fallback values for background and background colors when querying the terminal is not feasible.
+    pub fn default_for_bg() -> Color {
+        if crate::TERMINAL.is_valid {
+            crate::TERMINAL.background.into()
+        } else {
+            crate::SETTINGS.fallback_background_color
+        }
     }
 
     /// queries the [`Terminal`] for the background color,
@@ -71,12 +87,32 @@ impl Color {
     /// [`Terminal::background_color()`].
     ///
     /// [`Terminal`]: crate::Terminal
-    /// [`BLACK`]: crate::color::BLACK
+    /// [`BLACK`]: crate::BLACK
     /// [`Terminal::background_color()`]: crate::Terminal::background_color
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
 
-    pub fn default_for_bg() -> Color {
-        Terminal::background_color().unwrap_or_else(|_| *BLACK)
+    pub fn query_default_for_bg() -> Color {
+        if crate::TERMINAL.is_valid {
+            crate::TERMINAL.background.into()
+        } else {
+            crate::SETTINGS.colors.default_bg_color
+        }
+    }
+
+    /// Retrieves the terminal foreground color from the
+    /// [`TerminalForeground`] value cached in [`couleur::TERMINAL`]
+    /// falling back to the configurable global runtime value stored in [`couleur::SETTINGS`]
+    ///
+    /// ## Learn More
+    ///
+    /// - See [`Terminal::info()`] for information on how [`couleur::TERMINAL`] is computed
+    /// - See [`RuntimeSettings`] for information on how to customize the fallback values for foreground and background colors when querying the terminal is not feasible.
+    pub fn default_for_fg() -> Color {
+        if crate::TERMINAL.is_valid {
+            crate::TERMINAL.foreground.into()
+        } else {
+            crate::SETTINGS.fallback_foreground_color
+        }
     }
 
     /// queries the [`Terminal`] for the foreground color,
@@ -93,11 +129,15 @@ impl Color {
     /// [`Terminal::foreground_color()`].
     ///
     /// [`Terminal`]: crate::Terminal
-    /// [`WHITE`]: crate::color::WHITE
+    /// [`WHITE`]: crate::WHITE
     /// [`Terminal::background_color()`]: crate::Terminal::background_color
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
-    pub fn default_for_fg() -> Color {
-        Terminal::foreground_color().unwrap_or_else(|_| *WHITE)
+    pub fn query_default_for_fg() -> Color {
+        if crate::TERMINAL.is_valid {
+            crate::TERMINAL.foreground.into()
+        } else {
+            crate::SETTINGS.colors.default_fg_color
+        }
     }
 
     /// queries the [`Terminal`] for the color of the given
@@ -112,9 +152,26 @@ impl Color {
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
     pub fn default_for_layer(layer: Layer) -> Color {
         Terminal::layer_color(layer).unwrap_or_else(|_| match layer {
-            Layer::BG => *BLACK,
-            Layer::FG => *WHITE,
+            Layer::BG => crate::SETTINGS.colors.default_bg_color,
+            Layer::FG => crate::SETTINGS.colors.default_fg_color,
         })
+    }
+
+    /// queries the [`Terminal`] for the color of the given
+    /// [`Layer`], defaulting the background to black and the
+    /// foreground to white in case of errors, which is the same
+    /// behavior of the [`Terminal::background_color()`] and [`Terminal::foreground_color()`]
+    /// methods.
+    ///
+    /// [`Terminal`]: crate::Terminal
+    /// [`Layer`]: crate::Layer
+    /// [`Terminal::background_color()`]: crate::Terminal::background_color
+    /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
+    pub fn query_default_for_layer(layer: Layer) -> Color {
+         Terminal::query_layer_color(layer).unwrap_or_else(|_| match layer {
+            Layer::BG => crate::SETTINGS.fallback_background_color,
+            Layer::FG => crate::SETTINGS.fallback_foreground_color,
+         })
     }
 
     /// Returns the raw [`Value`] for the red band of this [`Color`]
@@ -192,7 +249,7 @@ impl Color {
 
     /// Returns either [`BLACK`] or [`WHITE`] as the contrasting color based on the [`binary luminance algorithm`](`crate::Color::get_binary_luminance`)
     pub fn get_binary_contrast(&self) -> Color {
-        if self.is_dark() { *BLACK } else { *WHITE }
+        if self.is_dark() { Color::BLACK } else { Color::WHITE }
     }
 
     /// Returns the contrast of the current color based on the simple
@@ -254,7 +311,20 @@ impl Color {
     /// Returns either [`BLACK`] or [`WHITE`] as the contrast of the
     /// current color.
     pub fn get_accessible_contrast(&self) -> Color {
-        if self.get_wcag_luminance() > 0.175 { *BLACK } else { *WHITE }
+        if self.get_wcag_luminance() > 0.175 { Color::BLACK } else { Color::WHITE }
+    }
+
+    /// Returns a string representing the color in hexadecimal
+    /// notation (.i.e.: 6 hexadecimal digits prefixed with "#")
+    pub fn to_rgb_hex(&self) -> String {
+        format!(
+            "#{}",
+            self.to_triple()
+                .iter()
+                .map(|c| format!("{:02X}", c.into_u8()))
+                .collect::<Vec<String>>()
+                .join("")
+        )
     }
 
     /// Returns a string which renders the current color as an ANSI sequence in the given [`Layer`].
@@ -354,8 +424,8 @@ impl Color {
     /// information.
     ///
     /// [`Terminal`]: crate::Terminal
-    /// [`BLACK`]: crate::color::BLACK
-    /// [`WHITE`]: crate::color::WHITE
+    /// [`BLACK`]: crate::BLACK
+    /// [`WHITE`]: crate::WHITE
     /// [`Terminal::background_color()`]: crate::Terminal::background_color
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
     /// [`default_for_bg`]: crate::Color::default_for_bg
@@ -378,8 +448,8 @@ impl Color {
     /// information.
     ///
     /// [`Terminal`]: crate::Terminal
-    /// [`BLACK`]: crate::color::BLACK
-    /// [`WHITE`]: crate::color::WHITE
+    /// [`BLACK`]: crate::BLACK
+    /// [`WHITE`]: crate::WHITE
     /// [`Terminal::background_color()`]: crate::Terminal::background_color
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
     /// [`default_for_bg`]: crate::Color::default_for_bg
@@ -421,6 +491,12 @@ where
     }
 }
 
+impl From<terminal_colorsaurus::Color> for Color {
+    fn from(colorsaurus: terminal_colorsaurus::Color) -> Color {
+        Color::from(colorsaurus.scale_to_8bit())
+    }
+}
+
 impl FromStr for Color {
     type Err = Error;
 
@@ -456,15 +532,20 @@ impl FromStr for Color {
 
 impl std::fmt::Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "#{}",
-            self.to_triple()
-                .iter()
-                .map(|c| format!("{:02X}", c.into_u8()))
-                .collect::<Vec<String>>()
-                .join("")
-        )
+        write!(f, "{}", self.to_rgb_hex())
+    }
+}
+
+impl Hash for Color {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.to_.hash(state);
+    }
+}
+impl AnsiRenderable for Color {
+    fn render(self) -> String {
+        let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
+        let color = triple.join(";");
+        format!("2;{color}m")
     }
 }
 

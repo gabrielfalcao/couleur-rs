@@ -1,4 +1,6 @@
+use crate::AnsiRenderable;
 use std::fmt::Display;
+use tracing::{Level, event, instrument, span};
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
@@ -14,10 +16,12 @@ pub enum Layer {
     BG,
 }
 impl Layer {
+    #[instrument]
     pub fn default_color(self) -> Color {
         Color::default_for_layer(self)
     }
 
+    #[instrument]
     pub fn inverted(self) -> Layer {
         match self {
             Layer::BG => Layer::FG,
@@ -25,17 +29,26 @@ impl Layer {
         }
     }
 
+    #[instrument]
     pub fn code(self) -> i32 {
-        match self {
+        let code = match self {
             Layer::BG => 48,
             Layer::FG => 38,
-        }
+        };
+        span!(Level::TRACE, "code", code);
+        code
     }
 }
 
 impl Display for Layer {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.variant_name_snake())
+    }
+}
+impl AnsiRenderable for Layer {
+    fn render(self) -> String {
+        let code = self.code();
+        format!("{code};")
     }
 }
 

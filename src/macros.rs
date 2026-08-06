@@ -23,3 +23,35 @@ macro_rules! impl_op {
         }
     };
 }
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! impl_struct_representative_of_color {
+    ($struct_name:ident, $color_attribute_name:ident $(,)?) => {
+        use crate::Color;
+
+        impl std::ops::Deref for $struct_name {
+            type Target = Color;
+
+            fn deref(&self) -> &Self::Target {
+                &self.$color_attribute_name
+            }
+        }
+        impl std::fmt::Display for $struct_name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(f, "{color}", color = &self.$color_attribute_name)
+            }
+        }
+
+        impl From<Color> for $struct_name {
+            fn from($color_attribute_name: Color) -> $struct_name {
+                $struct_name { $color_attribute_name }
+            }
+        }
+        impl Into<Color> for $struct_name {
+            fn into(self) -> Color {
+                self.$color_attribute_name
+            }
+        }
+    };
+}

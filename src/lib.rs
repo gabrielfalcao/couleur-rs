@@ -21,7 +21,8 @@
 //! assert_eq!(darkest_pink.get_binary_contrast().to_hex_string(), "#FFFFFF");
 //! assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
 //! ```
-use std::sync::LazyLock;
+use lazy_mut::LazyMut;
+use std::{sync::LazyLock, time::Duration};
 
 #[doc(hidden)] pub mod ansi_colorizer;
 
@@ -31,7 +32,7 @@ use std::sync::LazyLock;
 #[doc(inline)] pub use cmp::{max_rgb, min_rgb};
 
 #[doc(hidden)] pub mod color;
-#[doc(inline)] pub use color::{BLACK, Color, RGBParseError, WHITE};
+#[doc(inline)] pub use color::{Color, RGBParseError};
 
 #[doc(hidden)] pub mod contrast;
 #[doc(inline)] pub use contrast::Contrast;
@@ -59,7 +60,13 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(inline)] pub use reset::Reset;
 
 #[doc(hidden)] pub mod terminal;
-#[doc(inline)] pub use terminal::{Terminal, TerminalInfo, TerminalInfoError};
+pub use terminal::{
+    Terminal,
+    TerminalBackground,
+    TerminalForeground,
+    TerminalInfo,
+    TerminalInfoError,
+};
 
 #[doc(hidden)] pub mod to_ansi;
 #[doc(inline)] pub use to_ansi::ToAnsi;
@@ -88,9 +95,25 @@ pub use util::{
     serialize_static_str_to_string,
 };
 
+#[doc(hidden)] pub mod palette;
+#[doc(inline)] pub use palette::{Palette, PaletteColor};
+
+#[doc(hidden)] pub mod runtime;
+#[doc(inline)] pub use runtime::{RuntimeColors, RuntimeSettings};
+
+pub static SETTINGS: LazyMut<RuntimeSettings> = LazyMut::new(|| RuntimeSettings::default());
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
 
 pub mod templating;
 
 pub(crate) mod logging;
 pub use logging::{setup_logging, setup_tracing};
+
+#[doc(hidden)] pub mod renderable_color;
+#[doc(inline)] pub use renderable_color::RenderableColor;
+
+#[doc(hidden)] pub mod ansi_renderable;
+#[doc(inline)] pub use ansi_renderable::AnsiRenderable;
+
+pub(crate) mod testing;
+pub(crate) use testing::global_setup;

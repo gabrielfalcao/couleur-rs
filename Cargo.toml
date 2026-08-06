@@ -43,6 +43,7 @@ is-terminal = "0.4.17"
 tracing = { version = "0.1.44", features = ["log", "log-always"] }
 tracing-subscriber = { version = "0.3.23", features = ["serde", "serde_json", "json", "chrono", "env-filter"] }
 tracing-appender = "0.2.5"
+lazy_mut = "0.2.1"
 
 
 [package.metadata]

@@ -40,6 +40,10 @@ pub struct Cli {
     /// the command defaults to "Hello World"
     #[arg(default_value = "Hello World")]
     text: Vec<String>,
+
+    /// which contrast to use in the background (or foreground if `--invert-layer` is active)
+    #[arg()]
+    contrast: Contrast,
 }
 
 impl Cli {}
