@@ -273,7 +273,7 @@ mod tests {
     ///
     ///  - [x] 1. parse "{layer:bg}" to `Node::Layer(crate::Layer::BG)`
     ///  - [x] 2. parse "{layer:fg}" to `Node::Layer(crate::Layer::FG)`
-    ///  - [x] 3. parse "{color:#F9C22B@layer:bg}" to something like `Node::AnsiLayered(Node::Layer(crate::Layer::FG), Node::Color("#F9C22B".parse<crate::Color>()?))`
+    ///  - [x] 3. parse "{color:#F9C22B@layer:bg}" to something like `Node::RenderableColor(Node::Layer(crate::Layer::FG), Node::Color("#F9C22B".parse<crate::Color>()?))`
     ///
     /// ### fourth set of red -> green -> refactor rounds:
     ///
@@ -284,8 +284,8 @@ mod tests {
     ///    - [x] 1.4 "{contrast:harmonic}" should parse to `Node::Contrast(Contrast::Harmonic)`
     ///    - [x] 1.5 "{contrast:web}" should parse to `Node::Contrast(Contrast::Web)`
     ///
-    ///  - [ ] 2. parse "{color:#E83B3B%contrast:web}" to `Node::ContrastedColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?))`
-    ///  - [ ] 3. parse "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World" to `Node::Array(vec![Node::Color(Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text("Hello"), Node::ContrastedColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text(" World")])`
+    ///  - [ ] 2. parse "{color:#E83B3B%contrast:web}" to something like `Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?))`
+    ///  - [ ] 3. parse "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World" to something like `Node::Array(vec![Node::Color(Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text("Hello"), Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text(" World")])`
     ///    - [ ] 3.1 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
     use super::*;
     use crate::{setup_logging, setup_tracing};
