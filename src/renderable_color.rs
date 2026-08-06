@@ -38,6 +38,15 @@ impl RenderableColor {
         self.set_layer(layer);
         self
     }
+    #[cfg_attr(feature = "tracing", instrument)]
+    pub fn set_contrast(&mut self, contrast: Contrast) {
+        self.contrast = Some(contrast);
+    }
+    #[cfg_attr(feature = "tracing", instrument)]
+    pub fn with_contrast(mut self, contrast: Contrast) -> Self {
+        self.set_contrast(contrast);
+        self
+    }
 }
 impl From<Color> for RenderableColor {
     fn from(color: Color) -> RenderableColor {

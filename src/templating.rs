@@ -117,22 +117,45 @@ fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrC
     preceded(
         '{',
         terminated(
-            (
-                preceded(
-                    "color:",
-                    alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
-                ),
-                preceded(
-                    "@",
-                    preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))),
-                ),
-            ),
+            alt((
+                (
+                    // Color + Layer
+                    preceded(
+                        "color:",
+                        alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
+                    ),
+                    preceded(
+                        "@",
+                        preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))),
+                    ),
+                ).map(|(color, layer): (Color, Layer)| RenderableColor::new(color).with_layer(layer)),
+                (
+                    // Color + Contrast
+                    preceded(
+                        "color:",
+                        alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
+                    ),
+                    preceded(
+                        "%",
+                        preceded(
+                            "contrast:",
+                            alt((
+                                "none".value(Contrast::None),
+                                "read".value(Contrast::Read),
+                                "high_bit".value(Contrast::HighBit),
+                                "harmonic".value(Contrast::Harmonic),
+                                "web".value(Contrast::Web),
+                            )),
+                        ),
+                    ),
+                ).map(|(color, contrast): (Color, Contrast)| RenderableColor::new(color).with_contrast(contrast)),
+            )),
             '}',
         ),
     )
     .context(StrContext::Expected("rgb color".into()))
     .parse_next(input)
-    .map(|(color, layer): (Color, Layer)| RenderableColor::new(color).with_layer(layer))
+
 }
 #[cfg_attr(feature = "tracing", instrument)]
 fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -286,7 +309,7 @@ mod tests {
     ///    - [x] 1.4 "{contrast:harmonic}" should parse to `Node::Contrast(Contrast::Harmonic)`
     ///    - [x] 1.5 "{contrast:web}" should parse to `Node::Contrast(Contrast::Web)`
     ///
-    ///  - [ ] 2. parse "{color:#E83B3B%contrast:web}" to something like `Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?))`
+    ///  - [x] 2. parse "{color:#E83B3B%contrast:web}" to something like `Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?))`
     ///  - [ ] 3. parse "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World" to something like `Node::Array(vec![Node::Color(Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text("Hello"), Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text(" World")])`
     ///    - [ ] 3.1 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
     use super::*;
@@ -521,5 +544,20 @@ mod tests {
 
         Ok(())
     }
+    #[test]
+    fn test_parse_renderable_color_with_contrast() -> Result<()> {
+        global_setup();
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{color:#E83B3B%contrast:web}"),
+            Ok((
+                "",
+                Node::RenderableColor(
+                    RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                        .with_contrast(Contrast::Web)
+                )
+            ))
+        );
 
+        Ok(())
+    }
 }
