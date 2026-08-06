@@ -7,7 +7,7 @@ use std::{
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 
-use crate::{Color, Error, Layer, Result};
+use crate::{Color, Error, Layer, Result, Terminal};
 
 /// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
@@ -26,7 +26,7 @@ impl Display for Contrast {
 }
 
 impl Contrast {
-    pub fn apply(&self, color: Color, layer: Layer) -> Color {
+    pub fn apply(&self, color: Color) -> Color {
         match self {
             Contrast::None => layer.default_color(),
             Contrast::Read => color.get_accessible_contrast(),
@@ -45,7 +45,10 @@ impl Contrast {
     }
 
     pub fn unwrap(self) -> Self {
-        self
+        match self {
+            Contrast::None => panic!("contrast is none"),
+            Contrast::Read | Contrast::HighBit | Contrast::Harmonic | Contrast::Web => self,
+        }
     }
 
     pub fn variant_name_snake(&self) -> &'static str {
@@ -71,7 +74,13 @@ impl Contrast {
     }
 
     pub fn variants<'a>() -> &'a [Contrast] {
-        &[Contrast::Read, Contrast::HighBit, Contrast::Harmonic, Contrast::Web]
+        &[
+            Contrast::None,
+            Contrast::Read,
+            Contrast::HighBit,
+            Contrast::Harmonic,
+            Contrast::Web,
+        ]
     }
 
     fn to_possible_strings(&self) -> [String; 4] {
