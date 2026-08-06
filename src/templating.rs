@@ -41,6 +41,7 @@ pub enum Node {
     Reset(Reset),
     Color(Color),
     Layer(Layer),
+    Contrast(Contrast),
     Text(String),
     RenderableColor(RenderableColor),
     Array(Vec<Node>),
@@ -70,6 +71,7 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         reset::<E>.map(Node::Reset),                      // Reset
         color::<E>.map(Node::Color),                      // Color
         layer::<E>.map(Node::Layer),                      // Layer
+        contrast::<E>.map(Node::Contrast),                // Contrast
         renderable_color::<E>.map(Node::RenderableColor), // Layer
         text::<E>.map(Node::Text),                        // Text
         nodes::<E>,                                       // Array
@@ -142,6 +144,32 @@ fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
         terminated(preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))), '}'),
     )
     .context(StrContext::Expected("ansi rendering layer".into()))
+    .parse_next(input)
+}
+#[cfg_attr(feature = "tracing", instrument)]
+fn contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Contrast, E> {
+    #[cfg(feature = "tracing")]
+    span!(Level::TRACE, "input", input);
+
+    preceded(
+        '{',
+        terminated(
+            preceded(
+                "contrast:",
+                alt((
+                    "none".value(Contrast::None),
+                    // "read".value(Contrast::Read),
+                    // "high_bit".value(Contrast::HighBit))),
+                    // "harmonic".value(Contrast::Harmonic),
+                    // "web".value(Contrast::Web),
+                )),
+            ),
+            '}',
+        ),
+    )
+    .context(StrContext::Expected("ansi rendering contrast".into()))
     .parse_next(input)
 }
 
@@ -247,10 +275,10 @@ mod tests {
     ///  - [x] 2. parse "{layer:fg}" to `Node::Layer(crate::Layer::FG)`
     ///  - [x] 3. parse "{color:#F9C22B@layer:bg}" to something like `Node::AnsiLayered(Node::Layer(crate::Layer::FG), Node::Color("#F9C22B".parse<crate::Color>()?))`
     ///
-    /// ### forth set of red -> green -> refactor rounds:
+    /// ### fourth set of red -> green -> refactor rounds:
     ///
     ///  - [ ] 1. parse "{contrast:*VARIANT*}" for each of **variant** of the `crate::Contrast` enum, that is:
-    ///    - [ ] 1.1 "{contrast:none}" should parse to `Node::Contrast(Contrast::None)`
+    ///    - [x] 1.1 "{contrast:none}" should parse to `Node::Contrast(Contrast::None)`
     ///    - [ ] 1.2 "{contrast:read}" should parse to `Node::Contrast(Contrast::Read)`
     ///    - [ ] 1.3 "{contrast:high_bit}" should parse to `Node::Contrast(Contrast::HighBit)`
     ///    - [ ] 1.4 "{contrast:harmonic}" should parse to `Node::Contrast(Contrast::Harmonic)`
@@ -426,4 +454,31 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_parse_contrast_none() -> Result<()> {
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{contrast:none}"),
+            Ok(("", Node::Contrast(Contrast::None)))
+        );
+        assert_eq!(
+            nodes::<Error>.parse_peek("{contrast:none}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::None)])))
+        );
+
+        Ok(())
+    }
+    // #[test]
+    // fn test_parse_contrast_read() -> Result<()> {
+    //     assert_eq!(
+    //         parse_node::<Error>.parse_peek("{contrast:read}"),
+    //         Ok(("", Node::Contrast(Contrast::Read)))
+    //     );
+    //     assert_eq!(
+    //         nodes::<Error>.parse_peek("{contrast:read}"),
+    //         Ok(("", Node::Array(vec![Node::Contrast(Contrast::Read)])))
+    //     );
+    //
+    //     Ok(())
+    // }
 }
