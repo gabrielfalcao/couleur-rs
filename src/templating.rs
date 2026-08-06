@@ -117,13 +117,15 @@ fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrC
     preceded(
         '{',
         terminated(
-            separated_pair(
+            (
                 preceded(
                     "color:",
                     alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)),
                 ),
-                "@",
-                preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))),
+                preceded(
+                    "@",
+                    preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))),
+                ),
             ),
             '}',
         ),
