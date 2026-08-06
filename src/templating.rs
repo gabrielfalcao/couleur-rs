@@ -441,8 +441,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn test_parse_renderable_color() -> Result<()> {
-        global_setup();
+    fn test_parse_renderable_color_with_layer() -> Result<()> {
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:#F9C22B@layer:bg}"),
             Ok((
