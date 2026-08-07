@@ -68,11 +68,11 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
     }
     // log::debug!("parse_node called with input: {input:#?}", &input);
     alt((
+        renderable_color::<E>.map(Node::RenderableColor), // RenderableColor
         reset::<E>.map(Node::Reset),                      // Reset
         color::<E>.map(Node::Color),                      // Color
         layer::<E>.map(Node::Layer),                      // Layer
         contrast::<E>.map(Node::Contrast),                // Contrast
-        renderable_color::<E>.map(Node::RenderableColor), // Layer
         text::<E>.map(Node::Text),                        // Text
         nodes::<E>,                                       // Array
     ))
@@ -109,6 +109,15 @@ fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrC
         '{',
         terminated(
             alt((
+                (
+                    // Color + Layer + Contrast
+                    within_curly_braces::parse_color::<E>,
+                    preceded("@", within_curly_braces::parse_layer::<E>),
+                    preceded("%", within_curly_braces::parse_contrast::<E>),
+                )
+                    .map(|(color, layer, contrast): (Color, Layer, Contrast)| {
+                        RenderableColor::new(color).with_layer(layer).with_contrast(contrast)
+                    }),
                 (
                     // Color + Layer
                     within_curly_braces::parse_color::<E>,
@@ -553,6 +562,23 @@ mod tests {
                 "",
                 Node::RenderableColor(
                     RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                        .with_contrast(Contrast::Web)
+                )
+            ))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_renderable_color_with_layer_and_contrast() -> Result<()> {
+        global_setup();
+        assert_eq!(
+            parse_node::<Error>.parse_peek("{color:#E83B3B@layer:bg%contrast:web}"),
+            Ok((
+                "",
+                Node::RenderableColor(
+                    RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                        .with_layer(Layer::BG)
                         .with_contrast(Contrast::Web)
                 )
             ))
