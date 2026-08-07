@@ -319,7 +319,7 @@ mod tests {
     ///
     ///  - [x] 2. parse "{color:#E83B3B%contrast:web}" to something like `Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?))`
     ///  - [x] 3. parse "{color:#E83B3B@layer:bg%contrast:web}" to something like `Node::RenderableColor(Node::Color("#E83B3B".parse<crate::Color>()?, Node::Contrast(Contrast::Web), Node::Layer(Layer::BG), ))`
-    ///  - [ ] 4. parse "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World" to something like `Node::Array(vec![Node::Color(Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text("Hello"), Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text(" World")])`
+    ///  - [x] 4. parse "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World" to something like `Node::Array(vec![Node::Color(Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text("Hello"), Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text(" World")])`
     ///    - [ ] 4.1 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
     use super::*;
     use crate::{setup_logging, setup_tracing};
@@ -581,6 +581,27 @@ mod tests {
                         .with_layer(Layer::BG)
                         .with_contrast(Contrast::Web)
                 )
+            ))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_renderable_color_with_layer_contrast_and_text() -> Result<()> {
+        global_setup();
+        assert_eq!(
+            nodes::<Error>.parse_peek("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+            Ok((
+                "",
+                Node::Array(vec![
+                    Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+                    Node::Text("Hello".to_string()),
+                    Node::RenderableColor(
+                        RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                            .with_contrast(Contrast::Web)
+                    ),
+                    Node::Text(" World".to_string())
+                ])
             ))
         );
 
