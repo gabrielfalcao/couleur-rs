@@ -4,7 +4,8 @@ use {
     serde::{Deserialize, Serialize},
     std::fmt::Display,
 };
-#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+use bon:: Builder;
+#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize,Builder)]
 pub struct RenderableColor {
     pub(crate) color: Color,
     pub(crate) prefix: Option<Prefix>,
@@ -18,41 +19,43 @@ impl RenderableColor {
     pub fn color(&self) -> Color {
         self.color
     }
-    pub fn set_color(&mut self, value: Color) -> Option<Color> {
+    pub fn set_color(&mut self, value: Color) {
         self.color = value;
+        self.color
     }
     pub fn with_color(mut self, value: Color) -> RenderableColor {
         self.set_color(value);
         self
     }
-    pub fn prefix(&self) -> Prefix {
+    pub fn prefix(&self) -> Option<Prefix> {
         self.prefix
     }
-    pub fn set_prefix(&mut self, value: Prefix) -> Option<Prefix> {
-        self.prefix = value;
+    pub fn set_prefix(&mut self, value: Prefix) {
+        self.prefix = Some(value);
     }
-    pub fn with_prefix(mut self, value: Prefix) -> RenderablePrefix {
+    pub fn with_prefix(mut self, value: Prefix) -> RenderableColor {
         self.set_prefix(value);
         self
     }
-    pub fn layer(&self) -> Layer {
+    pub fn layer(&self) -> Option<Layer> {
         self.layer
     }
-    pub fn set_layer(&mut self, value: Layer) -> Option<Layer> {
-        self.layer = value;
+    pub fn set_layer(&mut self, value: Layer) {
+        self.layer = Some(value);
+        self.layer
     }
-    pub fn with_layer(mut self, value: Layer) -> RenderableLayer {
+    pub fn with_layer(mut self, value: Layer) -> RenderableColor {
         self.set_layer(value);
         self
     }
 
-    pub fn contrast(&self) -> Contrast {
+    pub fn contrast(&self) -> Option<Contrast> {
         self.contrast
     }
     pub fn set_contrast(&mut self, value: Contrast) -> Option<Contrast> {
-        self.contrast = value;
+        self.contrast = Some(value);
     }
-    pub fn with_contrast(mut self, value: Contrast) -> RenderableContrast {
+    pub fn with_contrast(mut self, value: Contrast) -> RenderableColor {
         self.set_contrast(value);
         self
     }
@@ -74,11 +77,11 @@ impl AnsiRenderable for RenderableColor {
         parts.push(prefix);
         parts.push(layer);
         parts.push(if let Some(contrast) = self.contrast.clone() {
-            contrast.apply(self.color, self.layer).render()
+            contrast.apply(self.color, self.layer.unwrap_or_default()).render()
         } else {
             self.color.render()
         });
-        let result = parts.collect::<String>();
+        let result = parts.into_iter().collect::<String>();
         Ok(result)
     }
 }

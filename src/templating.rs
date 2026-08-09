@@ -447,7 +447,7 @@ pub fn render<
     input: T,
 ) -> Result<String> {
     let resolve = nodes::<Error>.parse(input)?;
-    Ok(resolve)
+    Ok(resolve.render()?)
 }
 
 // pub fn render<'i, T: std::fmt::Display + std::fmt::Debug>(input: T) -> Result<String> {
