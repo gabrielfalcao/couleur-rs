@@ -21,19 +21,26 @@ impl RenderableColor {
 }
 impl Display for RenderableColor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let error = match self {
-            Error::RenderableColor(value) => value.to_string(),
-            Error::IOError(value) => value.to_string(),
-            Error::RuntimeError(value) => value.to_string(),
-            Error::ConversionToU8Error(value) => value.to_string(),
-            Error::TerminalQueryError(value) => value.to_string(),
-            Error::RenderError(value) => value.to_string(),
-        };
-        let variant = self.variant();
-        write!(f, "{variant}: {error}")
+        write!(f, "{}", self.render())
     }
 }
+impl AnsiRenderable for RenderableColor {
+    fn render(&self) -> String{
+        let mut parts = Vec::<Color>::new();
+        let prefix = prefix.unwrap_or_default().render();
+        let layer = layer.unwrap_or_default().render();
+        parts.push(prefix);
+        parts.push(layer);
+        parts.push(if let Some(contrast) = contrast.clone() {
+            contrast.apply(color,layer).render()
+        } else {
+            color.render()
+        });
+        let parts = [prefix, layer, color].iter().collect::(String);
 
+
+    }
+}
 // impl Display for RenderableColor {
 //     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 //         let color = self.color;
