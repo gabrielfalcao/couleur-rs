@@ -5,7 +5,7 @@ use std::{
     num::{ParseFloatError, ParseIntError},
 };
 use winnow::{
-    error::{AddContext, ContextError, ErrMode, ParserError},
+    error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
     stream::Stream,
 };
 
@@ -22,6 +22,7 @@ pub enum Error {
     ConfigurationError(String),
     ClapError(String),
     ParseError(ParseError),
+    TemplateParseError(String),
 }
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -39,9 +40,9 @@ impl Display for Error {
                 Error::JsonError(value) => value.to_string(),
                 Error::InitializationError(value) => value.to_string(),
                 Error::ConfigurationError(value) => value.to_string(),
-
                 Error::ClapError(value) => value.to_string(),
                 Error::ParseError(value) => value.to_string(),
+                Error::TemplateParseError(value) => value.to_string(),
             }
         )
     }
@@ -61,6 +62,7 @@ impl Error {
             Error::ConfigurationError(value) => value.to_string(),
             Error::ClapError(value) => value.to_string(),
             Error::ParseError(value) => value.to_string(),
+            Error::TemplateParseError(value) => value.to_string(),
         }
         .to_string()
     }
@@ -113,6 +115,14 @@ impl From<ErrMode<ContextError>> for Error {
         Error::ParseError(Into::<ParseError>::into(e.to_string()))
     }
 }
+// impl<'i, E> From<E> for Error
+// where
+//     E: ParserError<&'i str> + AddContext<&'i str, StrContext> + ToString,
+// {
+//     fn from(e: E) -> Error {
+//         Error::ParseError(e.to_string().into())
+//     }
+// }
 #[cfg(any(feature = "logging", feature = "tracing"))]
 impl From<log::SetLoggerError> for Error {
     fn from(e: log::SetLoggerError) -> Error {

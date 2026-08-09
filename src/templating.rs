@@ -284,43 +284,32 @@ fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     winnow_it.finish();
     Ok(Node::Array(res))
 }
+#[cfg_attr(feature = "tracing", instrument)]
+pub fn parse<'i, T : std::fmt::Debug + std::fmt::Display, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + std::fmt::Display >(
+    input: T,
+) -> Result<Node> {
+    let mut input: &'i mut str = input.to_string().leak();
+    let result = nodes::<E>.parse(input).map_err(|e| Error::TemplateParseError(format!("{e}")))?;
+    Ok(result)
+}
+pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item=T>>(items: I) -> String {
+    items.map(|i| i.render()).collect::<String>()
+}
+// pub fn render<
+//     'i,
+//     E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + std::fmt::Display,
+//     T: std::fmt::Display + std::fmt::Debug,
+// >(
+//     input: T,
+// ) -> Result<String> {
+//     let mut input: &'i mut str = input.to_string().leak();
+//     let items = render_nodes::<E>(input).to_string();
+//     Ok(render::<E>(input)?)
+// }
 
 #[cfg(test)]
 mod tests {
-    /// # TDD TODO:
-    ///
-    /// ### first set of red -> green -> refactor rounds:
-    ///
-    ///  - [x] parse "{reset}" to `Node::Reset` *DONE:
-    ///  - [x] 2. parse "{color:#F04F78}" to `Node::Color(crate::Color)`
-    ///  - [x] 3. parse "{color:F04F78}" to `Node::Color(crate::Color)`
-    ///  - [x] 4. parse "{color:240,79,120}" to `Node::Color(crate::Color)`
-    ///  - [x] 5. parse "{color:240,  79, 120 , }" to `Node::Color(crate::Color)`
-    ///
-    /// ### second set of red -> green -> refactor rounds:
-    ///
-    ///  - [x] 1. parse "hello {reset} world" to `Node::Array(vec![Node::Text("hello "), Node::Reset, Node::Text(" world")])`
-    ///  - [x] 2. parse "{color:#4D9BE6}hello {color:#91DB69}world{reset}" to something like `Node::Array(vec![Node::Color("#4D9BE6".parse::<crate::Color>()?), Node::Text("hello "), Node::Color("#91DB69".parse::<crate::Color>()?), Node::Text("world"), Node::Reset])`
-    ///
-    /// ### third set of red -> green -> refactor rounds:
-    ///
-    ///  - [x] 1. parse "{layer:bg}" to `Node::Layer(crate::Layer::BG)`
-    ///  - [x] 2. parse "{layer:fg}" to `Node::Layer(crate::Layer::FG)`
-    ///  - [x] 3. parse "{color:#F9C22B@layer:bg}" to something like `Node::RenderableColor(Node::Layer(crate::Layer::FG), Node::Color("#F9C22B".parse<crate::Color>()?))`
-    ///
-    /// ### fourth set of red -> green -> refactor rounds:
-    ///
-    ///  - [x] 1. parse "{contrast:*VARIANT*}" for each of **variant** of the `crate::Contrast` enum, that is:
-    ///    - [x] 1.1 "{contrast:none}" should parse to `Node::Contrast(Contrast::None)`
-    ///    - [x] 1.2 "{contrast:read}" should parse to `Node::Contrast(Contrast::Read)`
-    ///    - [x] 1.3 "{contrast:high_bit}" should parse to `Node::Contrast(Contrast::HighBit)`
-    ///    - [x] 1.4 "{contrast:harmonic}" should parse to `Node::Contrast(Contrast::Harmonic)`
-    ///    - [x] 1.5 "{contrast:web}" should parse to `Node::Contrast(Contrast::Web)`
-    ///
-    ///  - [x] 2. parse "{color:#E83B3B%contrast:web}" to something like `Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?))`
-    ///  - [x] 3. parse "{color:#E83B3B@layer:bg%contrast:web}" to something like `Node::RenderableColor(Node::Color("#E83B3B".parse<crate::Color>()?, Node::Contrast(Contrast::Web), Node::Layer(Layer::BG), ))`
-    ///  - [x] 4. parse "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World" to something like `Node::Array(vec![Node::Color(Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text("Hello"), Node::RenderableColor(Node::Contrast(Contrast::Web), Node::Color("#E83B3B".parse<crate::Color>()?)), Node::Text(" World")])`
-    ///    - [ ] 4.1 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
+    /// 4.0 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
     use super::*;
     use crate::{setup_logging, setup_tracing};
     use winnow::error::{ContextError as Error, ErrMode};
@@ -555,7 +544,6 @@ mod tests {
     }
     #[test]
     fn test_parse_renderable_color_with_contrast() -> Result<()> {
-        global_setup();
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:#E83B3B%contrast:web}"),
             Ok((
@@ -571,7 +559,6 @@ mod tests {
     }
     #[test]
     fn test_parse_renderable_color_with_layer_and_contrast() -> Result<()> {
-        global_setup();
         assert_eq!(
             parse_node::<Error>.parse_peek("{color:#E83B3B@layer:bg%contrast:web}"),
             Ok((
@@ -588,7 +575,6 @@ mod tests {
     }
     #[test]
     fn test_parse_renderable_color_with_layer_contrast_and_text() -> Result<()> {
-        global_setup();
         assert_eq!(
             nodes::<Error>.parse_peek("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
             Ok((
@@ -603,6 +589,20 @@ mod tests {
                     Node::Text(" World".to_string())
                 ])
             ))
+        );
+        assert_eq!(
+            parse::<&str, Error>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+            Ok(
+                Node::Array(vec![
+                    Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+                    Node::Text("Hello".to_string()),
+                    Node::RenderableColor(
+                        RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                            .with_contrast(Contrast::Web)
+                    ),
+                    Node::Text(" World".to_string())
+                ])
+            )
         );
 
         Ok(())
