@@ -1,12 +1,14 @@
-use crate::color::RGBParseError;
-use serde::{Deserialize, Serialize};
-use std::{
-    fmt::Display,
-    num::{ParseFloatError, ParseIntError},
-};
-use winnow::{
-    error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-    stream::Stream,
+use {
+    crate::color::RGBParseError,
+    serde::{Deserialize, Serialize},
+    std::{
+        fmt::Display,
+        num::{ParseFloatError, ParseIntError},
+    },
+    winnow::{
+        error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
+        stream::Stream,
+    },
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -28,9 +30,9 @@ impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "{}: {}",
-            self.variant(),
-            match self {
+            "{variant}: {error}",
+            variant = self.variant(),
+            error = match self {
                 Error::IOError(value) => value.to_string(),
                 Error::RuntimeError(value) => value.to_string(),
                 Error::ConversionToU8Error(value) => value.to_string(),

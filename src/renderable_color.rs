@@ -1,13 +1,43 @@
-use crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
-use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
-
+use {
+    crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap},
+    serde::{Deserialize, Serialize},
+    std::fmt::Display,
+};
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
     pub(crate) color: Color,
     pub(crate) prefix: Option<Prefix>,
     pub(crate) layer: Option<Layer>,
     pub(crate) contrast: Option<Contrast>,
+}
+impl Display for RenderableColor {
+    fn fmt(&self, &mut std::fmt::Formatter) -> std::fmt::Result {
+        let color = self.color;
+        let prefix = self.prefix;
+        let prefix = self.prefix;
+        let contrast = self.contrast;
+        let mut parts = vec![format!("color:{color}")];
+        if let Some(prefix) = &self.prefix {
+            parts.push(prefix.to_string())
+        }
+
+        if let Some(color) = &self.color {
+            parts.push(color.to_string())
+        }
+        if let Some(layer) = &self.layer {
+            parts.push(layer.to_string())
+        }
+
+        if let Some(contrast) = &self.contrast {
+            parts.push(contrast.to_string())
+        }
+        let write = parts.join(",");
+
+
+
+        write!(f, "{write}")
+    }
 }
 impl RenderableColor {
     pub fn new(color: Color) -> RenderableColor {
@@ -55,9 +85,11 @@ impl From<Color> for RenderableColor {
 }
 #[cfg(test)]
 mod tests {
-    use super::RenderableColor;
-    use crate::{AnsiRenderable, Color, Contrast, Error, Layer, Result, global_setup};
-    use std::str::FromStr;
+    use {
+        super::RenderableColor,
+        crate::{AnsiRenderable, Color, Contrast, Error, Layer, Result, global_setup},
+        std::str::FromStr,
+    };
 
     #[test]
     fn test_render_color_defaults_to_foreground_layer() -> Result<()> {

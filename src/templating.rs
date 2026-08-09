@@ -1,8 +1,10 @@
 // use crate::{Error, Result};
 #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
 #[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
-#[cfg(feature = "tracing")]
+
 use winnow::{
+    ModalResult,
+    Parser,
     ascii::{dec_uint, digit1, float, hex_digit1},
     combinator::{
         alt,
@@ -21,6 +23,8 @@ use winnow::{
     prelude::*,
     token::{any, none_of, rest, take, take_while},
 };
+pub(crate) type Stream<'i> = &'i str;
+
 use {
     crate::{
         AnsiRenderable,
@@ -34,18 +38,9 @@ use {
         Value,
         setup_logging,
     },
-    std::{
-        fmt::{Debug, Display},
-        str::FromStr,
-    },
-    winnow::{
-        ModalResult,
-        Parser,
-        error::{AddContext, ErrMode, ParserError, StrContext},
-    },
+    std::fmt::{Debug, Display},
 };
 
-pub(crate) type Stream<'i> = &'i str;
 impl AnsiRenderable for Node {
     fn render(&self) -> String {
         match self {
@@ -72,28 +67,34 @@ pub enum Node {
 
 impl Display for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Node::{variant}(data) => {repr:#?}",
-        variant = self.variant(),
-        repr= match self {
-            Node::Reset(reset) =>{
-                reset.render
-            },
-            Node::Color(color) =>{
-                layer.render()
-            },
-            Node::Layer(layer) =>{
-                layer.render()
-            },
-            Node::Contrast(contrast) =>{
-                contrast.render()
-            },
-            Node::Text(text) =>{ text.to_string()
-            },
-            Node::RenderableColor(RenderableColor) =>{
-            },
-            Node::Array(Vec<Node>) =>{
+        write!(
+            f,
+            "Node::{variant}(data) => {repr:#?}",
+            variant = self.variant(),
+            repr = match self {
+                Node::Reset(reset) => {
+                    reset.render()
+                }
+                Node::Color(color) => {
+                    color.render()
+                }
+                Node::Layer(layer) => {
+                    layer.render()
+                }
+                Node::Contrast(contrast) => {
+                    contrast.render()
+                }
+                Node::Text(text) => {
+                    text.to_string()
+                }
+                Node::RenderableColor(color) => {
+                    color.to_string()
+                }
+                Node::Array(nodes) => {
+                    nodes.iter().map(|node| AnsiRenderable::render(node)).collect::<String>()
+                }
             }
-        })
+        )
     }
 }
 
@@ -216,8 +217,25 @@ fn contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>
         .parse_next(input)
 }
 
+impl Node {
+    pub fn variant(&self) -> String {
+        match self {
+            Node::Reset(_) => "reset",
+            Node::Color(_) => "color",
+            Node::Layer(_) => "layer",
+            Node::Contrast(_) => "contrast",
+            Node::Text(_) => "string",
+            Node::RenderableColor(_) => "renderable_color",
+            Node::Array(nodes) => {
+                nodes.iter().map(|n| n.to_string()).collect::<Vec<String>>().join(",")
+            }
+        }
+    }
+}
 mod within_curly_braces {
+    #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
     use {
+        super::*,
         crate::{
             AnsiRenderable,
             Color,
