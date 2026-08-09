@@ -483,7 +483,7 @@ impl Hash for Color {
     }
 }
 impl AnsiRenderable for Color {
-    fn render(self) -> String {
+    fn render(&self) -> String {
         let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
         let color = triple.join(";");
         format!("2;{color}m")
