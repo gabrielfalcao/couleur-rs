@@ -13,11 +13,15 @@ pub(self) use crate::{
 };
 use couleur::*;
 
-use crate::{setup_logging, setup_tracing};
-use winnow::error::{ContextError as Error, ErrMode};
+use {
+    crate::{setup_logging, setup_tracing},
+    winnow::error::{ContextError as Error, ErrMode},
+};
 type Result<T> = std::result::Result<T, ContextError>;
-use std::{str::FromStr, sync::Once};
-use winnow::error::StrContextValue::StringLiteral;
+use {
+    std::{str::FromStr, sync::Once},
+    winnow::error::StrContextValue::StringLiteral,
+};
 
 #[test]
 fn test_parse_u8() {

@@ -1,19 +1,21 @@
 // use crate::{Error, Result};
-pub(self) use crate::{
-    AnsiRenderable,
-    Color,
-    Contrast,
-    Error,
-    Layer,
-    RenderableColor,
-    Reset,
-    Result,
-    Value,
-    setup_logging,
-};
 use std::fmt::{Debug, Display};
-pub(self) use std::str::FromStr;
 #[cfg(feature = "tracing")] pub(self) use tracing::{Level, event, instrument, span};
+pub(self) use {
+    crate::{
+        AnsiRenderable,
+        Color,
+        Contrast,
+        Error,
+        Layer,
+        RenderableColor,
+        Reset,
+        Result,
+        Value,
+        setup_logging,
+    },
+    std::str::FromStr,
+};
 
 pub(self) use winnow::{
     ascii::{dec_uint, digit1, float, hex_digit1},

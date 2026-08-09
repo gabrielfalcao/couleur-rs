@@ -1,5 +1,7 @@
-use crate::{setup_logging, setup_tracing};
-use std::sync::Once;
+use {
+    crate::{setup_logging, setup_tracing},
+    std::sync::Once,
+};
 
 static INIT: Once = Once::new();
 

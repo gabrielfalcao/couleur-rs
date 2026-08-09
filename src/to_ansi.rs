@@ -1,6 +1,8 @@
-use crate::{Error, Prefix, Result};
-use serde::Serialize;
-use std::fmt::Display;
+use {
+    crate::{Error, Prefix, Result},
+    serde::Serialize,
+    std::fmt::Display,
+};
 
 pub trait ToAnsi: Sized + Serialize {
     /// implementors must implement at least
