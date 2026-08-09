@@ -1,9 +1,10 @@
-use crate::AnsiRenderable;
-use std::fmt::Display;
+use {crate::AnsiRenderable, std::fmt::Display};
 
-use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
-use serde::{Deserialize, Serialize};
+use {
+    clap::{ValueEnum, builder::PossibleValue},
+    heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase},
+    serde::{Deserialize, Serialize},
+};
 
 use crate::{Prefix, ToAnsi};
 

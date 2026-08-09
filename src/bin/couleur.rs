@@ -29,8 +29,6 @@ where
     T: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Display,
 {
     fn dispatch(&self) -> Result<()> {
-
-
         Ok(())
     }
 }

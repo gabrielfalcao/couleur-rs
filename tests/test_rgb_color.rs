@@ -1,7 +1,9 @@
 use std::cmp::{max, min};
 
-use couleur_rs::{Color, Contrast, Layer, Reset, Result, Value, Wrap};
-use k9::assert_equal;
+use {
+    couleur_rs::{Color, Contrast, Layer, Reset, Result, Value, Wrap},
+    k9::assert_equal,
+};
 
 #[test]
 fn test_contrast_functions() -> Result<()> {

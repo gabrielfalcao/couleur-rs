@@ -1,8 +1,10 @@
 #![allow(unused)]
 use std::cmp::{max, min};
 
-use couleur_rs::{AnsiColorizer, Color, Contrast, Layer, Prefix, Reset, Result, Value, Wrap};
-use k9::assert_equal;
+use {
+    couleur_rs::{AnsiColorizer, Color, Contrast, Layer, Prefix, Reset, Result, Value, Wrap},
+    k9::assert_equal,
+};
 
 fn make_simple_test_colorizer(
     bg: Option<Color>,

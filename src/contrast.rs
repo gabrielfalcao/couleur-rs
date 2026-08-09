@@ -7,11 +7,10 @@ use {
 };
 
 use {
+    crate::{AnsiRenderableWithColorAndLayer, Color, Error, Layer, Result, Terminal, TerminalInfo},
     clap::{ValueEnum, builder::PossibleValue},
     heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase},
 };
-
-use crate::{Color, Error, Layer, Result, Terminal, TerminalInfo};
 
 /// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
@@ -122,6 +121,18 @@ impl From<Option<Contrast>> for Contrast {
         match contrast {
             Some(contrast) => contrast,
             None => Contrast::None,
+        }
+    }
+}
+
+impl AnsiRenderableWithColorAndLayer for Contrast {
+    fn render(&self, color: Color, layer: Layer) -> Color {
+        match self {
+            Contrast::None => layer.default_color(),
+            Contrast::Read => color.get_accessible_contrast(),
+            Contrast::HighBit => color.get_binary_contrast(),
+            Contrast::Harmonic => color.get_adobe_complementary(),
+            Contrast::Web => color.get_msb_invert_contrast(),
         }
     }
 }
