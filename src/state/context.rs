@@ -1,6 +1,8 @@
-use crate::{ColorPalette, Error, Result};
-use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use {
+    crate::{ColorPalette, Error, Result},
+    serde::{Deserialize, Serialize},
+    std::collections::{BTreeMap, BTreeSet},
+};
 
 /// [`Context`] is an object containing state for template
 /// rendering. It can be serialized and deserialized to load from
@@ -24,8 +26,9 @@ pub struct Context {
     /// [`Iterator<Item=ColoPalette>`] with:
     ///
     /// ```
-    /// let palettes: BTreeMap<String, ColorPalette> =
-    ///     BTreeMap::from_iter(palettes_iter.map(|palette| (palette.name.to_string(), palette.clone())));
+    /// let palettes: BTreeMap<String, ColorPalette> = BTreeMap::from_iter(
+    ///     palettes_iter.map(|palette| (palette.name.to_string(), palette.clone())),
+    /// );
     /// ```
     pub palettes: BTreeMap<String, ColorPalette>,
 }

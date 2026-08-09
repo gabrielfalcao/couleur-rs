@@ -1,19 +1,14 @@
-use crate::color::RGBParseError;
-use serde::{Deserialize, Serialize};
-use std::{
-    fmt::Display,
-    num::{ParseFloatError, ParseIntError},
-};
-use winnow::{
-    error::{
-        AddContext,
-        ContextError,
-        ErrMode,
-        ParserError,
-        StrContext,
-        StrContextValue,
+use {
+    crate::color::RGBParseError,
+    serde::{Deserialize, Serialize},
+    std::{
+        fmt::Display,
+        num::{ParseFloatError, ParseIntError},
     },
-    stream::Stream,
+    winnow::{
+        error::{AddContext, ContextError, ErrMode, ParserError, StrContext, StrContextValue},
+        stream::Stream,
+    },
 };
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
@@ -178,9 +173,7 @@ impl Into<winnow::error::ContextError> for ParseError {
         let mut c = ContextError::new();
         c.push(StrContext::Label(self.to_string().leak()));
         if let Some(context) = self.context.clone() {
-            c.push(StrContext::Expected(StrContextValue::Description(
-                context.to_string().leak(),
-            )));
+            c.push(StrContext::Expected(StrContextValue::Description(context.to_string().leak())));
         }
         c
     }
@@ -190,8 +183,7 @@ impl ParserError<&str> for ParseError {
     type Inner = ParseError;
 
     fn from_input(input: &&str) -> Self {
-        ParseError::new::<String>(input.to_string().into())
-            .with_input(input.to_string())
+        ParseError::new::<String>(input.to_string().into()).with_input(input.to_string())
     }
     fn into_inner(self) -> std::result::Result<Self::Inner, Self> {
         Err(self.clone())
@@ -202,12 +194,7 @@ where
     I: Display + Stream,
     C: Display,
 {
-    fn add_context(
-        self,
-        input: &I,
-        token_start: &<I as Stream>::Checkpoint,
-        context: C,
-    ) -> Self {
+    fn add_context(self, input: &I, token_start: &<I as Stream>::Checkpoint, context: C) -> Self {
         self.with_input(input.to_string()).with_context(context.to_string())
     }
 }
@@ -252,11 +239,8 @@ impl Display for ConversionToF32Error {
 impl Into<Error> for ConversionToF32Error {
     fn into(self) -> Error {
         Error::ConversionToU8Error(
-            ConversionToF32Error(
-                self.0 as u8,
-                format!("cannot convert {} to f32", self.0),
-            )
-            .to_string(),
+            ConversionToF32Error(self.0 as u8, format!("cannot convert {} to f32", self.0))
+                .to_string(),
         )
     }
 }

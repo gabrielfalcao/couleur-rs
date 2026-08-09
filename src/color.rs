@@ -1,14 +1,16 @@
 use std::{fmt::Display, ops::Deref, str::FromStr, sync::LazyLock};
 
-use regex::Regex;
-use serde::{
-    Deserialize,
-    Deserializer,
-    Serialize,
-    Serializer,
-    de::{self, Error as SerdeError, Visitor},
+use {
+    regex::Regex,
+    serde::{
+        Deserialize,
+        Deserializer,
+        Serialize,
+        Serializer,
+        de::{self, Error as SerdeError, Visitor},
+    },
+    std::fmt,
 };
-use std::fmt;
 
 use thiserror::Error as ThisError;
 
@@ -55,11 +57,7 @@ pub struct Color(
 impl Color {
     /// Creates a new color from the given red, green and blue values which should be of a type convertible [`Into<f32>`]
     pub fn new<T: Copy + Into<f32>>(red: T, green: T, blue: T) -> Result<Color> {
-        Ok(Color(
-            Value::new(red.into())?,
-            Value::new(green.into())?,
-            Value::new(blue.into())?,
-        ))
+        Ok(Color(Value::new(red.into())?, Value::new(green.into())?, Value::new(blue.into())?))
     }
 
     /// queries the [`Terminal`] for the background color,
@@ -186,16 +184,11 @@ impl Color {
         let s = input.to_string();
         match HEX_RGB_REGEX.captures(&s) {
             Some(captures) => {
-                let red_value =
-                    captures.name("red").map(|s| s.as_str().to_string()).expect("red");
-                let green_value = captures
-                    .name("green")
-                    .map(|s| s.as_str().to_string())
-                    .expect("green");
-                let blue_value = captures
-                    .name("blue")
-                    .map(|s| s.as_str().to_string())
-                    .expect("blue");
+                let red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
+                let green_value =
+                    captures.name("green").map(|s| s.as_str().to_string()).expect("green");
+                let blue_value =
+                    captures.name("blue").map(|s| s.as_str().to_string()).expect("blue");
                 let red = u8::from_str_radix(
                     &captures.name("red").map(|s| s.as_str().to_string()).unwrap(),
                     16,
@@ -221,16 +214,11 @@ impl Color {
         let s = input.to_string();
         match TRIPLE_RGB_REGEX.captures(&s) {
             Some(captures) => {
-                let red_value =
-                    captures.name("red").map(|s| s.as_str().to_string()).expect("red");
-                let green_value = captures
-                    .name("green")
-                    .map(|s| s.as_str().to_string())
-                    .expect("green");
-                let blue_value = captures
-                    .name("blue")
-                    .map(|s| s.as_str().to_string())
-                    .expect("blue");
+                let red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
+                let green_value =
+                    captures.name("green").map(|s| s.as_str().to_string()).expect("green");
+                let blue_value =
+                    captures.name("blue").map(|s| s.as_str().to_string()).expect("blue");
                 let red = u8::from_str_radix(
                     &captures.name("red").map(|s| s.as_str().to_string()).unwrap(),
                     10,
@@ -315,10 +303,8 @@ impl Color {
 
         for c in channels {
             if c <= 0.04045 {
-                linear.push(
-                    Value::from_f32(*(c / 12.92))
-                        .expect("value between 0 and 255 inclusive"),
-                )
+                linear
+                    .push(Value::from_f32(*(c / 12.92)).expect("value between 0 and 255 inclusive"))
             } else {
                 linear.push(
                     Value::from_f32(*((c + 0.055) / 1.055) * 2.4)
@@ -343,18 +329,13 @@ impl Color {
 
     /// Returns a string which renders the current color as an ANSI sequence in the given [`Layer`] and [`Prefix`].
     pub fn to_ansi_with_prefix(&self, layer: Layer, prefix: Option<Prefix>) -> String {
-        let triple =
-            self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
+        let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
         let color = triple.join(";");
         let mut parts = Vec::<String>::new();
         parts.push(layer.code().to_string());
         parts.push("2".to_string());
         parts.push(format!("{color}m"));
-        format!(
-            "{prefix}[{code}",
-            prefix = prefix.unwrap_or_default(),
-            code = parts.join(";")
-        )
+        format!("{prefix}[{code}", prefix = prefix.unwrap_or_default(), code = parts.join(";"))
     }
 
     pub fn wrap_ansi(
@@ -475,11 +456,7 @@ impl Color {
 }
 impl From<RgbTriple> for Color {
     fn from(triple: RgbTriple) -> Color {
-        Color(
-            Value::from(triple.red()),
-            Value::from(triple.green()),
-            Value::from(triple.blue()),
-        )
+        Color(Value::from(triple.red()), Value::from(triple.green()), Value::from(triple.blue()))
     }
 }
 
@@ -520,11 +497,8 @@ impl FromStr for Color {
     fn from_str(s: &str) -> std::result::Result<Color, RGBParseError> {
         Ok(Color::from_hex_string(s).or_else(|hex| {
             Color::from_triple_string(s).map_err(|triple| {
-                RGBParseError::ParseError {
-                    hex: hex.to_string(),
-                    triple: triple.to_string(),
-                }
-                .into()
+                RGBParseError::ParseError { hex: hex.to_string(), triple: triple.to_string() }
+                    .into()
             })
         })?)
     }

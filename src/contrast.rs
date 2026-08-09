@@ -1,11 +1,15 @@
-use serde::{Deserialize, Serialize};
-use std::{
-    cmp::{Ordering, PartialOrd},
-    fmt::Display,
+use {
+    serde::{Deserialize, Serialize},
+    std::{
+        cmp::{Ordering, PartialOrd},
+        fmt::Display,
+    },
 };
 
-use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use {
+    clap::{ValueEnum, builder::PossibleValue},
+    heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase},
+};
 
 use crate::{Color, Error, Layer, Result};
 
@@ -75,7 +79,12 @@ impl Contrast {
     }
 
     fn to_possible_strings(&self) -> [String; 4] {
-        [self.variant_name_snake().to_string(), self.variant_name_kebab(), self.variant_name_pascal(), self.variant_name_train()]
+        [
+            self.variant_name_snake().to_string(),
+            self.variant_name_kebab(),
+            self.variant_name_pascal(),
+            self.variant_name_train(),
+        ]
     }
 }
 
@@ -96,7 +105,9 @@ impl ValueEnum for Contrast {
     fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Contrast, String> {
         let val = if ignore_case { val.to_lowercase() } else { val.to_string() };
         let val = val.trim();
-        for (variant, possible_strings) in Contrast::variants().iter().map(|variant| (variant, variant.to_possible_strings())) {
+        for (variant, possible_strings) in
+            Contrast::variants().iter().map(|variant| (variant, variant.to_possible_strings()))
+        {
             for pos in possible_strings {
                 if pos == val {
                     return Ok(*variant);

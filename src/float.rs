@@ -19,7 +19,13 @@ impl<'a> FloatMetadata<'a> {
     }
 
     pub fn to_parts(&self) -> (f64, bool, i32, i32, i32) {
-        (self.value.parse::<f64>().unwrap(), self.negative, self.round, self.fraction, self.leading_zeros_fractional)
+        (
+            self.value.parse::<f64>().unwrap(),
+            self.negative,
+            self.round,
+            self.fraction,
+            self.leading_zeros_fractional,
+        )
     }
 
     pub fn new(value: f64) -> FloatMetadata<'a> {
@@ -31,7 +37,13 @@ impl<'a> FloatMetadata<'a> {
         let leading_fract = leading_zeros_fractional(&value);
         let nonzero_fract = 0;
         // dbg!(leading_fract, nonzero_fract);
-        FloatMetadata::from_parts((value, negative, float_round as i32, leading_fract as i32, nonzero_fract as i32))
+        FloatMetadata::from_parts((
+            value,
+            negative,
+            float_round as i32,
+            leading_fract as i32,
+            nonzero_fract as i32,
+        ))
     }
 }
 impl std::fmt::Display for FloatMetadata<'_> {

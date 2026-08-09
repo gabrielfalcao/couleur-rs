@@ -1,7 +1,23 @@
 #![allow(unused)]
-use clap::Parser;
-use couleur_rs::{BLACK, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, TERMINAL, WHITE, Wrap, dispatch::ParserDispatcher};
-use iocore::Path;
+use {
+    clap::Parser,
+    couleur_rs::{
+        BLACK,
+        Color,
+        Contrast,
+        Error,
+        Exit,
+        Layer,
+        Prefix,
+        Reset,
+        Result,
+        TERMINAL,
+        WHITE,
+        Wrap,
+        dispatch::ParserDispatcher,
+    },
+    iocore::Path,
+};
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]
@@ -19,7 +35,8 @@ impl ParserDispatcher<Error> for Cli {
             for line in lines {
                 let color = line.parse::<Color>()?;
                 let fg = color.to_ansi(Layer::FG);
-                let fg_contrast = if color.is_dark() && TERMINAL.is_dark { *WHITE } else { *BLACK }.to_ansi(Layer::BG);
+                let fg_contrast = if color.is_dark() && TERMINAL.is_dark { *WHITE } else { *BLACK }
+                    .to_ansi(Layer::BG);
 
                 let bg = color.to_ansi(Layer::BG);
                 let bg_contrast = if color.is_dark() && TERMINAL.is_dark {

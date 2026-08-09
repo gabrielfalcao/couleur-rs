@@ -1,32 +1,34 @@
-use crate::{Color, ParseError};
-use winnow::{
-    ModalResult,
-    Parser,
-    Result,
-    ascii::{
-        alpha1,
-        alphanumeric1 as alphanumeric,
-        float,
-        hex_digit0,
-        hex_digit1,
-        take_escaped,
+use {
+    crate::{Color, ParseError},
+    winnow::{
+        ModalResult,
+        Parser,
+        Result,
+        ascii::{
+            alpha1,
+            alphanumeric1 as alphanumeric,
+            float,
+            hex_digit0,
+            hex_digit1,
+            take_escaped,
+        },
+        combinator::{
+            alt,
+            cut_err,
+            delimited,
+            impls::Context,
+            preceded,
+            repeat,
+            repeat_till,
+            separated,
+            separated_pair,
+            terminated,
+        },
+        error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
+        prelude::*,
+        stream::{AsChar, Offset, Stream as _},
+        token::{any, literal, none_of, one_of, rest, take_till, take_while},
     },
-    combinator::{
-        alt,
-        cut_err,
-        delimited,
-        impls::Context,
-        preceded,
-        repeat,
-        repeat_till,
-        separated,
-        separated_pair,
-        terminated,
-    },
-    error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-    prelude::*,
-    stream::{AsChar, Offset, Stream as _},
-    token::{any, literal, none_of, one_of, rest, take_till, take_while},
 };
 pub(crate) type Stream<'i> = &'i str;
 
@@ -41,12 +43,12 @@ pub enum Node {
     None,
 }
 
-fn parse_str<'a, E: ParserError<&'a str>>(
-    input: &mut &'a str,
-) -> ModalResult<&'a str, E> {
+fn parse_str<'a, E: ParserError<&'a str>>(input: &mut &'a str) -> ModalResult<&'a str, E> {
     alpha1.parse_next(input)
 }
-fn parse_key_value<'a, E: ParserError<Stream<'a>> + AddContext<Stream<'a>, StrContext>>(input: &mut &'a str) -> ModalResult<Node, E> {
+fn parse_key_value<'a, E: ParserError<Stream<'a>> + AddContext<Stream<'a>, StrContext>>(
+    input: &mut &'a str,
+) -> ModalResult<Node, E> {
     alt((
         color.value(Node::Color),
         reset.value(Node::Reset),
@@ -79,11 +81,8 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     //     alt((preceded("#", repeat(6, hex_digit1)), repeat(6, hex_digit1))),
     // )
     // .parse_next(input)
-    preceded(
-        literal("color:"),
-        alt((preceded("#", repeat(6, hex_digit1)), repeat(6, hex_digit1))),
-    )
-    .parse_next(input)
+    preceded(literal("color:"), alt((preceded("#", repeat(6, hex_digit1)), repeat(6, hex_digit1))))
+        .parse_next(input)
 }
 fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
@@ -108,14 +107,9 @@ fn parse_node<'a>(input: &mut &'a str) -> ModalResult<Node> {
     while input.len() > 0 {
         if let Ok(mut markup) =
             // ZGVsaW1pdGVkKCd7JywgcGFyc2Vfc3RyOjo8Y3JhdGU6OlBhcnNlRXJyb3I+LCAnfScp
-            preceded(
-                '{',
-                cut_err(terminated(parse_str::<crate::ParseError>, '}')),
-            )
-            .context(StrContext::Label(
-                "trying to parse markup wrapped by curly braces",
-            ))
-            .parse_next(input)
+            preceded('{', cut_err(terminated(parse_str::<crate::ParseError>, '}')))
+                    .context(StrContext::Label("trying to parse markup wrapped by curly braces"))
+                    .parse_next(input)
         // .map(|value: &str| value.to_string())
         {
             nodes.push(parse_key_value(&mut markup)?);
@@ -156,8 +150,7 @@ mod tests {
     use k9::assert_equal;
 
     #[test]
-    fn test_parse_hardcoded_reset_keyword_wrapped_in_braces_markup() -> crate::Result<()>
-    {
+    fn test_parse_hardcoded_reset_keyword_wrapped_in_braces_markup() -> crate::Result<()> {
         let mut input = "{reset}";
         let result = parse_node(&mut input);
 

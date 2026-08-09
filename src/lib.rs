@@ -37,22 +37,15 @@ use std::sync::LazyLock;
 #[doc(inline)] pub use contrast::Contrast;
 
 #[doc(hidden)] pub mod dispatch;
-#[doc(inline)]
-pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
+#[doc(inline)] pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
 
 #[doc(hidden)] pub mod errors;
 #[doc(hidden)] pub use errors::Exit;
-#[doc(inline)] pub use errors::{
-    ConversionToF32Error,
-    ConversionToU8Error,
-    Error,
-    ParseError,
-    Result,
-};
+#[doc(inline)]
+pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, Result};
 
 #[doc(hidden)] pub mod float;
-#[doc(inline)]
-pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
+#[doc(inline)] pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
 
 #[doc(hidden)] pub mod layer;
 #[doc(inline)] pub use layer::Layer;
