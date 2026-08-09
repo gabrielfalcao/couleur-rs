@@ -1,3 +1,4 @@
+
 use {
     crate::color::RGBParseError,
     serde::{Deserialize, Serialize},
@@ -26,6 +27,23 @@ pub enum Error {
     ParseError(ParseError),
     TemplateParseError(String),
 }
+impl Error {
+    pub fn name(&self) -> &'static str{
+    match self {
+        Error::IOError(_value) => "io_error",
+        Error::RuntimeError(_value) => "runtime_error",
+        Error::ConversionToU8Error(_value) => "conversion_to_u8_error",
+        Error::TerminalQueryError(_value) => "terminal_query_error",
+        Error::RenderError(_value) => "render_error",
+        Error::YamlError(_value) => "yaml_error",
+        Error::JsonError(_value) => "json_error",
+        Error::InitializationError(_value) => "initialization_error",
+        Error::ConfigurationError(_value) => "configuration_error",
+        Error::ClapError(_value) => "clap_error",
+        Error::ParseError(_value) => "parse_error",
+        Error::TemplateParseError(_value) => "template_parse_error",
+    }}
+}
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
@@ -42,6 +60,7 @@ impl Display for Error {
                 Error::JsonError(value) => value.to_string(),
                 Error::InitializationError(value) => value.to_string(),
                 Error::ConfigurationError(value) => value.to_string(),
+                Error::UsageEror(value) => value.to_string(),
                 Error::ClapError(value) => value.to_string(),
                 Error::ParseError(value) => value.to_string(),
                 Error::TemplateParseError(value) => value.to_string(),

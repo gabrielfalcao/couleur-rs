@@ -9,13 +9,22 @@ TEST_ROOT		:= $(PROJECT_ROOT)/tests
 all: test
 
 
+contrast:
+	cargo run --bin couleur "{}"
+
 hex-to-bin:
 	cargo run --bin hex-to-bin ./palettes/cs108.hex
 
 contrast:
 	cargo run --bin contrast web "#E83B3B" "Hello World"
 
-run: cls
+check: cls
+	cargo check
+
+docs: cls
+	cargo doc --open
+run: check
+
 	@printf "testing background\n\n"
 	cargo run -q -- --bg FFCC00  --fg CCCCCC --detect test background
 	cargo run -q -- --contrast web  --fg CCCCCC --detect test background

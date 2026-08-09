@@ -16,10 +16,10 @@ repository = "https://github.com/gabrielfalcao/couleur-rs"
 keywords = ["color", "ansi", "unix", "system"]
 authors = ["Gabriel DeMoura <gabrielteratos@gmail.com>"]
 categories = ["command-line-interface"]
-# # default-run = "couleur"
+default-run = "couleur"
 # default-run = "hex-to-bin"
 # # default-run = "terminal-info"
-default-run = "contrast"
+# default-run = "contrast"
 
 # categories = [] # https://crates.io/category_slugs
 

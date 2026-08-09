@@ -226,10 +226,11 @@ impl Node {
             Node::Contrast(_) => "contrast",
             Node::Text(_) => "string",
             Node::RenderableColor(_) => "renderable_color",
-            Node::Array(nodes) => {
-                nodes.iter().map(|n| n.to_string()).collect::<Vec<String>>().join(",")
-            }
-        }
+            Node::Array(_) => "arrry_of_value",
+            // Node::Array(nodes) => {
+            //     nodes.iter().map(|n| n.to_string()).collect::<Vec<String>>().join(",")
+            // }
+        }.to_string()
     }
 }
 mod within_curly_braces {
@@ -416,7 +417,6 @@ pub fn render<
 >(
     input: T,
 ) -> Result<String> {
-    let nodes = parse::<T, E>(input)?;
-    let items = render_nodes([nodes].into_iter()).to_string();
-    Ok(render::<E, _>(input)?)
+    let resolve = nodes::<Error>.parse(i)?;
+    Ok(resolve)
 }
