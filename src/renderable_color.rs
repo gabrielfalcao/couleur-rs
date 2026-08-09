@@ -15,6 +15,48 @@ impl RenderableColor {
     pub fn new(color: Color) -> RenderableColor {
         RenderableColor { color, prefix: None, layer: None, contrast: None }
     }
+    pub fn color(&self) -> Color {
+        self.color
+    }
+    pub fn set_color(&mut self, value: Color) -> Option<Color> {
+        self.color = value;
+    }
+    pub fn with_color(mut self, value: Color) -> RenderableColor {
+        self.set_color(value);
+        self
+    }
+    pub fn prefix(&self) -> Prefix {
+        self.prefix
+    }
+    pub fn set_prefix(&mut self, value: Prefix) -> Option<Prefix> {
+        self.prefix = value;
+    }
+    pub fn with_prefix(mut self, value: Prefix) -> RenderablePrefix {
+        self.set_prefix(value);
+        self
+    }
+    pub fn layer(&self) -> Layer {
+        self.layer
+    }
+    pub fn set_layer(&mut self, value: Layer) -> Option<Layer> {
+        self.layer = value;
+    }
+    pub fn with_layer(mut self, value: Layer) -> RenderableLayer {
+        self.set_layer(value);
+        self
+    }
+
+    pub fn contrast(&self) -> Contrast {
+        self.contrast
+    }
+    pub fn set_contrast(&mut self, value: Contrast) -> Option<Contrast> {
+        self.contrast = value;
+    }
+    pub fn with_contrast(mut self, value: Contrast) -> RenderableContrast {
+        self.set_contrast(value);
+        self
+    }
+
     pub fn variant(&self) -> String {
         format!("RenderableCor(serde_yaml.to_string(&self))")
     }
@@ -25,20 +67,19 @@ impl Display for RenderableColor {
     }
 }
 impl AnsiRenderable for RenderableColor {
-    fn render(&self) -> String{
-        let mut parts = Vec::<Color>::new();
-        let prefix = prefix.unwrap_or_default().render();
-        let layer = layer.unwrap_or_default().render();
+    fn render(&self) -> String {
+        let mut parts = Vec::<String>::new();
+        let prefix = self.prefix.unwrap_or_default().render();
+        let layer = self.layer.unwrap_or_default().render();
         parts.push(prefix);
         parts.push(layer);
-        parts.push(if let Some(contrast) = contrast.clone() {
-            contrast.apply(color,layer).render()
+        parts.push(if let Some(contrast) = self.contrast.clone() {
+            contrast.apply(self.color, self.layer).render()
         } else {
-            color.render()
+            self.color.render()
         });
-        let parts = [prefix, layer, color].iter().collect::(String);
-
-
+        let result = parts.collect::<String>();
+        Ok(result)
     }
 }
 // impl Display for RenderableColor {
