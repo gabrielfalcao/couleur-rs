@@ -1,6 +1,21 @@
 // use crate::{Error, Result};
 #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
 #[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
+use {
+    crate::{
+        AnsiRenderable,
+        Color,
+        Contrast,
+        Error,
+        Layer,
+        RenderableColor,
+        Reset,
+        Result,
+        Value,
+        setup_logging,
+    },
+    std::fmt::{Debug, Display},
+};
 
 use winnow::{
     ModalResult,
@@ -25,22 +40,6 @@ use winnow::{
 };
 pub(crate) type Stream<'i> = &'i str;
 
-use {
-    crate::{
-        AnsiRenderable,
-        Color,
-        Contrast,
-        Error,
-        Layer,
-        RenderableColor,
-        Reset,
-        Result,
-        Value,
-        setup_logging,
-    },
-    std::fmt::{Debug, Display},
-};
-
 impl AnsiRenderable for Node {
     fn render(&self) -> String {
         match self {
@@ -54,6 +53,34 @@ impl AnsiRenderable for Node {
         }
     }
 }
+// impl AnsiRenderable for Node {
+//     fn render(&self) -> String {
+//         let nodes = match self {
+//             Node::Reset(reset) => {
+//                 vec![reset.render()]
+//             }
+//             Node::Color(color) => {
+//                 vec![color]
+//             }
+//             Node::Layer(layer) => {
+//                 vec![layer]
+//             }
+//             Node::Contrast(contrast) => {
+//                 vec![contrast]
+//             }
+//             Node::Text(text) => {
+//                 vec![text]
+//             }
+//             Node::RenderableColor(color) => {
+//                 vec![color]
+//             }
+//             Node::Array(nodes) => {
+//                 nodes.iter().map(|node| AnsiRenderable::render(node)).collect::<String>()
+//             }
+//         };
+//     }
+// }
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Node {
     Reset(Reset),
@@ -230,7 +257,8 @@ impl Node {
             // Node::Array(nodes) => {
             //     nodes.iter().map(|n| n.to_string()).collect::<Vec<String>>().join(",")
             // }
-        }.to_string()
+        }
+        .to_string()
     }
 }
 mod within_curly_braces {
@@ -392,11 +420,12 @@ fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     winnow_it.finish();
     Ok(Node::Array(res))
 }
+
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse<
     'i,
-    T: Debug + Display,
-    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Display,
+    T: std::fmt::Debug + std::fmt::Display,
+    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + std::fmt::Display,
 >(
     input: T,
 ) -> Result<Node> {
@@ -417,6 +446,79 @@ pub fn render<
 >(
     input: T,
 ) -> Result<String> {
-    let resolve = nodes::<Error>.parse(i)?;
+    let resolve = nodes::<Error>.parse(input)?;
     Ok(resolve)
 }
+
+// pub fn render<'i, T: std::fmt::Display + std::fmt::Debug>(input: T) -> Result<String> {
+//     let mut input: &'i mut str = input.to_string().leak();
+//     Ok(render::<ContextError>(input)?)
+// }
+#[test]
+fn test_parse_renderable_color_with_contrast() -> Result<()> {
+    assert_eq!(
+        parse_node::<Error>.parse_peek("{color:#E83B3B%contrast:web}"),
+        Ok((
+            "",
+            Node::RenderableColor(
+                RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                    .with_contrast(Contrast::Web)
+            )
+        ))
+    );
+
+    Ok(())
+}
+#[test]
+fn test_parse_renderable_color_with_layer_and_contrast() -> Result<()> {
+    assert_eq!(
+        parse_node::<Error>.parse_peek("{color:#E83B3B@layer:bg%contrast:web}"),
+        Ok((
+            "",
+            Node::RenderableColor(
+                RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                    .with_layer(Layer::BG)
+                    .with_contrast(Contrast::Web)
+            )
+        ))
+    );
+
+    Ok(())
+}
+// #[test]
+// fn test_parse_renderable_color_with_layer_contrast_and_text() -> Result<()> {
+//     assert_eq!(
+//         nodes::<Error>.parse_peek("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+//         Ok((
+//             "",
+//             Node::Array(vec![
+//                 Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+//                 Node::Text("Hello".to_string()),
+//                 Node::RenderableColor(
+//                     RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+//                         .with_contrast(Contrast::Web)
+//                 ),
+//                 Node::Text(" World".to_string())
+//             ])
+//         ))
+//     );
+//     assert_eq!(
+//         parse::<&str, Error>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+//         Ok(Node::Array(vec![
+//             Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+//             Node::Text("Hello".to_string()),
+//             Node::RenderableColor(
+//                 RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+//                     .with_contrast(Contrast::Web)
+//             ),
+//             Node::Text(" World".to_string())
+//         ]))
+//     );
+//
+//     Ok(())
+// }
+// #[test]
+// fn test_render_error() -> Result<()> {
+//     assert_eq!(render("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"), Ok(format!("")));
+//     Ok(())
+// }

@@ -21,20 +21,19 @@ impl RenderableColor {
 }
 impl Display for RenderableColor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "{variant}: {error}",
-            variant = self.variant(),
-            error = match self {
-                Error::IOError(value) => value.to_string(),
-                Error::RuntimeError(value) => value.to_string(),
-                Error::ConversionToU8Error(value) => value.to_string(),
-                Error::TerminalQueryError(value) => value.to_string(),
-                Error::RenderError(value) => value.to_string(),
-            }
-        )
+        let error = match self {
+            Error::RenderableColor(value) => value.to_string(),
+            Error::IOError(value) => value.to_string(),
+            Error::RuntimeError(value) => value.to_string(),
+            Error::ConversionToU8Error(value) => value.to_string(),
+            Error::TerminalQueryError(value) => value.to_string(),
+            Error::RenderError(value) => value.to_string(),
+        };
+        let variant = self.variant();
+        write!(f, "{variant}: {error}")
     }
 }
+
 // impl Display for RenderableColor {
 //     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 //         let color = self.color;
