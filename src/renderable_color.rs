@@ -1,11 +1,11 @@
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 use {
     crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap},
+    bon::Builder,
     serde::{Deserialize, Serialize},
     std::fmt::Display,
 };
-use bon:: Builder;
-#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize,Builder)]
+#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize, Builder)]
 pub struct RenderableColor {
     pub(crate) color: Color,
     pub(crate) prefix: Option<Prefix>,
