@@ -112,9 +112,9 @@ test = false
 # path = "./tests/test_terminal.rs"
 
 
-# [[test]]
-# name = "test_colorizer"
-# path = "./tests/test_colorizer.rs"
+[[test]]
+name = "test_colorizer"
+path = "./tests/test_colorizer.rs"
 
 # [[test]]
 # name = "test_float"

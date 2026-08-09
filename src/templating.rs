@@ -15,6 +15,8 @@ use std::fmt::{Debug, Display};
 pub(self) use std::str::FromStr;
 #[cfg(feature = "tracing")] pub(self) use tracing::{Level, event, instrument, span};
 
+#[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
+#[cfg(feature = "tracing")]
 pub(self) use winnow::{
     ascii::{dec_uint, digit1, float, hex_digit1},
     combinator::{
@@ -112,6 +114,7 @@ fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
         .context(StrContext::Expected("rgb color".into()))
         .parse_next(input)
 }
+
 #[cfg_attr(feature = "tracing", instrument)]
 fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
@@ -162,7 +165,7 @@ fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     span!(Level::TRACE, "input", input);
 
     preceded('{', terminated(within_curly_braces::parse_layer::<E>, "}"))
-        .context(StrContext::Expected("ansi rendering layer".into()))
+        .context(StrContext::Expected("ansi rendering contrast".into()))
         .parse_next(input)
 }
 #[cfg_attr(feature = "tracing", instrument)]
@@ -202,7 +205,6 @@ mod within_curly_braces {
     pub fn parse_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
         input: &mut Stream<'i>,
     ) -> ModalResult<Color, E> {
-        use super::*;
         #[cfg(feature = "tracing")]
         span!(Level::TRACE, "input", input);
         preceded("color:", alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)))
@@ -212,7 +214,6 @@ mod within_curly_braces {
     pub fn parse_layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
         input: &mut Stream<'i>,
     ) -> ModalResult<Layer, E> {
-        use super::*;
         #[cfg(feature = "tracing")]
         span!(Level::TRACE, "input", input);
         preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))).parse_next(input)
@@ -300,8 +301,8 @@ fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse<
     'i,
-    T: std::fmt::Debug + std::fmt::Display,
-    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + std::fmt::Display,
+    T: Debug + Display,
+    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Display,
 >(
     input: T,
 ) -> Result<Node> {
@@ -310,16 +311,19 @@ pub fn parse<
     Ok(result)
 }
 pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item = T>>(items: I) -> String {
-    items.map(|i| i.render()).collect::<String>()
+    let p = items.map(|i| i.render()).collect::<String>();
+        p
 }
+
 pub fn render<
     'i,
-    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Display + Debug,
-    T: Display + Debug,
+    I: Iterator<Item = T>,
+    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Debug + Display,
+    T: AnsiRenderable,
 >(
     input: T,
 ) -> Result<String> {
-    let nodes = parse(input)?;
-    let items = render_nodes([nodes].into_iter()).to_string();
-    Ok(render::<E>(input)?)
+    let nodes = parse::<T, E>(input)?;
+    let items = render_nodes::<T, E>([nodes].into_iter()).to_string();
+    Ok(render::<E, _>(input)?)
 }

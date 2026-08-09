@@ -17,6 +17,11 @@ pub enum Reset {
     Around,
     None,
 }
+impl AnsiRenderable for Reset {
+    fn render(&self) -> String {
+        Reset::code().to_string()
+    }
+}
 impl ToAnsi for Reset {
     fn as_ansi_suffix(&self) -> String {
         Self::ansi_suffix().unwrap()
