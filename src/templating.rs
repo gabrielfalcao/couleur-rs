@@ -1,23 +1,8 @@
 // use crate::{Error, Result};
-pub(self) use crate::{
-    AnsiRenderable,
-    Color,
-    Contrast,
-    Error,
-    Layer,
-    RenderableColor,
-    Reset,
-    Result,
-    Value,
-    setup_logging,
-};
-use std::fmt::{Debug, Display};
-pub(self) use std::str::FromStr;
-#[cfg(feature = "tracing")] pub(self) use tracing::{Level, event, instrument, span};
-
+#[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
 #[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
 #[cfg(feature = "tracing")]
-pub(self) use winnow::{
+use winnow::{
     ascii::{dec_uint, digit1, float, hex_digit1},
     combinator::{
         alt,
@@ -35,6 +20,29 @@ pub(self) use winnow::{
     error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
     prelude::*,
     token::{any, none_of, rest, take, take_while},
+};
+use {
+    crate::{
+        AnsiRenderable,
+        Color,
+        Contrast,
+        Error,
+        Layer,
+        RenderableColor,
+        Reset,
+        Result,
+        Value,
+        setup_logging,
+    },
+    std::{
+        fmt::{Debug, Display},
+        str::FromStr,
+    },
+    winnow::{
+        ModalResult,
+        Parser,
+        error::{AddContext, ErrMode, ParserError, StrContext},
+    },
 };
 
 pub(crate) type Stream<'i> = &'i str;
@@ -61,6 +69,34 @@ pub enum Node {
     RenderableColor(RenderableColor),
     Array(Vec<Node>),
 }
+
+impl Display for Node {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Node::{variant}(data) => {repr:#?}",
+        variant = self.variant(),
+        repr= match self {
+            Node::Reset(reset) =>{
+                reset.render
+            },
+            Node::Color(color) =>{
+                layer.render()
+            },
+            Node::Layer(layer) =>{
+                layer.render()
+            },
+            Node::Contrast(contrast) =>{
+                contrast.render()
+            },
+            Node::Text(text) =>{ text.to_string()
+            },
+            Node::RenderableColor(RenderableColor) =>{
+            },
+            Node::Array(Vec<Node>) =>{
+            }
+        })
+    }
+}
+
 impl From<Reset> for Node {
     fn from(reset: Reset) -> Node {
         Node::Reset(reset)
@@ -181,7 +217,46 @@ fn contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>
 }
 
 mod within_curly_braces {
-    use super::*;
+    use {
+        crate::{
+            AnsiRenderable,
+            Color,
+            Contrast,
+            Error,
+            Layer,
+            RenderableColor,
+            Reset,
+            Result,
+            Value,
+            setup_logging,
+        },
+        std::{
+            fmt::{Debug, Display},
+            str::FromStr,
+        },
+        winnow::{
+            ModalResult,
+            Parser,
+            ascii::{dec_uint, digit1, float, hex_digit1},
+            combinator::{
+                alt,
+                cut_err,
+                delimited,
+                eof,
+                iterator,
+                preceded,
+                repeat,
+                separated,
+                separated_pair,
+                seq,
+                terminated,
+            },
+            error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
+            prelude::*,
+            token::{any, none_of, rest, take, take_while},
+        },
+    };
+
     #[cfg_attr(feature = "tracing", instrument)]
     pub fn parse_contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
         input: &mut Stream<'i>,
@@ -312,7 +387,7 @@ pub fn parse<
 }
 pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item = T>>(items: I) -> String {
     let p = items.map(|i| i.render()).collect::<String>();
-        p
+    p
 }
 
 pub fn render<
@@ -324,6 +399,6 @@ pub fn render<
     input: T,
 ) -> Result<String> {
     let nodes = parse::<T, E>(input)?;
-    let items = render_nodes::<T, E>([nodes].into_iter()).to_string();
+    let items = render_nodes([nodes].into_iter()).to_string();
     Ok(render::<E, _>(input)?)
 }
