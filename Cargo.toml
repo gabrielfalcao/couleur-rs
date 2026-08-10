@@ -107,6 +107,10 @@ bench = false
 doc = false
 test = false
 
+[[test]]
+name = "test_templating"
+path = "./tests/test_templating.rs"
+
 # [[test]]
 # name = "test_terminal"
 # path = "./tests/test_terminal.rs"
@@ -120,9 +124,6 @@ test = false
 # name = "test_float"
 # path = "./tests/test_float.rs"
 
-# # # # # # # # [[test]]
-# # # # # # # # name = "test_templating"
-# # # # # # # # path = "./tests/test_templating.rs"
 # #
 # # # [[test]]
 # # # name = "test_rgb_color"

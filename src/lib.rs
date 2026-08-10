@@ -96,15 +96,31 @@ pub use util::{
 
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
 
-#[doc(hidden)] pub mod templating;
+pub mod templating;
+pub use templating::{
+    Node,
+    Result as TemplatingResult,
+    Stream,
+    color,
+    contrast,
+    layer,
+    nodes,
+    parse,
+    parse_node,
+    parse_rgb_hex,
+    parse_rgb_triple,
+    parse_triple,
+    parse_u8,
+    render,
+    render_nodes,
+    renderable_color,
+    reset,
+    text,
+    ws,
+};
 
-#[cfg(any(feature = "tracing", feature = "logging"))]
-#[doc(inline)]
-pub use templating::{Level, event, instrument, span};
-#[doc(inline)] pub use templating::{Node, parse, parse_node, render, render_nodes};
-
-pub(crate) mod logging;
+pub mod logging;
 pub use logging::{setup_logging, setup_tracing};
 
-pub(crate) mod testing;
-pub(crate) use testing::global_setup;
+pub mod testing;
+pub use testing::global_setup;
