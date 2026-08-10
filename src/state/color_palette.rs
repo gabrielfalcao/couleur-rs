@@ -1,8 +1,10 @@
-use crate::{Color, Error, Result};
+use std::collections::{BTreeMap, BTreeSet};
+
 use heck::ToTitleCase;
 use iocore::Path;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+
+use crate::{Color, Error, Result};
 
 /// [`ColorPalette`] is an object which stores a color palette based
 /// on a [`name`](`ColorPalette::name`), a set of [`RGB

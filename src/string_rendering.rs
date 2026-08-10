@@ -1,8 +1,8 @@
 #[cfg(test)]
-mod tests  {
+mod tests {
 
     #[test]
-    pub fn test_cluster_together_non_renderable_color_nodes() -> Result<()>{
+    pub fn test_cluster_together_non_renderable_color_nodes() -> Result<()> {
         // Given a list of N random Node variants In order to render
         // colored ANSI test I want to agglutinate together all nodes
         // into `Node::RenderableColor` nodes while advancing cursor
@@ -31,5 +31,4 @@ mod tests  {
         //
         Ok(())
     }
-
 }

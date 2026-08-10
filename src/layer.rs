@@ -1,12 +1,11 @@
-use crate::AnsiRenderable;
 use std::fmt::Display;
-#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
-use crate::{Color, Error, Result};
+use crate::{AnsiRenderable, Color, Error, Result};
 
 /// Represents the concept of "background" and "foreground" colors in a terminal
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]

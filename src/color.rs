@@ -1,12 +1,3 @@
-use crate::AnsiRenderable;
-use regex::Regex;
-use serde::{
-    Deserialize,
-    Deserializer,
-    Serialize,
-    Serializer,
-    de::{self, Error as SerdeError, Visitor},
-};
 use std::{
     fmt,
     hash::{Hash, Hasher},
@@ -15,9 +6,18 @@ use std::{
     sync::LazyLock,
 };
 
+use regex::Regex;
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+    de::{self, Error as SerdeError, Visitor},
+};
 use thiserror::Error as ThisError;
 
 use crate::{
+    AnsiRenderable,
     Contrast,
     ConversionToU8Error,
     Error,

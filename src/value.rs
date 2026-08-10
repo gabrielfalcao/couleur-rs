@@ -1,10 +1,3 @@
-use serde::{
-    Deserialize,
-    Deserializer,
-    Serialize,
-    Serializer,
-    de::{self, Error as SerdeError, Visitor},
-};
 use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
     fmt,
@@ -29,6 +22,14 @@ use std::{
         SubAssign,
     },
     str::FromStr,
+};
+
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+    de::{self, Error as SerdeError, Visitor},
 };
 
 use crate::{

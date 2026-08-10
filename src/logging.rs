@@ -1,10 +1,9 @@
-use crate::{Error, Result};
-use clap::Parser;
-use iocore::{Path, env};
-use is_terminal::IsTerminal;
 use std::{fs::File, io::Write};
 
 #[cfg(any(feature = "logging", feature = "tracing"))] use chrono::Local;
+use clap::Parser;
+use iocore::{Path, env};
+use is_terminal::IsTerminal;
 #[cfg(any(feature = "logging", feature = "tracing"))] use log::LevelFilter;
 #[cfg(any(feature = "logging", feature = "tracing"))]
 use tracing_subscriber::{
@@ -12,6 +11,8 @@ use tracing_subscriber::{
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
+
+use crate::{Error, Result};
 
 #[cfg(any(feature = "logging", feature = "tracing"))]
 pub fn setup_logging() -> Result<()> {

@@ -1,7 +1,7 @@
-use serde::{Deserialize, Deserializer, Serializer};
 use std::sync::LazyLock;
 
 use regex::Regex;
+use serde::{Deserialize, Deserializer, Serializer};
 
 pub static SINGLE_BAND_DECIMAL_RGB_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?<band>[0-9]{1,3})").expect("regex pattern"));

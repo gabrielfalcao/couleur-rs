@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use std::{
     cmp::{Ordering, PartialOrd},
     fmt::Display,
@@ -6,6 +5,7 @@ use std::{
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use serde::{Deserialize, Serialize};
 
 use crate::{AnsiRenderable, Color, Error, Layer, Result};
 

@@ -1,4 +1,7 @@
 // use crate::{Error, Result};
+use couleur::*;
+use winnow::error::{ContextError as Error, ErrMode};
+
 pub(self) use crate::{
     AnsiRenderable,
     Color,
@@ -11,12 +14,10 @@ pub(self) use crate::{
     Value,
     setup_logging,
 };
-use couleur::*;
-
 use crate::{setup_logging, setup_tracing};
-use winnow::error::{ContextError as Error, ErrMode};
 type Result<T> = std::result::Result<T, ContextError>;
 use std::{str::FromStr, sync::Once};
+
 use winnow::error::StrContextValue::StringLiteral;
 
 #[test]

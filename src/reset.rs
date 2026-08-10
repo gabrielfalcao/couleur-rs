@@ -1,11 +1,10 @@
-use crate::AnsiRenderable;
 use std::fmt::Display;
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{Prefix, ToAnsi};
+use crate::{AnsiRenderable, Prefix, ToAnsi};
 
 /// Represents the intent of adding an "ansi reset" sequence before,
 /// after or around an ANSI color sequence.

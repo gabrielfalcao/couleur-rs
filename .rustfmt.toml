@@ -18,7 +18,7 @@ struct_variant_width =  88
 use_small_heuristics = "Default"
 
 
-group_imports = "Preserve"
+group_imports = "StdExternalCrate"
 imports_granularity = "Crate"
 imports_indent = "Block"
 imports_layout = "HorizontalVertical"

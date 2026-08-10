@@ -1,26 +1,5 @@
-// use crate::{Error, Result};
 #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
 #[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
-use {
-    crate::{
-        AnsiRenderable,
-        Color,
-        Contrast,
-        Error,
-        Layer,
-        RenderableColor,
-        Reset,
-        Value,
-        // ansi_renderable::{
-        //     AnsiRenderable,
-        //     AnsiRenderableWithColor,
-        //     AnsiRenderableWithColorAndLayer,
-        // },
-        setup_logging,
-    },
-    std::fmt::{Debug, Display},
-};
-
 use winnow::{
     ModalResult,
     Parser,
@@ -42,8 +21,69 @@ use winnow::{
     prelude::*,
     token::{any, none_of, rest, take, take_while},
 };
+use {
+    crate::{
+        AnsiRenderable,
+        Color,
+        Contrast,
+        Error,
+        Layer,
+        RenderableColor,
+        Reset,
+        Value,
+        // ansi_renderable::{
+        //     AnsiRenderable,
+        //     AnsiRenderableWithColor,
+        //     AnsiRenderableWithColorAndLayer,
+        // },
+        setup_logging,
+    },
+    std::fmt::{Debug, Display},
+};
 type Result<T> = std::result::Result<T, ContextError>;
 pub(crate) type Stream<'i> = &'i str;
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Node {
+    Reset(Reset),
+    Color(Color),
+    Layer(Layer),
+    Contrast(Contrast),
+    Text(String),
+    RenderableColor(RenderableColor),
+    Array(Vec<Node>),
+}
+impl Node {
+    pub fn render(&self) -> String {
+        match self {
+            Node::Reset(reset) => reset.render(),
+            Node::Color(color) => color.render(),
+            Node::Layer(layer) => layer.render(),
+            Node::Contrast(contrast) => contrast.render(),
+            Node::Text(string) => string.render(),
+            Node::RenderableColor(renderable_color) => renderable_color.render(),
+            // Node::Array(arrry_of_value) => arrry_of_value.render(),
+            Node::Array(nodes) => {
+                nodes.iter().map(|n| n.render()).collect::<Vec<String>>().join("")
+            }
+        }
+    }
+    pub fn variant(&self) -> String {
+        match self {
+            Node::Reset(_) => "reset",
+            Node::Color(_) => "color",
+            Node::Layer(_) => "layer",
+            Node::Contrast(_) => "contrast",
+            Node::Text(_) => "string",
+            Node::RenderableColor(_) => "renderable_color",
+            Node::Array(_) => "arrry_of_value",
+            // Node::Array(nodes) => {
+            //     nodes.iter().map(|n| n.to_string()).collect::<Vec<String>>().join(",")
+            // }
+        }
+        .to_string()
+    }
+}
 
 impl AnsiRenderable for Node {
     fn render(&self) -> String {
@@ -57,44 +97,6 @@ impl AnsiRenderable for Node {
             Node::Array(node) => node.render(), // node.iter().map(|node| node.render()).collect::<String>(),
         }
     }
-}
-// impl AnsiRenderable for Node {
-//     fn render(&self) -> String {
-//         let nodes = match self {
-//             Node::Reset(reset) => {
-//                 vec![reset.render()]
-//             }
-//             Node::Color(color) => {
-//                 vec![color]
-//             }
-//             Node::Layer(layer) => {
-//                 vec![layer]
-//             }
-//             Node::Contrast(contrast) => {
-//                 vec![contrast]
-//             }
-//             Node::Text(text) => {
-//                 vec![text]
-//             }
-//             Node::RenderableColor(color) => {
-//                 vec![color]
-//             }
-//             Node::Array(nodes) => {
-//                 nodes.iter().map(|node| AnsiRenderable::render(node)).collect::<String>()
-//             }
-//         };
-//     }
-// }
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Node {
-    Reset(Reset),
-    Color(Color),
-    Layer(Layer),
-    Contrast(Contrast),
-    Text(String),
-    RenderableColor(RenderableColor),
-    Array(Vec<Node>),
 }
 
 impl Display for Node {
@@ -249,55 +251,12 @@ fn contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>
         .parse_next(input)
 }
 
-impl Node {
-    pub fn render(&self) -> String {
-        match self {
-            Node::Reset(reset) => reset.render(),
-            Node::Color(color) => color.render(),
-            Node::Layer(layer) => layer.render(),
-            Node::Contrast(contrast) => contrast.render(),
-            Node::Text(string) => string.render(),
-            Node::RenderableColor(renderable_color) => renderable_color.render(),
-            // Node::Array(arrry_of_value) => arrry_of_value.render(),
-            Node::Array(nodes) => {
-                nodes.iter().map(|n| n.render()).collect::<Vec<String>>().join("")
-            }
-        }
-    }
-    pub fn variant(&self) -> String {
-        match self {
-            Node::Reset(_) => "reset",
-            Node::Color(_) => "color",
-            Node::Layer(_) => "layer",
-            Node::Contrast(_) => "contrast",
-            Node::Text(_) => "string",
-            Node::RenderableColor(_) => "renderable_color",
-            Node::Array(_) => "arrry_of_value",
-            // Node::Array(nodes) => {
-            //     nodes.iter().map(|n| n.to_string()).collect::<Vec<String>>().join(",")
-            // }
-        }
-        .to_string()
-    }
-}
 mod within_curly_braces {
-    use super::*;
-    use crate::{
-        AnsiRenderable,
-        Color,
-        Contrast,
-        Error,
-        Layer,
-        RenderableColor,
-        Reset,
-        Result,
-        Value,
-        setup_logging,
-    };
     use std::{
         fmt::{Debug, Display},
         str::FromStr,
     };
+
     #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
     use winnow::{
         ModalResult,
@@ -319,6 +278,20 @@ mod within_curly_braces {
         error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
         prelude::*,
         token::{any, none_of, rest, take, take_while},
+    };
+
+    use super::*;
+    use crate::{
+        AnsiRenderable,
+        Color,
+        Contrast,
+        Error,
+        Layer,
+        RenderableColor,
+        Reset,
+        Result,
+        Value,
+        setup_logging,
     };
 
     #[cfg_attr(feature = "tracing", instrument)]
@@ -514,29 +487,27 @@ pub fn render<
 ///    - [ ] 4.1 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
 /// 4.0 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
 
-// I1tjZmcodGVzdCldCiNbdGVzdF0KZm4gdGVzdF9wYXJzZV9yZW5kZXJhYmxlX2NvbG9yX3dpdGhfY29udHJhc3Q8PigpIC0+IFJlc3VsdDwoKT4gewogICAgYXNzZXJ0X2VxISgKICAgICAgICBwYXJzZV9ub2RlOjo8Q29udGV4dEVycm9yPi5wYXJzZV9wZWVrKCJ7Y29sb3I6I0U4M0IzQiVjb250cmFzdDp3ZWJ9IiksCiAgICAgICAgT2soKAogICAgICAgICAgICAiIiwKICAgICAgICAgICAgTm9kZTo6UmVuZGVyYWJsZUNvbG9yKAogICAgICAgICAgICAgICAgUmVuZGVyYWJsZUNvbG9yOjpuZXcoIiNFODNCM0IiLnBhcnNlOjo8Y3JhdGU6OkNvbG9yPigpLnVud3JhcCgpKQogICAgICAgICAgICAgICAgICAgIC53aXRoX2NvbnRyYXN0KENvbnRyYXN0OjpXZWIpCiAgICAgICAgICAgICkKICAgICAgICApKQogICAgKTsKCiAgICBPaygoKSkKfQojW3Rlc3RdCmZuIHRlc3RfcGFyc2VfcmVuZGVyYWJsZV9jb2xvcl93aXRoX2xheWVyX2FuZF9jb250cmFzdCgpIC0+IFJlc3VsdDwoKT4gewogICAgYXNzZXJ0X2VxISgKICAgICAgICBwYXJzZV9ub2RlOjo8Q29udGV4dEVycm9yPi5wYXJzZV9wZWVrKCJ7Y29sb3I6I0U4M0IzQkBsYXllcjpiZyVjb250cmFzdDp3ZWJ9IiksCiAgICAgICAgT2soKAogICAgICAgICAgICAiIiwKICAgICAgICAgICAgTm9kZTo6UmVuZGVyYWJsZUNvbG9yKAogICAgICAgICAgICAgICAgUmVuZGVyYWJsZUNvbG9yOjpuZXcoIiNFODNCM0IiLnBhcnNlOjo8Y3JhdGU6OkNvbG9yPigpLnVud3JhcCgpKQogICAgICAgICAgICAgICAgICAgIC53aXRoX2xheWVyKExheWVyOjpCRykKICAgICAgICAgICAgICAgICAgICAud2l0aF9jb250cmFzdChDb250cmFzdDo6V2ViKQogICAgICAgICAgICApCiAgICAgICAgKSkKICAgICk7CgogICAgT2soKCkpCn0KLy8gI1t0ZXN0XQovLyBmbiB0ZXN0X3BhcnNlX3JlbmRlcmFibGVfY29sb3Jfd2l0aF9sYXllcl9jb250cmFzdF9hbmRfdGV4dCgpIC0+IFJlc3VsdDwoKT4gewovLyAgICAgYXNzZXJ0X2VxISgKLy8gICAgICAgICBub2Rlczo6PEVycm9yPi5wYXJzZV9wZWVrKCJ7Y29sb3I6I0U4M0IzQn1IZWxsb3tjb2xvcjojRTgzQjNCJWNvbnRyYXN0OndlYn0gV29ybGQiKSwKLy8gICAgICAgICBPaygoCi8vICAgICAgICAgICAgICIiLAovLyAgICAgICAgICAgICBOb2RlOjpBcnJheSh2ZWMhWwovLyAgICAgICAgICAgICAgICAgTm9kZTo6Q29sb3IoIiNFODNCM0IiLnBhcnNlOjo8Y3JhdGU6OkNvbG9yPigpLnVud3JhcCgpKSwKLy8gICAgICAgICAgICAgICAgIE5vZGU6OlRleHQoIkhlbGxvIi50b19zdHJpbmcoKSksCi8vICAgICAgICAgICAgICAgICBOb2RlOjpSZW5kZXJhYmxlQ29sb3IoCi8vICAgICAgICAgICAgICAgICAgICAgUmVuZGVyYWJsZUNvbG9yOjpuZXcoIiNFODNCM0IiLnBhcnNlOjo8Y3JhdGU6OkNvbG9yPigpLnVud3JhcCgpKQovLyAgICAgICAgICAgICAgICAgICAgICAgICAud2l0aF9jb250cmFzdChDb250cmFzdDo6V2ViKQovLyAgICAgICAgICAgICAgICAgKSwKLy8gICAgICAgICAgICAgICAgIE5vZGU6OlRleHQoIiBXb3JsZCIudG9fc3RyaW5nKCkpCi8vICAgICAgICAgICAgIF0pCi8vICAgICAgICAgKSkKLy8gICAgICk7Ci8vICAgICBhc3NlcnRfZXEhKAovLyAgICAgICAgIHBhcnNlOjo8JnN0ciwgRXJyb3I+KCJ7Y29sb3I6I0U4M0IzQn1IZWxsb3tjb2xvcjojRTgzQjNCJWNvbnRyYXN0OndlYn0gV29ybGQiKSwKLy8gICAgICAgICBPayhOb2RlOjpBcnJheSh2ZWMhWwovLyAgICAgICAgICAgICBOb2RlOjpDb2xvcigiI0U4M0IzQiIucGFyc2U6OjxjcmF0ZTo6Q29sb3I+KCkudW53cmFwKCkpLAovLyAgICAgICAgICAgICBOb2RlOjpUZXh0KCJIZWxsbyIudG9fc3RyaW5nKCkpLAovLyAgICAgICAgICAgICBOb2RlOjpSZW5kZXJhYmxlQ29sb3IoCi8vICAgICAgICAgICAgICAgICBSZW5kZXJhYmxlQ29sb3I6Om5ldygiI0U4M0IzQiIucGFyc2U6OjxjcmF0ZTo6Q29sb3I+KCkudW53cmFwKCkpCi8vICAgICAgICAgICAgICAgICAgICAgLndpdGhfY29udHJhc3QoQ29udHJhc3Q6OldlYikKLy8gICAgICAgICAgICAgKSwKLy8gICAgICAgICAgICAgTm9kZTo6VGV4dCgiIFdvcmxkIi50b19zdHJpbmcoKSkKLy8gICAgICAgICBdKSkKLy8gICAgICk7Ci8vCi8vICAgICBPaygoKSkKLy8gfQovLyAjW3Rlc3RdCi8vIGZuIHRlc3RfcmVuZGVyX2Vycm9yKCkgLT4gUmVzdWx0PCgpPiB7Ci8vICAgICBhc3NlcnRfZXEhKHJlbmRlcigie2NvbG9yOiNFODNCM0J9SGVsbG97Y29sb3I6I0U4M0IzQiVjb250cmFzdDp3ZWJ9IFdvcmxkIiksIE9rKGZvcm1hdCEoIiIpKSk7Ci8vICAgICBPaygoKSkKLy8gfQo=
-
-// use crate::{Error, Result};
 #[cfg(test)]
 mod tests {
+    use std::{str::FromStr, sync::Once};
+
+    use winnow::error::{ContextError, ErrMode, StrContextValue::StringLiteral};
+
     use super::*;
+    // type Result<T> = std::result::Result<T, ContextError>;
     use crate::{
         AnsiRenderable,
         Color,
         Contrast,
         Error,
         Layer,
+        Node,
         RenderableColor,
         Reset,
         Result,
         Value,
         logging::{setup_logging, setup_tracing},
     };
-
-    // type Result<T> = std::result::Result<T, ContextError>;
-    use crate::Node;
-    use std::{str::FromStr, sync::Once};
-    use winnow::error::{ContextError, ErrMode, StrContextValue::StringLiteral};
 
     #[test]
     fn test_parse_u8() {

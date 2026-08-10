@@ -1,8 +1,9 @@
-use crate::Node;
 use std::{
     fmt::{Debug, Display},
     iter::{IntoIterator, Iterator},
 };
+
+use crate::Node;
 pub trait AnsiRenderable: Sized + Clone {
     fn render(&self) -> String;
 }
