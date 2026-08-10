@@ -285,14 +285,18 @@ fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     Ok(Node::Array(res))
 }
 #[cfg_attr(feature = "tracing", instrument)]
-pub fn parse<'i, T : std::fmt::Debug + std::fmt::Display, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + std::fmt::Display >(
+pub fn parse<
+    'i,
+    T: std::fmt::Debug + std::fmt::Display,
+    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + std::fmt::Display,
+>(
     input: T,
 ) -> Result<Node> {
     let mut input: &'i mut str = input.to_string().leak();
     let result = nodes::<E>.parse(input).map_err(|e| Error::TemplateParseError(format!("{e}")))?;
     Ok(result)
 }
-pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item=T>>(items: I) -> String {
+pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item = T>>(items: I) -> String {
     items.map(|i| i.render()).collect::<String>()
 }
 // pub fn render<
@@ -592,17 +596,15 @@ mod tests {
         );
         assert_eq!(
             parse::<&str, Error>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
-            Ok(
-                Node::Array(vec![
-                    Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
-                    Node::Text("Hello".to_string()),
-                    Node::RenderableColor(
-                        RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
-                            .with_contrast(Contrast::Web)
-                    ),
-                    Node::Text(" World".to_string())
-                ])
-            )
+            Ok(Node::Array(vec![
+                Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+                Node::Text("Hello".to_string()),
+                Node::RenderableColor(
+                    RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                        .with_contrast(Contrast::Web)
+                ),
+                Node::Text(" World".to_string())
+            ]))
         );
 
         Ok(())
