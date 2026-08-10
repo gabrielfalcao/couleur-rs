@@ -1,9 +1,7 @@
 use std::cmp::{max, min};
 
-use {
-    couleur_rs::{Color, Result, Value},
-    k9::assert_equal,
-};
+use couleur_rs::{Color, Result, Value};
+use k9::assert_equal;
 
 #[test]
 fn test_value_from_u8() -> Result<()> {

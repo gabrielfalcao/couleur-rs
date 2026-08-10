@@ -1,8 +1,6 @@
 #![allow(unused)]
-use {
-    couleur_rs::{Color, Error, Result, Terminal},
-    k9::assert_equal,
-};
+use couleur_rs::{Color, Error, Result, Terminal};
+use k9::assert_equal;
 
 #[test]
 fn test_terminal_luminance_functions() -> Result<()> {

@@ -1,17 +1,15 @@
-use {
-    crate::{
-        Color,
-        Error,
-        Layer,
-        Result,
-        Value,
-        deserialize_string_to_str,
-        serialize_static_str_to_string,
-    },
-    serde::{Deserialize, Serialize},
-    std::{borrow::Cow, marker::PhantomData},
-    terminal_colorsaurus::{QueryOptions, background_color, foreground_color},
+use crate::{
+    Color,
+    Error,
+    Layer,
+    Result,
+    Value,
+    deserialize_string_to_str,
+    serialize_static_str_to_string,
 };
+use serde::{Deserialize, Serialize};
+use std::{borrow::Cow, marker::PhantomData};
+use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
 /// Terminal is an abstraction to retrive information regarding the
 /// background and foreground colors of the terminal at runtime along

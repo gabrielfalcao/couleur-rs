@@ -1,20 +1,18 @@
-use {
-    crate::AnsiRenderable,
-    regex::Regex,
-    serde::{
-        Deserialize,
-        Deserializer,
-        Serialize,
-        Serializer,
-        de::{self, Error as SerdeError, Visitor},
-    },
-    std::{
-        fmt,
-        hash::{Hash, Hasher},
-        ops::Deref,
-        str::FromStr,
-        sync::LazyLock,
-    },
+use crate::AnsiRenderable;
+use regex::Regex;
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+    de::{self, Error as SerdeError, Visitor},
+};
+use std::{
+    fmt,
+    hash::{Hash, Hasher},
+    ops::Deref,
+    str::FromStr,
+    sync::LazyLock,
 };
 
 use thiserror::Error as ThisError;

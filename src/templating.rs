@@ -10,7 +10,6 @@ use {
         Layer,
         RenderableColor,
         Reset,
-        Result,
         Value,
         // ansi_renderable::{
         //     AnsiRenderable,
@@ -43,6 +42,7 @@ use winnow::{
     prelude::*,
     token::{any, none_of, rest, take, take_while},
 };
+type Result<T> = std::result::Result<T, ContextError>;
 pub(crate) type Stream<'i> = &'i str;
 
 impl AnsiRenderable for Node {
@@ -281,46 +281,44 @@ impl Node {
     }
 }
 mod within_curly_braces {
+    use super::*;
+    use crate::{
+        AnsiRenderable,
+        Color,
+        Contrast,
+        Error,
+        Layer,
+        RenderableColor,
+        Reset,
+        Result,
+        Value,
+        setup_logging,
+    };
+    use std::{
+        fmt::{Debug, Display},
+        str::FromStr,
+    };
     #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
-    use {
-        super::*,
-        crate::{
-            AnsiRenderable,
-            Color,
-            Contrast,
-            Error,
-            Layer,
-            RenderableColor,
-            Reset,
-            Result,
-            Value,
-            setup_logging,
+    use winnow::{
+        ModalResult,
+        Parser,
+        ascii::{dec_uint, digit1, float, hex_digit1},
+        combinator::{
+            alt,
+            cut_err,
+            delimited,
+            eof,
+            iterator,
+            preceded,
+            repeat,
+            separated,
+            separated_pair,
+            seq,
+            terminated,
         },
-        std::{
-            fmt::{Debug, Display},
-            str::FromStr,
-        },
-        winnow::{
-            ModalResult,
-            Parser,
-            ascii::{dec_uint, digit1, float, hex_digit1},
-            combinator::{
-                alt,
-                cut_err,
-                delimited,
-                eof,
-                iterator,
-                preceded,
-                repeat,
-                separated,
-                separated_pair,
-                seq,
-                terminated,
-            },
-            error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-            prelude::*,
-            token::{any, none_of, rest, take, take_while},
-        },
+        error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
+        prelude::*,
+        token::{any, none_of, rest, take, take_while},
     };
 
     #[cfg_attr(feature = "tracing", instrument)]
@@ -433,7 +431,7 @@ fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 ) -> ModalResult<Node, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
-    let mut winnow_it = iterator(input, parse_node::<E>);
+    let mut winnow_it = iterator(input, parse_node::<ContextError>);
     let res = winnow_it.map(|node| node).collect::<Vec<Node>>();
 
     winnow_it.finish();
@@ -447,9 +445,12 @@ pub fn parse<
     E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + std::fmt::Display,
 >(
     input: T,
-) -> Result<Node> {
-    let mut input: &'i mut str = input.to_string().as_mut();
-    let result = nodes::<E>.parse(input).map_err(|e| Error::TemplateParseError(format!("{e}")))?;
+) -> crate::Result<Node> {
+    let mut input = input.to_string();
+    let mut input: &'i mut str = input.leak();
+    let result = nodes::<ContextError>
+        .parse(input)
+        .map_err(|e| Error::TemplateParseError(format!("{e}")))?;
     Ok(result)
 }
 pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item = T>>(items: I) -> String {
@@ -464,10 +465,11 @@ pub fn render<
     T: AnsiRenderable + Display,
 >(
     input: T,
-) -> Result<String> {
-    let mut input = input.to_string().as_mut();
-    let resolve =
-        nodes::<E>.parse(input).map_err(|error| Error::TemplateParseError(error.to_string()))?;
+) -> crate::Result<String> {
+    let mut input = input.to_string().leak();
+    let resolve = nodes::<ContextError>
+        .parse(input)
+        .map_err(|error| Error::TemplateParseError(error.to_string()))?;
     Ok(resolve.render())
 }
 
@@ -512,74 +514,353 @@ pub fn render<
 ///    - [ ] 4.1 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
 /// 4.0 IMPORTANT: take note of this particular test spec and make a reference to it when writing tests for template rendering: "Hello" must be colored with #E83B3B while " World" must be colored with #68BBBB because that's its *"web"* contrast color.
 
-#[test]
-fn test_parse_renderable_color_with_contrast<
-    'i,
-    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>,
->() -> Result<()> {
-    assert_eq!(
-        parse_node::<E>.parse_peek("{color:#E83B3B%contrast:web}"),
-        Ok((
-            "",
-            Node::RenderableColor(
-                RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
-                    .with_contrast(Contrast::Web)
-            )
-        ))
-    );
+// I1tjZmcodGVzdCldCiNbdGVzdF0KZm4gdGVzdF9wYXJzZV9yZW5kZXJhYmxlX2NvbG9yX3dpdGhfY29udHJhc3Q8PigpIC0+IFJlc3VsdDwoKT4gewogICAgYXNzZXJ0X2VxISgKICAgICAgICBwYXJzZV9ub2RlOjo8Q29udGV4dEVycm9yPi5wYXJzZV9wZWVrKCJ7Y29sb3I6I0U4M0IzQiVjb250cmFzdDp3ZWJ9IiksCiAgICAgICAgT2soKAogICAgICAgICAgICAiIiwKICAgICAgICAgICAgTm9kZTo6UmVuZGVyYWJsZUNvbG9yKAogICAgICAgICAgICAgICAgUmVuZGVyYWJsZUNvbG9yOjpuZXcoIiNFODNCM0IiLnBhcnNlOjo8Y3JhdGU6OkNvbG9yPigpLnVud3JhcCgpKQogICAgICAgICAgICAgICAgICAgIC53aXRoX2NvbnRyYXN0KENvbnRyYXN0OjpXZWIpCiAgICAgICAgICAgICkKICAgICAgICApKQogICAgKTsKCiAgICBPaygoKSkKfQojW3Rlc3RdCmZuIHRlc3RfcGFyc2VfcmVuZGVyYWJsZV9jb2xvcl93aXRoX2xheWVyX2FuZF9jb250cmFzdCgpIC0+IFJlc3VsdDwoKT4gewogICAgYXNzZXJ0X2VxISgKICAgICAgICBwYXJzZV9ub2RlOjo8Q29udGV4dEVycm9yPi5wYXJzZV9wZWVrKCJ7Y29sb3I6I0U4M0IzQkBsYXllcjpiZyVjb250cmFzdDp3ZWJ9IiksCiAgICAgICAgT2soKAogICAgICAgICAgICAiIiwKICAgICAgICAgICAgTm9kZTo6UmVuZGVyYWJsZUNvbG9yKAogICAgICAgICAgICAgICAgUmVuZGVyYWJsZUNvbG9yOjpuZXcoIiNFODNCM0IiLnBhcnNlOjo8Y3JhdGU6OkNvbG9yPigpLnVud3JhcCgpKQogICAgICAgICAgICAgICAgICAgIC53aXRoX2xheWVyKExheWVyOjpCRykKICAgICAgICAgICAgICAgICAgICAud2l0aF9jb250cmFzdChDb250cmFzdDo6V2ViKQogICAgICAgICAgICApCiAgICAgICAgKSkKICAgICk7CgogICAgT2soKCkpCn0KLy8gI1t0ZXN0XQovLyBmbiB0ZXN0X3BhcnNlX3JlbmRlcmFibGVfY29sb3Jfd2l0aF9sYXllcl9jb250cmFzdF9hbmRfdGV4dCgpIC0+IFJlc3VsdDwoKT4gewovLyAgICAgYXNzZXJ0X2VxISgKLy8gICAgICAgICBub2Rlczo6PEVycm9yPi5wYXJzZV9wZWVrKCJ7Y29sb3I6I0U4M0IzQn1IZWxsb3tjb2xvcjojRTgzQjNCJWNvbnRyYXN0OndlYn0gV29ybGQiKSwKLy8gICAgICAgICBPaygoCi8vICAgICAgICAgICAgICIiLAovLyAgICAgICAgICAgICBOb2RlOjpBcnJheSh2ZWMhWwovLyAgICAgICAgICAgICAgICAgTm9kZTo6Q29sb3IoIiNFODNCM0IiLnBhcnNlOjo8Y3JhdGU6OkNvbG9yPigpLnVud3JhcCgpKSwKLy8gICAgICAgICAgICAgICAgIE5vZGU6OlRleHQoIkhlbGxvIi50b19zdHJpbmcoKSksCi8vICAgICAgICAgICAgICAgICBOb2RlOjpSZW5kZXJhYmxlQ29sb3IoCi8vICAgICAgICAgICAgICAgICAgICAgUmVuZGVyYWJsZUNvbG9yOjpuZXcoIiNFODNCM0IiLnBhcnNlOjo8Y3JhdGU6OkNvbG9yPigpLnVud3JhcCgpKQovLyAgICAgICAgICAgICAgICAgICAgICAgICAud2l0aF9jb250cmFzdChDb250cmFzdDo6V2ViKQovLyAgICAgICAgICAgICAgICAgKSwKLy8gICAgICAgICAgICAgICAgIE5vZGU6OlRleHQoIiBXb3JsZCIudG9fc3RyaW5nKCkpCi8vICAgICAgICAgICAgIF0pCi8vICAgICAgICAgKSkKLy8gICAgICk7Ci8vICAgICBhc3NlcnRfZXEhKAovLyAgICAgICAgIHBhcnNlOjo8JnN0ciwgRXJyb3I+KCJ7Y29sb3I6I0U4M0IzQn1IZWxsb3tjb2xvcjojRTgzQjNCJWNvbnRyYXN0OndlYn0gV29ybGQiKSwKLy8gICAgICAgICBPayhOb2RlOjpBcnJheSh2ZWMhWwovLyAgICAgICAgICAgICBOb2RlOjpDb2xvcigiI0U4M0IzQiIucGFyc2U6OjxjcmF0ZTo6Q29sb3I+KCkudW53cmFwKCkpLAovLyAgICAgICAgICAgICBOb2RlOjpUZXh0KCJIZWxsbyIudG9fc3RyaW5nKCkpLAovLyAgICAgICAgICAgICBOb2RlOjpSZW5kZXJhYmxlQ29sb3IoCi8vICAgICAgICAgICAgICAgICBSZW5kZXJhYmxlQ29sb3I6Om5ldygiI0U4M0IzQiIucGFyc2U6OjxjcmF0ZTo6Q29sb3I+KCkudW53cmFwKCkpCi8vICAgICAgICAgICAgICAgICAgICAgLndpdGhfY29udHJhc3QoQ29udHJhc3Q6OldlYikKLy8gICAgICAgICAgICAgKSwKLy8gICAgICAgICAgICAgTm9kZTo6VGV4dCgiIFdvcmxkIi50b19zdHJpbmcoKSkKLy8gICAgICAgICBdKSkKLy8gICAgICk7Ci8vCi8vICAgICBPaygoKSkKLy8gfQovLyAjW3Rlc3RdCi8vIGZuIHRlc3RfcmVuZGVyX2Vycm9yKCkgLT4gUmVzdWx0PCgpPiB7Ci8vICAgICBhc3NlcnRfZXEhKHJlbmRlcigie2NvbG9yOiNFODNCM0J9SGVsbG97Y29sb3I6I0U4M0IzQiVjb250cmFzdDp3ZWJ9IFdvcmxkIiksIE9rKGZvcm1hdCEoIiIpKSk7Ci8vICAgICBPaygoKSkKLy8gfQo=
 
-    Ok(())
-}
-#[test]
-fn test_parse_renderable_color_with_layer_and_contrast() -> Result<()> {
-    assert_eq!(
-        parse_node::<Error>.parse_peek("{color:#E83B3B@layer:bg%contrast:web}"),
-        Ok((
-            "",
-            Node::RenderableColor(
-                RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
-                    .with_layer(Layer::BG)
-                    .with_contrast(Contrast::Web)
-            )
-        ))
-    );
+// use crate::{Error, Result};
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        AnsiRenderable,
+        Color,
+        Contrast,
+        Error,
+        Layer,
+        RenderableColor,
+        Reset,
+        Result,
+        Value,
+        logging::{setup_logging, setup_tracing},
+    };
 
-    Ok(())
+    // type Result<T> = std::result::Result<T, ContextError>;
+    use crate::Node;
+    use std::{str::FromStr, sync::Once};
+    use winnow::error::{ContextError, ErrMode, StrContextValue::StringLiteral};
+
+    #[test]
+    fn test_parse_u8() {
+        assert_eq!(parse_u8::<ContextError>.parse_peek("127"), Ok(("", 127u8)));
+        assert_eq!(parse_u8::<ContextError>.parse_peek("255"), Ok(("", 255u8)));
+        let mut context = ContextError::new();
+        context.push(StrContext::Expected("unsigned number between 0 and 255".into()));
+        assert_eq!(parse_u8::<ContextError>.parse_peek("300"), Err(ErrMode::Backtrack(context)));
+    }
+
+    #[test]
+    fn test_parse_triple_trailing_comma() {
+        assert_eq!(
+            parse_triple::<ContextError>.parse_peek("127,255,71,"),
+            Ok(("", (127u8, 255u8, 71u8)))
+        );
+    }
+    #[test]
+    fn test_parse_triple() {
+        assert_eq!(
+            parse_triple::<ContextError>.parse_peek("127,255,63"),
+            Ok(("", (127u8, 255u8, 63u8)))
+        );
+    }
+
+    #[test]
+    fn test_parse_reset() -> Result<()> {
+        assert_eq!(reset::<ContextError>.parse_peek("{reset}"), Ok(("", Reset::default())));
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{reset}"),
+            Ok(("", Node::Reset(Reset::default())))
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_color_rgb_hex_prefixed_hash() -> Result<()> {
+        assert_eq!(
+            color::<ContextError>.parse_peek("{color:#F04F78}"),
+            Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color")))
+        );
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{color:#F04F78}"),
+            Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_color_rgb_hex() -> Result<()> {
+        assert_eq!(
+            color::<ContextError>.parse_peek("{color:F04F78}"),
+            Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color")))
+        );
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{color:F04F78}"),
+            Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_color_rgb_u8_triple() -> Result<()> {
+        assert_eq!(
+            color::<ContextError>.parse_peek("{color:240,79,120,}"),
+            Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color")))
+        );
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{color:240,79,120}"),
+            Ok(("", Node::Color("#F04F78".parse::<Color>().expect("parse rgb color"))))
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_color_rgb_u8_triple_with_extra_spaces_and_trailing_comma() -> Result<()> {
+        assert_eq!(
+            color::<ContextError>.parse_peek("{color:240,  79, 120 , }"),
+            Ok(("", "#F04F78".parse::<Color>().expect("parse rgb color")))
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_text_single_node() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("hello world"),
+            Ok(("", Node::Text("hello world".to_string())))
+        );
+        Ok(())
+    }
+    #[test]
+    fn test_parse_text_node_array() -> Result<()> {
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("hello {reset} world"),
+            Ok((
+                "",
+                Node::Array(vec![
+                    Node::Text("hello ".to_string()),
+                    Node::Reset(Reset::default()),
+                    Node::Text(" world".to_string())
+                ])
+            ))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_node_array_color_text_and_reset() -> Result<()> {
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("{color:#4D9BE6}hello {color:#91DB69}world{reset}"),
+            Ok((
+                "",
+                Node::Array(vec![
+                    Node::Color("#4D9BE6".parse::<crate::Color>().unwrap()),
+                    Node::Text("hello ".to_string()),
+                    Node::Color("#91DB69".parse::<crate::Color>().unwrap()),
+                    Node::Text("world".to_string()),
+                    Node::Reset(Reset::default())
+                ])
+            ))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_layer_bg() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{layer:bg}"),
+            Ok(("", Node::Layer(Layer::BG)))
+        );
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("{layer:bg}"),
+            Ok(("", Node::Array(vec![Node::Layer(Layer::BG)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_layer_fg() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{layer:fg}"),
+            Ok(("", Node::Layer(Layer::FG)))
+        );
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("{layer:fg}"),
+            Ok(("", Node::Array(vec![Node::Layer(Layer::FG)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_renderable_color_with_layer() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{color:#F9C22B@layer:bg}"),
+            Ok((
+                "",
+                Node::RenderableColor(
+                    RenderableColor::new("#F9C22B".parse::<crate::Color>().unwrap())
+                        .with_layer(Layer::BG)
+                )
+            ))
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_contrast_none() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{contrast:none}"),
+            Ok(("", Node::Contrast(Contrast::None)))
+        );
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("{contrast:none}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::None)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_contrast_read() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{contrast:read}"),
+            Ok(("", Node::Contrast(Contrast::Read)))
+        );
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("{contrast:read}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::Read)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_contrast_high_bit() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{contrast:high_bit}"),
+            Ok(("", Node::Contrast(Contrast::HighBit)))
+        );
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("{contrast:high_bit}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::HighBit)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_contrast_harmonic() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{contrast:harmonic}"),
+            Ok(("", Node::Contrast(Contrast::Harmonic)))
+        );
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("{contrast:harmonic}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::Harmonic)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_contrast_web() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{contrast:web}"),
+            Ok(("", Node::Contrast(Contrast::Web)))
+        );
+        assert_eq!(
+            nodes::<ContextError>.parse_peek("{contrast:web}"),
+            Ok(("", Node::Array(vec![Node::Contrast(Contrast::Web)])))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_renderable_color_with_contrast() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{color:#E83B3B%contrast:web}"),
+            Ok((
+                "",
+                Node::RenderableColor(
+                    RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                        .with_contrast(Contrast::Web)
+                )
+            ))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_renderable_color_with_layer_and_contrast() -> Result<()> {
+        assert_eq!(
+            parse_node::<ContextError>.parse_peek("{color:#E83B3B@layer:bg%contrast:web}"),
+            Ok((
+                "",
+                Node::RenderableColor(
+                    RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                        .with_layer(Layer::BG)
+                        .with_contrast(Contrast::Web)
+                )
+            ))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_parse_renderable_color_with_layer_contrast_and_text() -> Result<()> {
+        assert_eq!(
+            nodes::<ContextError>
+                .parse_peek("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+            Ok((
+                "",
+                Node::Array(vec![
+                    Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+                    Node::Text("Hello".to_string()),
+                    Node::RenderableColor(
+                        RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                            .with_contrast(Contrast::Web)
+                    ),
+                    Node::Text(" World".to_string())
+                ])
+            ))
+        );
+        assert_eq!(
+            parse::<&str, Error>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+            Ok(Node::Array(vec![
+                Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+                Node::Text("Hello".to_string()),
+                Node::RenderableColor(
+                    RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                        .with_contrast(Contrast::Web)
+                ),
+                Node::Text(" World".to_string())
+            ]))
+        );
+
+        Ok(())
+    }
+    #[test]
+    fn test_render_string() -> Result<()> {
+        assert_eq!(
+            nodes::<ContextError>
+                .parse_peek("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+            Ok((
+                "",
+                Node::Array(vec![
+                    Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+                    Node::Text("Hello".to_string()),
+                    Node::RenderableColor(
+                        RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                            .with_contrast(Contrast::Web)
+                    ),
+                    Node::Text(" World".to_string())
+                ])
+            ))
+        );
+        assert_eq!(
+            parse::<&str, Error>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+            Ok(Node::Array(vec![
+                Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
+                Node::Text("Hello".to_string()),
+                Node::RenderableColor(
+                    RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
+                        .with_contrast(Contrast::Web)
+                ),
+                Node::Text(" World".to_string())
+            ]))
+        );
+
+        Ok(())
+    }
 }
-// #[test]
-// fn test_parse_renderable_color_with_layer_contrast_and_text() -> Result<()> {
-//     assert_eq!(
-//         nodes::<Error>.parse_peek("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
-//         Ok((
-//             "",
-//             Node::Array(vec![
-//                 Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
-//                 Node::Text("Hello".to_string()),
-//                 Node::RenderableColor(
-//                     RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
-//                         .with_contrast(Contrast::Web)
-//                 ),
-//                 Node::Text(" World".to_string())
-//             ])
-//         ))
-//     );
-//     assert_eq!(
-//         parse::<&str, Error>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
-//         Ok(Node::Array(vec![
-//             Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
-//             Node::Text("Hello".to_string()),
-//             Node::RenderableColor(
-//                 RenderableColor::new("#E83B3B".parse::<crate::Color>().unwrap())
-//                     .with_contrast(Contrast::Web)
-//             ),
-//             Node::Text(" World".to_string())
-//         ]))
-//     );
-//
-//     Ok(())
-// }
-// #[test]
-// fn test_render_error() -> Result<()> {
-//     assert_eq!(render("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"), Ok(format!("")));
-//     Ok(())
-// }

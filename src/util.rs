@@ -1,7 +1,5 @@
-use {
-    serde::{Deserialize, Deserializer, Serializer},
-    std::sync::LazyLock,
-};
+use serde::{Deserialize, Deserializer, Serializer};
+use std::sync::LazyLock;
 
 use regex::Regex;
 

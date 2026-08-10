@@ -1,8 +1,6 @@
-use {
-    couleur_rs::{FloatMetadata, Result},
-    iocore::Path,
-    k9::assert_equal,
-};
+use couleur_rs::{FloatMetadata, Result};
+use iocore::Path;
+use k9::assert_equal;
 
 #[test]
 fn test_to_string() -> Result<()> {

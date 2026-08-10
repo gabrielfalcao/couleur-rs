@@ -1,9 +1,7 @@
+use crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
+use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
-use {
-    crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap},
-    serde::{Deserialize, Serialize},
-    std::fmt::Display,
-};
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
     pub(crate) color: Color,
@@ -63,11 +61,9 @@ impl Display for RenderableColor {
 
 #[cfg(test)]
 mod tests {
-    use {
-        super::RenderableColor,
-        crate::{AnsiRenderable, Color, Contrast, Error, Layer, Result, global_setup},
-        std::str::FromStr,
-    };
+    use super::RenderableColor;
+    use crate::{AnsiRenderable, Color, Contrast, Error, Layer, Result, global_setup};
+    use std::str::FromStr;
 
     #[test]
     fn test_render_color_defaults_to_foreground_layer() -> Result<()> {
