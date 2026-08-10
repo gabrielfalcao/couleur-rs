@@ -2,8 +2,8 @@
 use {
     crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap},
     serde::{Deserialize, Serialize},
+    std::fmt::Display,
 };
-
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
     pub(crate) color: Color,
@@ -55,6 +55,12 @@ impl From<Color> for RenderableColor {
         RenderableColor::new(color)
     }
 }
+impl Display for RenderableColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.render())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use {
