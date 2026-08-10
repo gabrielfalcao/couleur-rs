@@ -17,12 +17,23 @@ pub enum Reset {
     Around,
     None,
 }
+impl Reset {
+    pub fn render_with_prefix(&self, prefix: Prefix) -> String {
+        [prefix.render(), Self::code_string()].iter().map(|val| val.to_string()).collect::<String>()
+    }
+}
+
+impl AnsiRenderable for Reset {
+    fn render(&self) -> String {
+        self.render_with_prefix(Prefix::default())
+    }
+}
 impl ToAnsi for Reset {
     fn as_ansi_suffix(&self) -> String {
         Self::ansi_suffix().unwrap()
     }
     fn ansi_suffix() -> Option<String> {
-        Some(Reset::code().to_string())
+        Some(Reset::code_string())
     }
     fn render_ansi<T: Display>(&self, text: T, prefix: Option<Prefix>) -> String {
         let text = text.to_string();
@@ -46,6 +57,9 @@ impl Display for Reset {
 impl Reset {
     pub fn code() -> &'static str {
         "[0m"
+    }
+    pub fn code_string() -> String {
+        Self::code().to_string()
     }
     pub fn to_ansi(prefix: Option<Prefix>) -> String {
         format!(

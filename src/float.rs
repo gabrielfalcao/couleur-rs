@@ -14,7 +14,7 @@ pub struct FloatMetadata<'a> {
 impl<'a> FloatMetadata<'a> {
     pub fn from_parts(parts: (f64, bool, i32, i32, i32)) -> FloatMetadata<'a> {
         let (value, negative, round, fraction, leading_zeros_fractional) = parts;
-        let value = value.to_string();
+        let mut value = value.to_string();
         FloatMetadata { value: value.leak(), negative, round, fraction, leading_zeros_fractional }
     }
 

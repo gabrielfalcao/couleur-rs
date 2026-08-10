@@ -7,7 +7,7 @@ use std::{
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 
-use crate::{Color, Error, Layer, Result};
+use crate::{AnsiRenderable, Color, Error, Layer, Result};
 
 /// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
@@ -19,6 +19,13 @@ pub enum Contrast {
     Harmonic,
     Web,
 }
+
+impl AnsiRenderable for Contrast {
+    fn render(&self) -> String {
+        format!("")
+    }
+}
+
 impl Display for Contrast {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.variant_name_snake())
