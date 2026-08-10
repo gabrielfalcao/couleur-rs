@@ -5,7 +5,7 @@ use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
-use crate::{AnsiRenderable, Color, Error, Result};
+use crate::{AnsiRenderable, AnsiSequenceItem, Color, Error, Result};
 
 /// Represents the concept of "background" and "foreground" colors in a terminal
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
@@ -46,11 +46,12 @@ impl Display for Layer {
     }
 }
 impl AnsiRenderable for Layer {
-    fn render(&self) -> String {
+    fn render(&self, prefix: Option<Prefix>) -> String {
         let code = self.code();
-        format!("{code};")
+        format!("{prefix}{code};", prefix = prefix.unwrap_or_default())
     }
 }
+impl AnsiSequenceItem for Layer {}
 
 impl Layer {
     pub fn variant_name_snake(&self) -> &'static str {

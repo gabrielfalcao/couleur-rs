@@ -39,3 +39,25 @@ use {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test_conglomeate_ast_into_cst {
+    use std::{str::FromStr, sync::Once};
+
+    use winnow::error::{ContextError, ErrMode, StrContextValue::StringLiteral};
+
+    use super::*;
+    // type Result<T> = std::result::Result<T, ContextError>;
+    use crate::{
+        AnsiRenderable,
+        Color,
+        Contrast,
+        Error,
+        Layer,
+        Node,
+        RenderableColor,
+        Reset,
+        Result,
+        Value,
+        logging::{setup_logging, setup_tracing},
+    };

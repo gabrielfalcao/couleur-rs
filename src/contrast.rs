@@ -7,7 +7,7 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{AnsiRenderable, Color, Error, Layer, Result};
+use crate::{AnsiRenderable, AnsiSequenceItem, Color, Error, Layer, Result};
 
 /// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
@@ -19,9 +19,10 @@ pub enum Contrast {
     Harmonic,
     Web,
 }
+impl AnsiSequenceItem for Contrast {}
 
 impl AnsiRenderable for Contrast {
-    fn render(&self) -> String {
+    fn render(&self, _prefix: Option<Prefix>) -> String {
         format!("")
     }
 }

@@ -34,6 +34,13 @@ use crate::{
     max_rgb,
     min_rgb,
 };
+impl AnsiRenderable for Color {
+    fn render(&self) -> String {
+        let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
+        let color = triple.join(";");
+        format!("2;{color}m")
+    }
+}
 
 /// static instance of [`Color`] which holds the absolute black RGB color.
 pub static BLACK: LazyLock<Color> =
@@ -480,13 +487,6 @@ impl Hash for Color {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.to_triple().hash(state);
         self.to_rgb_hex().hash(state);
-    }
-}
-impl AnsiRenderable for Color {
-    fn render(&self) -> String {
-        let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
-        let color = triple.join(";");
-        format!("2;{color}m")
     }
 }
 

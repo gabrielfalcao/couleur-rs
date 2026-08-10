@@ -1,10 +1,11 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use serde::Serialize;
 
 use crate::{Error, Prefix, Result};
+pub trait AnsiSequenceItem: Sized + Clone + Display + Debug {}
 
-pub trait ToAnsi: Sized + Serialize {
+pub trait ToAnsi: Sized + Serialize + AnsiSequenceItem {
     /// implementors must implement at least
     /// [`ToAnsi::as_ansi_suffix`] for their instances.
     fn as_ansi_suffix(&self) -> String;
@@ -52,25 +53,17 @@ pub trait ToAnsi: Sized + Serialize {
     }
     fn render_ansi<T: Display>(&self, text: T, prefix: Option<Prefix>) -> String;
 }
-use std::{
-    fmt::{Debug, Display},
-    iter::{IntoIterator, Iterator},
-};
+use std::iter::{IntoIterator, Iterator};
 
 use crate::Node;
-pub trait AnsiRenderable: Sized + Clone {
+pub trait AnsiRenderable: Sized + Clone + AnsiSequenceItem {
     fn render(&self, prefix: Option<Prefix>) -> String;
+}
+pub trait PrefixedAnsiRenderable: Sized + Clone + AnsiSequenceItem {
+    fn render_with_prefix(&self, prefix: Option<Prefix>) -> String ;
 }
 use std::{convert::AsRef, ops::Deref};
 
-// impl<T> AnsiRenderable for T
-// where
-//     T: std::ops::Deref<Target = str> + Clone + Debug + Display,
-// {
-//     fn render(&self) -> String {
-//         self.to_string()
-//     }
-// }
 impl AnsiRenderable for &str {
     fn render(&self) -> String {
         self.to_string()
@@ -86,8 +79,4 @@ impl AnsiRenderable for &Vec<Node> {
     fn render(&self) -> String {
         self.into_iter().map(|node| node.render()).collect::<String>()
     }
-}
-
-pub trait AnsiSequenceItem: Sized {
-    fn render(&self) -> String;
 }

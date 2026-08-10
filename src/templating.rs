@@ -24,6 +24,7 @@ use winnow::{
 use {
     crate::{
         AnsiRenderable,
+        AnsiSequenceItem,
         Color,
         Contrast,
         Error,
@@ -125,7 +126,7 @@ impl Display for Node {
                     color.to_string()
                 }
                 Node::Array(nodes) => {
-                    nodes.iter().map(|node| AnsiRenderable::render(node)).collect::<String>()
+                    nodes.iter().map(|node| AnsiRenderable::render(node, None)).collect::<String>()
                 }
             }
         )
@@ -426,8 +427,11 @@ pub fn parse<
         .map_err(|e| Error::TemplateParseError(format!("{e}")))?;
     Ok(result)
 }
-pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item = T>>(items: I) -> String {
-    let p = items.map(|i| i.render()).collect::<String>();
+pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item = T>>(
+    items: I,
+    prefix: Option<Prefix>,
+) -> String {
+    let p = items.map(|i| i.render(prefix)).collect::<String>();
     p
 }
 

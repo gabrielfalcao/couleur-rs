@@ -68,14 +68,14 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 // #[doc(inline)]
 pub use state::{ColorPalette, Context};
 
+#[doc(hidden)] pub mod traits;
+pub use traits::{AnsiRenderable, AnsiSequenceItem, ToAnsi};
+
 #[doc(hidden)] pub mod value;
 #[doc(inline)] pub use value::Value;
 
 #[doc(hidden)] pub mod wrap;
 #[doc(inline)] pub use wrap::Wrap;
-
-#[doc(hidden)] pub mod ansi_renderable;
-#[doc(inline)] pub use ansi_renderable::AnsiRenderable;
 
 #[doc(hidden)] pub mod renderable_color;
 #[doc(inline)] pub use renderable_color::RenderableColor;

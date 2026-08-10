@@ -4,7 +4,7 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{AnsiRenderable, Prefix, ToAnsi};
+use crate::{AnsiRenderable, AnsiSequenceItem, Prefix, ToAnsi};
 
 /// Represents the intent of adding an "ansi reset" sequence before,
 /// after or around an ANSI color sequence.
@@ -21,6 +21,7 @@ impl Reset {
         [prefix.render(), Self::code_string()].iter().map(|val| val.to_string()).collect::<String>()
     }
 }
+impl AnsiSequenceItem for Reset {}
 
 impl AnsiRenderable for Reset {
     fn render(&self) -> String {

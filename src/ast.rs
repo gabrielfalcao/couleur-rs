@@ -1,4 +1,3 @@
-
 #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
 #[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
 use winnow::{
@@ -87,15 +86,15 @@ impl Node {
 }
 
 impl AnsiRenderable for Node {
-    fn render(&self) -> String {
+    fn render(&self, prefix: Option<Prefix>) -> String {
         match self {
-            Node::Reset(node) => node.render(),           // node.reset(),
-            Node::Color(node) => node.render(),           // node.color(),
-            Node::Layer(node) => node.render(),           // node.layer(),
-            Node::Contrast(node) => node.render(),        // node.contrast(),
-            Node::Text(node) => node.to_string(),         // node.to()_string(),
-            Node::RenderableColor(node) => node.render(), // node.render(),
-            Node::Array(node) => node.render(), // node.iter().map(|node| node.render()).collect::<String>(),
+            Node::Reset(node) => node.render(prefix),           // node.reset(),
+            Node::Color(node) => node.render(prefix),           // node.color(),
+            Node::Layer(node) => node.render(prefix),           // node.layer(),
+            Node::Contrast(node) => node.render(prefix),        // node.contrast(),
+            Node::Text(node) => node.to_string(),               // node.to()_string(),
+            Node::RenderableColor(node) => node.render(prefix), // node.render(prefix),
+            Node::Array(node) => node.render(prefix),           // node.iter().map(|node| node.render(prefix)).collect::<String>(),
         }
     }
 }

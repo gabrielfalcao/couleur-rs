@@ -3,7 +3,19 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
-use crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
+use crate::{
+    AnsiRenderable,
+    AnsiSequenceItem,
+    Color,
+    Contrast,
+    Error,
+    Exit,
+    Layer,
+    Prefix,
+    Reset,
+    Result,
+    Wrap,
+};
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
     pub(crate) color: Color,
@@ -60,6 +72,7 @@ impl Display for RenderableColor {
         write!(f, "{}", self.render())
     }
 }
+impl AnsiSequenceItem for RenderableColor {}
 
 #[cfg(test)]
 mod tests {
