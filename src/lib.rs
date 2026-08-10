@@ -61,9 +61,6 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(hidden)] pub mod terminal;
 #[doc(inline)] pub use terminal::{Terminal, TerminalInfo, TerminalInfoError};
 
-#[doc(hidden)] pub mod to_ansi;
-#[doc(inline)] pub use to_ansi::ToAnsi;
-
 #[doc(hidden)] pub mod triples;
 #[doc(inline)] pub use triples::{RgbTriple, U8Triple};
 

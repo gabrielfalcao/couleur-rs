@@ -446,10 +446,10 @@ pub fn render<
     Ok(resolve.render())
 }
 
-// pub fn render<'i, T: std::fmt::Display + std::fmt::Debug>(input: T) -> Result<String> {
-//     let mut input: &'i mut str = input.to_string().as_mut();
-//     Ok(render::<ContextError>(input)?)
-// }
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ConcreteNodes<T: AnsiSequenceItem> {
+    items: Vec<T>,
+}
 
 /// # TDD TODO:
 ///
