@@ -816,7 +816,7 @@ mod tests {
             ))
         );
         assert_eq!(
-            parse::<&str, Error>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+            parse::<&str, ContextError>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
             Ok(Node::Array(vec![
                 Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
                 Node::Text("Hello".to_string()),
@@ -849,7 +849,7 @@ mod tests {
             ))
         );
         assert_eq!(
-            parse::<&str, Error>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+            parse::<&str, ContextError>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
             Ok(Node::Array(vec![
                 Node::Color("#E83B3B".parse::<crate::Color>().unwrap()),
                 Node::Text("Hello".to_string()),
