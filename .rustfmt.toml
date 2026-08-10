@@ -19,7 +19,7 @@ use_small_heuristics = "Default"
 
 
 group_imports = "Preserve"
-imports_granularity = "One"
+imports_granularity = "Crate"
 imports_indent = "Block"
 imports_layout = "HorizontalVertical"
 reorder_imports = true
