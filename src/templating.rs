@@ -1,34 +1,25 @@
-use {
-    crate::{Color, ParseError},
-    winnow::{
-        ModalResult,
-        Parser,
-        Result,
-        ascii::{
-            alpha1,
-            alphanumeric1 as alphanumeric,
-            float,
-            hex_digit0,
-            hex_digit1,
-            take_escaped,
-        },
-        combinator::{
-            alt,
-            cut_err,
-            delimited,
-            impls::Context,
-            preceded,
-            repeat,
-            repeat_till,
-            separated,
-            separated_pair,
-            terminated,
-        },
-        error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-        prelude::*,
-        stream::{AsChar, Offset, Stream as _},
-        token::{any, literal, none_of, one_of, rest, take_till, take_while},
+use crate::{Color, ParseError};
+use winnow::{
+    ModalResult,
+    Parser,
+    Result,
+    ascii::{alpha1, alphanumeric1 as alphanumeric, float, hex_digit0, hex_digit1, take_escaped},
+    combinator::{
+        alt,
+        cut_err,
+        delimited,
+        impls::Context,
+        preceded,
+        repeat,
+        repeat_till,
+        separated,
+        separated_pair,
+        terminated,
     },
+    error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
+    prelude::*,
+    stream::{AsChar, Offset, Stream as _},
+    token::{any, literal, none_of, one_of, rest, take_till, take_while},
 };
 pub(crate) type Stream<'i> = &'i str;
 

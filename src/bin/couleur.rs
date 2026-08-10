@@ -1,19 +1,17 @@
 #![allow(unused)]
-use {
-    clap::Parser,
-    couleur_rs::{
-        AnsiColorizer,
-        Color,
-        Contrast,
-        Error,
-        Exit,
-        Layer,
-        Prefix,
-        Reset,
-        Result,
-        Wrap,
-        dispatch::ParserDispatcher,
-    },
+use clap::Parser;
+use couleur_rs::{
+    AnsiColorizer,
+    Color,
+    Contrast,
+    Error,
+    Exit,
+    Layer,
+    Prefix,
+    Reset,
+    Result,
+    Wrap,
+    dispatch::ParserDispatcher,
 };
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]

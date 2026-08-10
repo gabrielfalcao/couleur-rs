@@ -1,13 +1,11 @@
-use {
-    serde::{
-        Deserialize,
-        Deserializer,
-        Serialize,
-        Serializer,
-        de::{self, Error as SerdeError, Visitor},
-    },
-    std::fmt,
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+    de::{self, Error as SerdeError, Visitor},
 };
+use std::fmt;
 
 use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},

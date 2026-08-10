@@ -1,14 +1,12 @@
-use {
-    crate::color::RGBParseError,
-    serde::{Deserialize, Serialize},
-    std::{
-        fmt::Display,
-        num::{ParseFloatError, ParseIntError},
-    },
-    winnow::{
-        error::{AddContext, ContextError, ErrMode, ParserError, StrContext, StrContextValue},
-        stream::Stream,
-    },
+use crate::color::RGBParseError;
+use serde::{Deserialize, Serialize};
+use std::{
+    fmt::Display,
+    num::{ParseFloatError, ParseIntError},
+};
+use winnow::{
+    error::{AddContext, ContextError, ErrMode, ParserError, StrContext, StrContextValue},
+    stream::Stream,
 };
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {

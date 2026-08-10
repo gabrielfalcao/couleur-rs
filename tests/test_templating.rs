@@ -1,10 +1,8 @@
 #![allow(unused)]
 use std::cmp::{max, min};
 
-use {
-    couleur_rs::{Reset, render_template},
-    k9::assert_equal,
-};
+use couleur_rs::{Reset, render_template};
+use k9::assert_equal;
 
 #[test]
 fn test_render_foreground() -> Result<()> {

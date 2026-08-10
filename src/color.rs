@@ -1,16 +1,14 @@
 use std::{fmt::Display, ops::Deref, str::FromStr, sync::LazyLock};
 
-use {
-    regex::Regex,
-    serde::{
-        Deserialize,
-        Deserializer,
-        Serialize,
-        Serializer,
-        de::{self, Error as SerdeError, Visitor},
-    },
-    std::fmt,
+use regex::Regex;
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+    de::{self, Error as SerdeError, Visitor},
 };
+use std::fmt;
 
 use thiserror::Error as ThisError;
 

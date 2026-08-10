@@ -1,15 +1,11 @@
-use {
-    serde::{Deserialize, Serialize},
-    std::{
-        cmp::{Ordering, PartialOrd},
-        fmt::Display,
-    },
+use serde::{Deserialize, Serialize};
+use std::{
+    cmp::{Ordering, PartialOrd},
+    fmt::Display,
 };
 
-use {
-    clap::{ValueEnum, builder::PossibleValue},
-    heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase},
-};
+use clap::{ValueEnum, builder::PossibleValue};
+use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 
 use crate::{Color, Error, Layer, Result};
 
