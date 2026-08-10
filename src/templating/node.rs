@@ -2,13 +2,9 @@ use crate::{
     AnsiRenderable,
     Color,
     Contrast,
-    Error,
     Layer,
     RenderableColor,
     Reset,
-    Value,
-    setup_logging,
-    templating::types::{Result, Stream},
 };
 use std::fmt::{Debug, Display};
 

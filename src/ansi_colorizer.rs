@@ -1,4 +1,4 @@
-use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
+use crate::{Color, Contrast, Error, Layer, Prefix, Reset, Result, Wrap};
 use serde::{Deserialize, Serialize};
 
 /// Utility struct to [`colorize()`] arbitrary text

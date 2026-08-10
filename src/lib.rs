@@ -1,4 +1,4 @@
-#![allow(unused)]
+// #![allow(unused)]
 //!
 //! ```rust
 //! let dark_pink = "#C32454".parse::<Color>()?;

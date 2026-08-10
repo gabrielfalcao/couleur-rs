@@ -5,7 +5,7 @@ use std::{
     num::{ParseFloatError, ParseIntError},
 };
 use winnow::{
-    error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
+    error::{AddContext, ContextError, ErrMode, ParserError},
     stream::Stream,
 };
 
@@ -203,7 +203,7 @@ where
     I: Display + Stream,
     C: Display,
 {
-    fn add_context(self, input: &I, token_start: &<I as Stream>::Checkpoint, context: C) -> Self {
+    fn add_context(self, input: &I, _token_start: &<I as Stream>::Checkpoint, context: C) -> Self {
         self.with_input(input.to_string()).with_context(context.to_string())
     }
 }

@@ -29,7 +29,7 @@ pub fn deserialize_string_to_str<'de, D>(deserializer: D) -> Result<&'de str, D:
 where
     D: Deserializer<'de>,
 {
-    let mut raw_string = String::deserialize(deserializer)?;
+    let raw_string = String::deserialize(deserializer)?;
     let leaked = raw_string.leak();
     Ok(leaked)
 }

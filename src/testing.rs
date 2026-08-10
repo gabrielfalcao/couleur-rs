@@ -1,7 +1,6 @@
 //! small set of utilities to unit test couleur_rs itself
 use crate::{setup_logging, setup_tracing};
 use std::sync::Once;
-
 static INIT: Once = Once::new();
 
 /// `global_setup` can be manually called before each unit test but

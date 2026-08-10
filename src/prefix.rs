@@ -1,6 +1,6 @@
 use crate::AnsiRenderable;
 use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display};
 

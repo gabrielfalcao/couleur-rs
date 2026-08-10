@@ -1,11 +1,10 @@
 use crate::AnsiRenderable;
-use regex::Regex;
 use serde::{
     Deserialize,
     Deserializer,
     Serialize,
     Serializer,
-    de::{self, Error as SerdeError, Visitor},
+    de::{Error as SerdeError, Visitor},
 };
 use std::{
     fmt,
@@ -19,7 +18,6 @@ use thiserror::Error as ThisError;
 
 use crate::{
     Contrast,
-    ConversionToU8Error,
     Error,
     HEX_RGB_REGEX,
     Layer,
@@ -43,7 +41,6 @@ pub static BLACK: LazyLock<Color> =
 pub static WHITE: LazyLock<Color> =
     LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
 
-use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
 /// Represents an RGB color, providing methods to obtain color
 /// information and render the color in ANSI terminals supporting true-color.
@@ -293,7 +290,7 @@ impl Color {
         let contrast = contrast.unwrap_or_default();
 
         let ansi_sequence = self.to_ansi_with_prefix(layer, prefix);
-        let contrast = if contrast != Contrast::None {
+        let _contrast = if contrast != Contrast::None {
             self.contrast(contrast).to_ansi_with_prefix(layer.inverted(), prefix)
         } else {
             String::new()
@@ -443,10 +440,10 @@ impl FromStr for Color {
     fn from_str(s: &str) -> Result<Color> {
         match HEX_RGB_REGEX.captures(s) {
             Some(captures) => {
-                let red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
-                let green_value =
+                let _red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
+                let _green_value =
                     captures.name("green").map(|s| s.as_str().to_string()).expect("green");
-                let blue_value =
+                let _blue_value =
                     captures.name("blue").map(|s| s.as_str().to_string()).expect("blue");
                 let red = u8::from_str_radix(
                     &captures.name("red").map(|s| s.as_str().to_string()).unwrap(),

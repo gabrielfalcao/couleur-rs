@@ -1,4 +1,4 @@
-use crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
+use crate::{AnsiRenderable, Color, Contrast, Layer, Prefix};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};

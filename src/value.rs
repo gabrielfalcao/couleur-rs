@@ -3,7 +3,7 @@ use serde::{
     Deserializer,
     Serialize,
     Serializer,
-    de::{self, Error as SerdeError, Visitor},
+    de::{Error as SerdeError, Visitor},
 };
 use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
@@ -34,12 +34,9 @@ use std::{
 use crate::{
     ConversionToU8Error,
     Error,
-    FloatMetadata,
     ParseError,
     Result,
-    SINGLE_BAND_DECIMAL_RGB_REGEX,
     SINGLE_BAND_HEX_RGB_REGEX,
-    float::{leading_zeros_exp, leading_zeros_fractional},
     impl_op,
 };
 
@@ -132,7 +129,7 @@ impl Value {
 
     pub fn leading_zeros_exp(&self) -> i32 {
         let self_fract_leading_zeroes = self.leading_zeros_fractional();
-        let self_fract = self.fract().copysign(1.0_f32);
+        let _self_fract = self.fract().copysign(1.0_f32);
         let mut exp = self.fract();
         for _ in 0..self_fract_leading_zeroes {
             exp = exp * 10.0;

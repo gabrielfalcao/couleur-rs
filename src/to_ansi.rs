@@ -1,4 +1,4 @@
-use crate::{Error, Prefix, Result};
+use crate::Prefix;
 use serde::Serialize;
 use std::fmt::Display;
 

@@ -1,12 +1,8 @@
 use crate::Node;
-use std::{
-    fmt::{Debug, Display},
-    iter::{IntoIterator, Iterator},
-};
+use std::iter::{IntoIterator, Iterator};
 pub trait AnsiRenderable: Sized + Clone {
     fn render(&self) -> String;
 }
-use std::{convert::AsRef, ops::Deref};
 
 // impl<T> AnsiRenderable for T
 // where

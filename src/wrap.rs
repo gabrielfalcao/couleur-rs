@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
 /// Represents the intent of rendering a [`Color`] before, after or

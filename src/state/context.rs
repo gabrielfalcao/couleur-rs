@@ -1,6 +1,6 @@
-use crate::{ColorPalette, Error, Result};
+use crate::ColorPalette;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 /// [`Context`] is an object containing state for template
 /// rendering. It can be serialized and deserialized to load from
