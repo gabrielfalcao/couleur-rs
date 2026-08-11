@@ -3,7 +3,7 @@ use std::{
     iter::{IntoIterator, Iterator},
 };
 
-use crate::Node;
+use crate::{Node, Prefix};
 pub trait AnsiRenderable: Sized + Clone {
     fn render(&self) -> String;
 }

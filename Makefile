@@ -4,9 +4,8 @@ SRC_ROOT		:= $(PROJECT_ROOT)/src
 TEST_ROOT		:= $(PROJECT_ROOT)/tests
 
 
-# # all: run test
-# all: cls hex-to-bin
-all: cls run-couleur test
+all: cls run-couleur #test
+# all: cls run-couleur test
 
 
 hex-to-bin: cls

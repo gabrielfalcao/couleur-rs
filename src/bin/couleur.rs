@@ -32,6 +32,10 @@ impl Cli {
     pub fn text(&self) -> String {
         self.text.join(" ")
     }
+    pub fn nodes(&self) -> Result<Vec<Node>> {
+        let result = parse::<String, ContextError>(self.text())?;
+        Ok(result.to_vec())
+    }
     pub fn parsed(&self) -> Result<Node> {
         let result = parse::<String, ContextError>(self.text())?;
         Ok(result)
@@ -46,8 +50,10 @@ impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let input = self.text();
         println!("input: {input}");
-        let result = self.rendered()?;
-        println!("rendered: {result}");
+        let parsed = self.parsed()?;
+        println!("parsed: {parsed}");
+        // let result = self.rendered()?;
+        // println!("rendered: {result}");
 
         Ok(())
     }

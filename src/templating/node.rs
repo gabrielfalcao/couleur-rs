@@ -60,7 +60,7 @@ impl Node {
             Node::Contrast(contrast) => contrast.render(),
             Node::Text(string) => string.render(),
             Node::RenderableColor(renderable_color) => renderable_color.render(),
-            // Node::Array(arrry_of_value) => arrry_of_value.render(),
+            // Node::Array(array_of_value) => array_of_value.render(),
             Node::Array(nodes) => {
                 nodes.iter().map(|n| n.render()).collect::<Vec<String>>().join("")
             }
@@ -75,12 +75,23 @@ impl Node {
             Node::Contrast(_) => "contrast",
             Node::Text(_) => "string",
             Node::RenderableColor(_) => "renderable_color",
-            Node::Array(_) => "arrry_of_value",
+            Node::Array(_) => "array_of_value",
             // Node::Array(nodes) => {
             //     nodes.iter().map(|n| n.to_string()).collect::<Vec<String>>().join(",")
             // }
         }
         .to_string()
+    }
+    pub fn to_vec(&self) -> Vec<Node> {
+        match self {
+            Node::Reset(node) => vec![self.clone()],
+            Node::Color(node) => vec![self.clone()],
+            Node::Layer(node) => vec![self.clone()],
+            Node::Contrast(node) => vec![self.clone()],
+            Node::Text(node) => vec![self.clone()],
+            Node::RenderableColor(node) => vec![self.clone()],
+            Node::Array(nodes) => nodes.to_vec(),
+        }
     }
 }
 
