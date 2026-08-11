@@ -33,13 +33,13 @@ impl RenderableColor {
     #[cfg_attr(feature = "tracing", instrument)]
     pub fn render_all(&self) -> String {
         let prefix = self.prefix.unwrap_or_default().to_string();
-        let layer = self.layer.unwrap_or_default().render();
+        let layer = self.layer.unwrap_or_default().to_ansi_esc_suffix();
         let color = if let Some(contrast) = self.contrast {
             contrast.apply(self.color, self.layer.unwrap_or_default())
         } else {
             self.color
         }
-        .render();
+        .to_ansi_esc_suffix();
         #[cfg(feature = "tracing")]
         span!(Level::TRACE, "rendered params", prefix = prefix, layer = layer, color = color);
 
@@ -82,13 +82,13 @@ impl Display for RenderableColor {
 }
 impl ToAnsiEscSuffix for RenderableColor {
     fn to_ansi_esc_suffix(&self) -> String {
-        let layer = self.layer.unwrap_or_default().render();
+        let layer = self.layer.unwrap_or_default().to_ansi_esc_suffix();
         let color = if let Some(contrast) = self.contrast {
             contrast.apply(self.color, self.layer.unwrap_or_default())
         } else {
             self.color
         }
-        .render();
+        .to_ansi_esc_suffix();
         #[cfg(feature = "tracing")]
         span!(Level::TRACE, "rendered params", layer = layer, color = color);
 
@@ -105,20 +105,20 @@ impl AnsiRenderable for RenderableColor {
 mod tests {
 
     use super::RenderableColor;
-    use crate::{Color, Layer, Result};
+    use crate::{Color, Layer, Result, ToAnsiEscSuffix};
     // use crate::{ToAnsiEscSuffix};
 
     #[test]
     fn test_render_color_defaults_to_foreground_layer() -> Result<()> {
         let color = RenderableColor::new("#F9C22B".parse::<Color>()?);
 
-        assert_eq!(color.render(), "\x1b[38;2;249;194;43m");
+        assert_eq!(color.to_ansi_esc_suffix(), "38;2;249;194;43m");
         Ok(())
     }
     #[test]
     fn test_render_color_defaults_to_background_layer() -> Result<()> {
         let color = RenderableColor::new("#F9C22B".parse::<Color>()?).with_layer(Layer::BG);
-        assert_eq!(color.render(), "\x1b[48;2;249;194;43m");
+        assert_eq!(color.to_ansi_esc_suffix(), "48;2;249;194;43m");
         Ok(())
     }
 }

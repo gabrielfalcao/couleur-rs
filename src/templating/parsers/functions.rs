@@ -226,7 +226,7 @@ pub fn parse<
     Ok(result)
 }
 pub fn render_nodes<T: ToAnsiEscSuffix, I: Iterator<Item = T>>(items: I) -> String {
-    let p = items.map(|i| i.render()).collect::<String>();
+    let p = items.map(|i| i.to_ansi_esc_suffix()).collect::<String>();
     p
 }
 

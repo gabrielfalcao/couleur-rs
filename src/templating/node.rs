@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 
 // use winnow::Parser;
-use crate::{Color, Contrast, Layer, RenderableColor, Reset, ToAnsiEscSuffix, AnsiRenderable};
+use crate::{AnsiRenderable, Color, Contrast, Layer, RenderableColor, Reset, ToAnsiEscSuffix};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Node {
@@ -19,19 +19,19 @@ pub enum Node {
 impl Node {
     pub fn render(&self) -> String {
         let rendered = match self {
-            Node::Reset(reset) => reset.render(),
-            Node::Color(color) => color.render(),
-            Node::Layer(layer) => layer.render(),
-            Node::Contrast(contrast) => contrast.render(),
+            Node::Reset(reset) => reset.to_ansi_esc_suffix(),
+            Node::Color(color) => color.to_ansi_esc_suffix(),
+            Node::Layer(layer) => layer.to_ansi_esc_suffix(),
+            Node::Contrast(contrast) => contrast.to_ansi_esc_suffix(),
             Node::Text(string) => string.to_string(),
-            Node::RenderableColor(renderable_color) => renderable_color.render(),
-            // Node::Array(array_of_value) => array_of_value.render(),
+            Node::RenderableColor(renderable_color) => renderable_color.to_ansi_esc_suffix(),
+            // Node::Array(array_of_value) => array_of_value.to_ansi_esc_suffix(),
             Node::Array(nodes) => {
-                nodes.iter().map(|n| n.render()).collect::<Vec<String>>().join("")
+                nodes.iter().map(|n| n.to_ansi_esc_suffix()).collect::<Vec<String>>().join("")
             }
             Node::EOI => String::new(),
         };
-        [rendered, Reset::default().render()].into_iter().collect::<String>()
+        [rendered, Reset::default().to_ansi_esc_suffix()].into_iter().collect::<String>()
     }
     pub fn variant(&self) -> String {
         match self {
@@ -66,13 +66,15 @@ impl Node {
 impl ToAnsiEscSuffix for Node {
     fn to_ansi_esc_suffix(&self) -> String {
         match self {
-            Node::Reset(node) => node.render(),           // node.reset(),
-            Node::Color(node) => node.render(),           // node.color(),
-            Node::Layer(node) => node.render(),           // node.layer(),
-            Node::Contrast(node) => node.render(),        // node.contrast(),
-            Node::Text(node) => node.to_string(),         // node.to()_string(),
-            Node::RenderableColor(node) => node.render(), // node.render(),
-            Node::Array(node) => node.iter().map(|node| node.render()).collect::<String>(),
+            Node::Reset(node) => node.to_ansi_esc_suffix(), // node.reset(),
+            Node::Color(node) => node.to_ansi_esc_suffix(), // node.color(),
+            Node::Layer(node) => node.to_ansi_esc_suffix(), // node.layer(),
+            Node::Contrast(node) => node.to_ansi_esc_suffix(), // node.contrast(),
+            Node::Text(node) => node.to_string(),           // node.to()_string(),
+            Node::RenderableColor(node) => node.to_ansi_esc_suffix(), // node.to_ansi_esc_suffix(),
+            Node::Array(node) => {
+                node.iter().map(|node| node.to_ansi_esc_suffix()).collect::<String>()
+            }
             Node::EOI => String::new(),
         }
     }
@@ -86,16 +88,16 @@ impl Display for Node {
             variant = self.variant(),
             repr = match self {
                 Node::Reset(reset) => {
-                    reset.render()
+                    reset.to_ansi_esc_suffix()
                 }
                 Node::Color(color) => {
-                    color.render()
+                    color.to_ansi_esc_suffix()
                 }
                 Node::Layer(layer) => {
-                    layer.render()
+                    layer.to_ansi_esc_suffix()
                 }
                 Node::Contrast(contrast) => {
-                    contrast.render()
+                    contrast.to_ansi_esc_suffix()
                 }
                 Node::Text(text) => {
                     text.to_string()
@@ -104,7 +106,7 @@ impl Display for Node {
                     color.to_string()
                 }
                 Node::Array(nodes) => {
-                    nodes.iter().map(|node| ToAnsiEscSuffix::render(node)).collect::<String>()
+                    nodes.iter().map(|node| node.to_ansi_esc_suffix()).collect::<String>()
                 }
                 Node::EOI => {
                     String::new()
