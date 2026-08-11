@@ -1,3 +1,4 @@
+#![allow(unused)]
 //! couleur-rs: parse, apply contrast algorithms to ANSI RGB colors and print text powered by a simple template language
 //!
 //! ## Parsing Colors
@@ -40,9 +41,9 @@
 //!     Node::Text("Hello".to_string()),
 //!     Node::RenderableColor(
 //!         RenderableColor::new("#1EBC73".parse::<couleur_rs::Color>().unwrap())
-//!             .with_contrast(Contrast::Web)
+//!             .with_contrast(Contrast::Web),
 //!     ),
-//!     Node::Text(" World".to_string())
+//!     Node::Text(" World".to_string()),
 //! ]))
 //! ```
 //!
@@ -93,7 +94,7 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(hidden)] pub mod renderable_color;
 #[doc(inline)] pub use renderable_color::RenderableColor;
 #[doc(hidden)] pub mod traits;
-#[doc(inline)] pub use traits::ToAnsiEscSuffix;
+#[doc(inline)] pub use traits::{AnsiRenderable, ToAnsiEscSuffix};
 #[doc(hidden)] pub mod templating;
 #[cfg(any(feature = "tracing", feature = "logging"))]
 #[doc(hidden)]

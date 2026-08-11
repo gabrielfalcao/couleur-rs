@@ -58,11 +58,6 @@ impl Display for Prefix {
         )
     }
 }
-impl ToAnsiEscSuffix for Prefix {
-    fn to_ansi_esc_suffix(&self) -> String {
-        format!("{self}[")
-    }
-}
 
 impl Prefix {
     pub fn variant_name_snake(&self) -> &'static str {

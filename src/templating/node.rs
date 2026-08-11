@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 
 // use winnow::Parser;
-use crate::{Color, Contrast, Layer, RenderableColor, Reset, ToAnsiEscSuffix};
+use crate::{Color, Contrast, Layer, RenderableColor, Reset, ToAnsiEscSuffix, AnsiRenderable};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Node {
@@ -11,8 +11,9 @@ pub enum Node {
     Contrast(Contrast),
     Text(String),
     RenderableColor(RenderableColor),
+    /// Sequence of Nodes
     Array(Vec<Node>),
-    // End Of input
+    /// End Of input
     EOI,
 }
 impl Node {
@@ -22,7 +23,7 @@ impl Node {
             Node::Color(color) => color.render(),
             Node::Layer(layer) => layer.render(),
             Node::Contrast(contrast) => contrast.render(),
-            Node::Text(string) => string.render(),
+            Node::Text(string) => string.to_string(),
             Node::RenderableColor(renderable_color) => renderable_color.render(),
             // Node::Array(array_of_value) => array_of_value.render(),
             Node::Array(nodes) => {

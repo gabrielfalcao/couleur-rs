@@ -3,7 +3,7 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 
-use crate::{Color, Contrast, Layer, Prefix, ToAnsiEscSuffix};
+use crate::{AnsiRenderable, Color, Contrast, Layer, Prefix, ToAnsiEscSuffix};
 
 /// `RenderableColor` contains a [`Color`] and optional properties
 /// that dictate how the color may be rendered as ANSI string and what
@@ -31,8 +31,8 @@ impl RenderableColor {
         RenderableColor { color, prefix: None, layer: None, contrast: None }
     }
     #[cfg_attr(feature = "tracing", instrument)]
-    pub fn render(&self) -> String {
-        let prefix = self.prefix.unwrap_or_default().render();
+    pub fn render_all(&self) -> String {
+        let prefix = self.prefix.unwrap_or_default().to_string();
         let layer = self.layer.unwrap_or_default().render();
         let color = if let Some(contrast) = self.contrast {
             contrast.apply(self.color, self.layer.unwrap_or_default())
@@ -77,7 +77,27 @@ impl From<Color> for RenderableColor {
 }
 impl Display for RenderableColor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.render())
+        write!(f, "{}", self.render_all())
+    }
+}
+impl ToAnsiEscSuffix for RenderableColor {
+    fn to_ansi_esc_suffix(&self) -> String {
+        let layer = self.layer.unwrap_or_default().render();
+        let color = if let Some(contrast) = self.contrast {
+            contrast.apply(self.color, self.layer.unwrap_or_default())
+        } else {
+            self.color
+        }
+        .render();
+        #[cfg(feature = "tracing")]
+        span!(Level::TRACE, "rendered params", layer = layer, color = color);
+
+        [layer, color].iter().map(|value| value.to_string()).collect::<String>()
+    }
+}
+impl AnsiRenderable for RenderableColor {
+    fn prefix(&self) -> String {
+        self.prefix.unwrap_or_default().to_string()
     }
 }
 

@@ -32,41 +32,5 @@ use crate::templating::Node;
 /// [`Reset`]: crate::Reset
 /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
 pub trait ToAnsiEscSuffix: Sized + Clone {
-    fn render(&self) -> String {
-        self.to_ansi_esc_suffix()
-    }
-    // fn to_ansi(&self, prefix: Option<Prefix>) -> String {
-    //     format!(
-    //         "{prefix}{code}",
-    //         prefix = prefix.unwrap_or_default(),
-    //         code = self.to_ansi_esc_suffix()
-    //     )
-    // }
-
     fn to_ansi_esc_suffix(&self) -> String;
-}
-
-// impl<T> ToAnsiEscSuffix for T
-// where
-//     T: std::ops::Deref<Target = str> + Clone + Debug + Display,
-// {
-//     fn render(&self) -> String {
-//         self.to_string()
-//     }
-// }
-impl ToAnsiEscSuffix for &str {
-    fn to_ansi_esc_suffix(&self) -> String {
-        self.to_string()
-    }
-}
-impl ToAnsiEscSuffix for String {
-    fn to_ansi_esc_suffix(&self) -> String {
-        self.to_string()
-    }
-}
-
-impl ToAnsiEscSuffix for &Vec<Node> {
-    fn to_ansi_esc_suffix(&self) -> String {
-        self.into_iter().map(|node| node.render()).collect::<String>()
-    }
 }
