@@ -50,10 +50,10 @@ impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
         let input = self.text();
         println!("input: {input}");
-        let parsed = self.parsed()?;
-        println!("parsed: {parsed}");
-        // let result = self.rendered()?;
-        // println!("rendered: {result}");
+        // let parsed = self.parsed()?;
+        // println!("parsed: {parsed:#?}");
+        let result = self.rendered()?;
+        println!("rendered: \x1b[{result}");
 
         Ok(())
     }

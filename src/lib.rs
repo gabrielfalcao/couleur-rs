@@ -1,5 +1,15 @@
 #![allow(unused)]
-//! couleur-rs: parse, print, manipulate and apply contrast algorithms to ANSI RGB colors
+//! couleur-rs: parse, print, apply contrast algorithms to ANSI RGB colors
+//!
+//! ## Parsing Colors
+//!
+//! ```rust
+//! let dark_pink = "#C32454".parse::<Color>()?;
+//! let darkest_pink = "#831C5D".parse::<Color>()?;
+//! let light_pink = "#FCA790".parse::<Color>()?;
+//! let lightest_pink = "#FDCBB0".parse::<Color>()?;
+//!
+//! ## Applying Contrast
 //!
 //! ```rust
 //! let dark_pink = "#C32454".parse::<Color>()?;
@@ -21,6 +31,7 @@
 //! assert_eq!(darkest_pink.get_accessible_contrast().to_hex_string(), "#000000");
 //! assert_eq!(darkest_pink.get_binary_contrast().to_hex_string(), "#FFFFFF");
 //! assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
+//!
 //! ```
 use std::sync::LazyLock;
 
@@ -62,9 +73,6 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(hidden)] pub mod terminal;
 #[doc(inline)] pub use terminal::{Terminal, TerminalInfo, TerminalInfoError};
 
-#[doc(hidden)] pub mod to_ansi;
-#[doc(inline)] pub use to_ansi::ToAnsi;
-
 #[doc(hidden)] pub mod triples;
 #[doc(inline)] pub use triples::{RgbTriple, U8Triple};
 
@@ -77,11 +85,11 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(hidden)] pub mod wrap;
 #[doc(inline)] pub use wrap::Wrap;
 
-#[doc(hidden)] pub mod ansi_renderable;
-#[doc(inline)] pub use ansi_renderable::AnsiRenderable;
-
 #[doc(hidden)] pub mod renderable_color;
 #[doc(inline)] pub use renderable_color::RenderableColor;
+
+#[doc(hidden)] pub mod traits;
+#[doc(inline)] pub use traits::{AnsiRenderable, ToAnsi};
 
 #[doc(hidden)] pub mod templating;
 #[cfg(any(feature = "tracing", feature = "logging"))]
@@ -105,6 +113,5 @@ pub use util::{
 
 #[doc(hidden)] pub mod testing;
 #[doc(inline)] pub use testing::global_setup;
-
 
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
