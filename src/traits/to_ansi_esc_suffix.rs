@@ -34,7 +34,6 @@ use crate::{Node, Prefix};
 /// [`RenderableColor`]: crate::RenderableColor
 /// [`Reset`]: crate::Reset
 /// [`ToAnsiSuffix`]: crate::ToAnsiSuffix
-///
 pub trait ToAnsiEscSuffix: Sized + Clone {
     fn render(&self) -> String {
         self.to_ansi_esc_suffix()

@@ -23,13 +23,13 @@ use winnow::{
 };
 use {
     crate::{
-        ToAnsiEscSuffix,
         Color,
         Contrast,
         Error,
         Layer,
         RenderableColor,
         Reset,
+        ToAnsiEscSuffix,
         Value,
         // ansi_renderable::{
         //     ToAnsiEscSuffix,

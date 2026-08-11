@@ -28,7 +28,6 @@ use winnow::{
 
 use super::*;
 use crate::{
-    ToAnsiEscSuffix,
     Color,
     Contrast,
     Error,
@@ -36,6 +35,7 @@ use crate::{
     RenderableColor,
     Reset,
     Result,
+    ToAnsiEscSuffix,
     Value,
     setup_logging,
 };
