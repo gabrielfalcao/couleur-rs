@@ -33,7 +33,7 @@ impl ParserDispatcher<Error> for Cli {
             for line in lines {
                 let color = line.parse::<Color>()?;
                 let fg = color.to_ansi(Layer::FG);
-                let fg_contrast = if color.is_dark() && TERMINAL.is_dark { *WHITE } else { *BLACK }
+                let fg_contrast = if color.is_dark() && TERMINAL.is_dark { WHITE } else { BLACK }
                     .to_ansi(Layer::BG);
 
                 let bg = color.to_ansi(Layer::BG);

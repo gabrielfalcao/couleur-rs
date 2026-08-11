@@ -1,16 +1,6 @@
-use std::{
-    fmt,
-    hash::{Hash, Hasher},
-    ops::Deref,
-    str::FromStr,
-    sync::LazyLock,
-};
-
-use super::Color;
+use crate::{Color, Value};
 /// static instance of [`Color`] which holds the absolute black RGB color.
-pub static BLACK: LazyLock<Color> =
-    LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
+pub const BLACK: Color = Color(Value(0.0_f32), Value(0.0_f32), Value(0.0_f32));
 
 /// static instance of [`Color`] which holds the absolute white RGB color.
-pub static WHITE: LazyLock<Color> =
-    LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
+pub const WHITE: Color = Color(Value(255.0_f32), Value(255.0_f32), Value(255.0_f32));

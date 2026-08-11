@@ -71,7 +71,7 @@ impl Color {
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
 
     pub fn default_for_bg() -> Color {
-        Terminal::background_color().unwrap_or_else(|_| *BLACK)
+        Terminal::background_color().unwrap_or_else(|_| BLACK)
     }
 
     /// queries the [`Terminal`] for the foreground color,
@@ -92,7 +92,7 @@ impl Color {
     /// [`Terminal::background_color()`]: crate::Terminal::background_color
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
     pub fn default_for_fg() -> Color {
-        Terminal::foreground_color().unwrap_or_else(|_| *WHITE)
+        Terminal::foreground_color().unwrap_or_else(|_| WHITE)
     }
 
     /// queries the [`Terminal`] for the color of the given
@@ -107,8 +107,8 @@ impl Color {
     /// [`Terminal::foreground_color()`]: crate::Terminal::foreground_color
     pub fn default_for_layer(layer: Layer) -> Color {
         Terminal::layer_color(layer).unwrap_or_else(|_| match layer {
-            Layer::BG => *BLACK,
-            Layer::FG => *WHITE,
+            Layer::BG => BLACK,
+            Layer::FG => WHITE,
         })
     }
 
@@ -187,7 +187,7 @@ impl Color {
 
     /// Returns either [`BLACK`] or [`WHITE`] as the contrasting color based on the [`binary luminance algorithm`](`crate::Color::get_binary_luminance`)
     pub fn get_binary_contrast(&self) -> Color {
-        if self.is_dark() { *BLACK } else { *WHITE }
+        if self.is_dark() { BLACK } else { WHITE }
     }
 
     /// Returns the contrast of the current color based on the simple
@@ -249,7 +249,7 @@ impl Color {
     /// Returns either [`BLACK`] or [`WHITE`] as the contrast of the
     /// current color.
     pub fn get_accessible_contrast(&self) -> Color {
-        if self.get_wcag_luminance() > 0.175 { *BLACK } else { *WHITE }
+        if self.get_wcag_luminance() > 0.175 { BLACK } else { WHITE }
     }
 
     /// Returns a string which renders the current color as an ANSI sequence in the given [`Layer`].
