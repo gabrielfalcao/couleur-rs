@@ -14,8 +14,10 @@ use serde::{
     Serializer,
     de::{self, Error as SerdeError, Visitor},
 };
+use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 use thiserror::Error as ThisError;
 
+use super::{BLACK, WHITE};
 use crate::{
     AnsiRenderable,
     Contrast,
@@ -32,16 +34,6 @@ use crate::{
     max_rgb,
     min_rgb,
 };
-
-/// static instance of [`Color`] which holds the absolute black RGB color.
-pub static BLACK: LazyLock<Color> =
-    LazyLock::new(|| Color::new(0.0_f32, 0.0_f32, 0.0_f32).unwrap());
-
-/// static instance of [`Color`] which holds the absolute white RGB color.
-pub static WHITE: LazyLock<Color> =
-    LazyLock::new(|| Color::new(255.0_f32, 255.0_f32, 255.0_f32).unwrap());
-
-use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
 /// Represents an RGB color, providing methods to obtain color
 /// information and render the color in ANSI terminals supporting true-color.
@@ -481,7 +473,7 @@ impl Hash for Color {
     }
 }
 impl AnsiRenderable for Color {
- fn render_without_prefix(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
         let color = triple.join(";");
         format!("2;{color}m")

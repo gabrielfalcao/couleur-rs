@@ -1,0 +1,74 @@
+use std::{
+    fmt,
+    hash::{Hash, Hasher},
+    ops::Deref,
+    str::FromStr,
+    sync::LazyLock,
+};
+
+use regex::Regex;
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+    de::{self, Error as SerdeError, Visitor},
+};
+use thiserror::Error as ThisError;
+
+use crate::{
+    AnsiRenderable,
+    Contrast,
+    ConversionToU8Error,
+    Error,
+    HEX_RGB_REGEX,
+    Layer,
+    Prefix,
+    Reset,
+    Result,
+    Terminal,
+    Value,
+    Wrap,
+    max_rgb,
+    min_rgb,
+};
+
+use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
+
+/// U8Triple is a type alias which represents a tuple containing the three RGB bands as [`u8`]
+pub type U8Triple = (u8, u8, u8);
+
+/// RgbTriple is an intermediary container which holds each of the
+/// three bands of an RGB color as [`u8`] values.
+#[derive(Clone, Copy, Debug, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RgbTriple(u8, u8, u8);
+
+impl RgbTriple {
+    pub fn red(&self) -> u8 {
+        self.0
+    }
+
+    pub fn green(&self) -> u8 {
+        self.1
+    }
+
+    pub fn blue(&self) -> u8 {
+        self.2
+    }
+
+    pub fn into_triple(self) -> U8Triple {
+        (self.red(), self.green(), self.blue())
+    }
+}
+impl From<U8Triple> for RgbTriple {
+    fn from(input: U8Triple) -> RgbTriple {
+        let (red, green, blue) = input;
+        RgbTriple(red, green, blue)
+    }
+}
+
+impl Into<U8Triple> for RgbTriple {
+    fn into(self) -> U8Triple {
+        self.into_triple()
+    }
+}
