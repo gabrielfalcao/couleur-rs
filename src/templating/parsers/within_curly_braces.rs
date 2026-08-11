@@ -28,7 +28,7 @@ use winnow::{
 
 use super::*;
 use crate::{
-    AnsiRenderable,
+    ToAnsiEscSuffix,
     Color,
     Contrast,
     Error,

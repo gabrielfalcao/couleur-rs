@@ -14,10 +14,10 @@ use serde::{
     Serializer,
     de::{self, Error as SerdeError, Visitor},
 };
+use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 use thiserror::Error as ThisError;
 
 use crate::{
-    AnsiRenderable,
     Contrast,
     ConversionToU8Error,
     Error,
@@ -27,13 +27,12 @@ use crate::{
     Reset,
     Result,
     Terminal,
+    ToAnsiEscSuffix,
     Value,
     Wrap,
     max_rgb,
     min_rgb,
 };
-
-use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 
 /// U8Triple is a type alias which represents a tuple containing the three RGB bands as [`u8`]
 pub type U8Triple = (u8, u8, u8);

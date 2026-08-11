@@ -3,7 +3,12 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
-use crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
+use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, ToAnsiEscSuffix, Wrap};
+
+/// `RenderableColor` contains a [`Color`] and optional properties
+/// that dictate how the color may be rendered as ANSI string and what
+/// contrast algorithm, if any, should be applied to a color before
+/// rendering.
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
     pub color: Color,
@@ -66,7 +71,7 @@ mod tests {
     use std::str::FromStr;
 
     use super::RenderableColor;
-    use crate::{AnsiRenderable, Color, Contrast, Error, Layer, Result, global_setup};
+    use crate::{Color, Contrast, Error, Layer, Result, ToAnsiEscSuffix, global_setup};
 
     #[test]
     fn test_render_color_defaults_to_foreground_layer() -> Result<()> {

@@ -19,7 +19,6 @@ use thiserror::Error as ThisError;
 
 use super::{BLACK, WHITE};
 use crate::{
-    AnsiRenderable,
     Contrast,
     ConversionToU8Error,
     Error,
@@ -29,6 +28,7 @@ use crate::{
     Reset,
     Result,
     Terminal,
+    ToAnsiEscSuffix,
     Value,
     Wrap,
     max_rgb,
@@ -268,41 +268,6 @@ impl Color {
         format!("{prefix}[{code}", prefix = prefix.unwrap_or_default(), code = parts.join(";"))
     }
 
-    pub fn wrap_ansi(
-        &self,
-        text: &str,
-        prefix: Option<Prefix>,
-        layer: Option<Layer>,
-        wrap: Option<Wrap>,
-        reset: Option<Reset>,
-        contrast: Option<Contrast>,
-    ) -> String {
-        let layer = layer.unwrap_or_default();
-        let wrap = wrap.unwrap_or_default();
-        let reset = reset.unwrap_or_default();
-        let contrast = contrast.unwrap_or_default();
-
-        let ansi_sequence = self.to_ansi_with_prefix(layer, prefix);
-        let contrast = if contrast != Contrast::None {
-            self.contrast(contrast).to_ansi_with_prefix(layer.inverted(), prefix)
-        } else {
-            String::new()
-        };
-
-        let colored = match wrap {
-            Wrap::Before => format!("{ansi_sequence}{text}"),
-            Wrap::After => format!("{text}{ansi_sequence}"),
-            Wrap::Around => format!("{ansi_sequence}{text}{ansi_sequence}"),
-        };
-        let result = match reset {
-            Reset::Before => format!("{reset}{colored}", reset = Reset::code()),
-            Reset::After => format!("{colored}{reset}", reset = Reset::code()),
-            Reset::Around => format!("{reset}{colored}{reset}", reset = Reset::code()),
-            Reset::None => colored,
-        };
-        return result;
-    }
-
     pub fn contrast(&self, contrast: Contrast) -> Color {
         match contrast {
             Contrast::Read => self.get_accessible_contrast(),
@@ -472,8 +437,8 @@ impl Hash for Color {
         self.to_rgb_hex().hash(state);
     }
 }
-impl AnsiRenderable for Color {
-    fn render_without_prefix(&self) -> String {
+impl ToAnsiEscSuffix for Color {
+    fn to_ansi_esc_suffix(&self) -> String {
         let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
         let color = triple.join(";");
         format!("2;{color}m")

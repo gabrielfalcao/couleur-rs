@@ -7,7 +7,7 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{AnsiRenderable, Color, Error, Layer, Result};
+use crate::{Color, Error, Layer, Result, ToAnsiEscSuffix};
 
 /// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
@@ -20,8 +20,8 @@ pub enum Contrast {
     Web,
 }
 
-impl AnsiRenderable for Contrast {
-    fn render_without_prefix(&self) -> String {
+impl ToAnsiEscSuffix for Contrast {
+    fn to_ansi_esc_suffix(&self) -> String {
         format!("")
     }
 }

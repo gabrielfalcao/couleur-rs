@@ -1,7 +1,6 @@
 #![allow(unused)]
 use clap::Parser;
 use couleur_rs::{
-    AnsiRenderable,
     BLACK,
     Color,
     Contrast,
@@ -9,10 +8,10 @@ use couleur_rs::{
     Exit,
     Layer,
     Prefix,
-    RESET,
     Reset,
     Result,
     TERMINAL,
+    ToAnsiEscSuffix,
     WHITE,
     Wrap,
     dispatch::ParserDispatcher,
@@ -66,11 +65,11 @@ impl ParserDispatcher<Error> for Cli {
 
         let input_text = self.text.join(" ");
         let text_lines = vec![
-            format!("{RESET}color: {color_ansi_normal}{color}{RESET}"),
-            format!("{RESET}contrast: {contrast_ansi_inverted}{contrast_color}{RESET}"),
+            format!("{Reset}color: {color_ansi_normal}{color}{Reset}"),
+            format!("{Reset}contrast: {contrast_ansi_inverted}{contrast_color}{Reset}"),
             String::new(),
-            format!("{color_ansi_normal}{contrast_ansi_normal}{input_text}{RESET}"),
-            format!("{color_ansi_inverted}{contrast_ansi_inverted}{input_text}{RESET}"),
+            format!("{color_ansi_normal}{contrast_ansi_normal}{input_text}{Reset}"),
+            format!("{color_ansi_inverted}{contrast_ansi_inverted}{input_text}{Reset}"),
         ];
 
         let output_text = text_lines.join("\n");

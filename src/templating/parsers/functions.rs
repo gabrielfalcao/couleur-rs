@@ -23,7 +23,7 @@ use winnow::{
 };
 use {
     crate::{
-        AnsiRenderable,
+        ToAnsiEscSuffix,
         Color,
         Contrast,
         Error,
@@ -32,9 +32,9 @@ use {
         Reset,
         Value,
         // ansi_renderable::{
-        //     AnsiRenderable,
-        //     AnsiRenderableWithColor,
-        //     AnsiRenderableWithColorAndLayer,
+        //     ToAnsiEscSuffix,
+        //     ToAnsiEscSuffixWithColor,
+        //     ToAnsiEscSuffixWithColorAndLayer,
         // },
         setup_logging,
     },
@@ -243,7 +243,7 @@ pub fn parse<
         .map_err(|e| Error::TemplateParseError(format!("{e}")))?;
     Ok(result)
 }
-pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item = T>>(items: I) -> String {
+pub fn render_nodes<T: ToAnsiEscSuffix, I: Iterator<Item = T>>(items: I) -> String {
     let p = items.map(|i| i.render()).collect::<String>();
     p
 }
@@ -252,7 +252,7 @@ pub fn render<
     'i,
     I: Iterator<Item = T>,
     E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Debug + Display,
-    T: AnsiRenderable + Display,
+    T: ToAnsiEscSuffix + Display,
 >(
     input: T,
 ) -> crate::Result<String> {

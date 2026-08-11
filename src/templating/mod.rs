@@ -2,7 +2,7 @@ pub mod node;
 pub use node::Node;
 
 pub mod types;
-#[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
+#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 #[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
 pub use types::{Result, Stream};
 use winnow::{
@@ -28,18 +28,18 @@ use winnow::{
 };
 use {
     crate::{
-        AnsiRenderable,
         Color,
         Contrast,
         Error,
         Layer,
         RenderableColor,
         Reset,
+        ToAnsiEscSuffix,
         Value,
         // ansi_renderable::{
-        //     AnsiRenderable,
-        //     AnsiRenderableWithColor,
-        //     AnsiRenderableWithColorAndLayer,
+        //     ToAnsiEscSuffix,
+        //     ToAnsiEscSuffixWithColor,
+        //     ToAnsiEscSuffixWithColorAndLayer,
         // },
         setup_logging,
     },
@@ -53,7 +53,7 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     if input.is_empty() {
-        return Ok(Node::EOI)
+        return Ok(Node::EOI);
     }
     #[cfg(any(feature = "tracing", feature = "logging"))]
     log::debug!("parse_node called with input: {input:#?}");
@@ -232,14 +232,14 @@ pub fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>
     let initial_input = input.to_string();
     if initial_input.len() == 0 {
         log::error!("empty input");
-        return Ok(Node::EOI)
+        return Ok(Node::EOI);
     }
 
     let mut res = Vec::<Node>::new();
     while input.len() > 0 {
         let parsed = parse_node::<E>(input)?;
         if parsed == Node::EOI {
-            break
+            break;
         }
         res.push(parsed);
     }
@@ -261,7 +261,7 @@ pub fn parse<
         .map_err(|e| Error::TemplateParseError(format!("{e}")))?;
     Ok(result)
 }
-pub fn render_nodes<T: AnsiRenderable, I: Iterator<Item = T>>(items: I) -> String {
+pub fn render_nodes<T: ToAnsiEscSuffix, I: Iterator<Item = T>>(items: I) -> String {
     let p = items.map(|i| i.render()).collect::<String>();
     p
 }
@@ -270,7 +270,7 @@ pub fn render<
     'i,
     I: Iterator<Item = T>,
     E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Debug + Display,
-    T: AnsiRenderable + Display,
+    T: ToAnsiEscSuffix + Display,
 >(
     input: T,
 ) -> crate::Result<String> {
@@ -287,7 +287,7 @@ mod within_curly_braces {
         str::FromStr,
     };
 
-    #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
+    #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
     use winnow::{
         ModalResult,
         Parser,
@@ -312,7 +312,6 @@ mod within_curly_braces {
 
     use super::*;
     use crate::{
-        AnsiRenderable,
         Color,
         Contrast,
         Error,
@@ -320,6 +319,7 @@ mod within_curly_braces {
         RenderableColor,
         Reset,
         Result,
+        ToAnsiEscSuffix,
         Value,
         setup_logging,
     };

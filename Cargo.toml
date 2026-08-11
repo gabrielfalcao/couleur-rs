@@ -1,7 +1,7 @@
 [package]
 name = "couleur-rs"
 version = "0.1.0"
-description = "parse, manipulate, apply contrast algorithms to RGB colors and print in ANSI code"
+description = "parse, apply contrast algorithms to ANSI RGB colors and print text powered by a simple template language"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 edition = "2024"
@@ -24,18 +24,19 @@ default-run = "couleur"
 # categories = [] # https://crates.io/category_slugs
 
 [features]
+# default = ["tracing", "logging"]
 tracing = [
     "dep:tracing",
     "dep:tracing-subscriber",
     "dep:tracing-appender",
+    "dep:dirs",
 ]
 logging = [
     "dep:log",
     "dep:fern",
     "dep:chrono",
+    "dep:dirs",
 ]
-dirs = ["dep:dirs"]
-
 [dependencies]
 # bon = "3.9.3"
 clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }

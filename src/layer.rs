@@ -5,7 +5,7 @@ use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 
-use crate::{AnsiRenderable, Color, Error, Result};
+use crate::{Color, Error, Result, ToAnsiEscSuffix};
 
 /// Represents the concept of "background" and "foreground" colors in a terminal
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
@@ -45,8 +45,8 @@ impl Display for Layer {
         write!(f, "{}", self.variant_name_snake())
     }
 }
-impl AnsiRenderable for Layer {
-    fn render_without_prefix(&self) -> String {
+impl ToAnsiEscSuffix for Layer {
+    fn to_ansi_esc_suffix(&self) -> String {
         let code = self.code();
         format!("{code};")
     }

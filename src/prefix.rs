@@ -4,14 +4,34 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::AnsiRenderable;
+use crate::ToAnsiEscSuffix;
 
-/// Represents the intent to use an specific type of ANSI sequence
-/// prefix such as `\x1b`, `\033` or `\E` so as to allow rendering
-/// ANSI colors in various contexts such as bash PS1 variable (which
-/// uses the Octal variant).
+/// Represents an [ANSI Escape
+/// character](https://en.wikipedia.org/wiki/Escape_character#ASCII_escape_character)
+/// which prefixes ANSI sequences rendered by elements of this crate
+/// such as [`RenderableColor`](crate::RenderableColor)
 ///
-/// Defaults to the hex prefix which is used by rust programs.
+/// The supported escape characters are available as follows:
+///
+/// - [`Octal`](crate::Prefix::Octal) => `\033`
+/// - [`Hex`](crate::Prefix::Hex) => `\x1b`
+/// - [`Unicode`](crate::Prefix::Unicode) => `\u{1b}`
+/// - [`Escape`](crate::Prefix::Escape) => `\E`
+///
+/// # Rendering Support
+///
+/// At least one of each variant of [`Prefix`](crate::Prefix) is
+/// supported by different context of tools such as terminal emulators and shell
+/// interpreters which are the scope of this crate.
+///
+/// This crate focuses primarily in rendering text decorated with
+/// colors in terminal emulators that support true color rendering,
+/// for this reason the [`Prefix`] enum defaults to the variant
+/// [`Hex`](crate::Prefix::Hex)
+///
+/// The reason to provide other variants such as the
+/// [`Octal`](crate::Prefix::Octal) (`\033`) is to allow using this
+/// crate to colorize, for example, the bash PS1 variable.
 #[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Prefix {
     Octal,
@@ -34,8 +54,8 @@ impl Display for Prefix {
         )
     }
 }
-impl AnsiRenderable for Prefix {
-    fn render_without_prefix(&self) -> String {
+impl ToAnsiEscSuffix for Prefix {
+    fn to_ansi_esc_suffix(&self) -> String {
         format!("{self}[")
     }
 }

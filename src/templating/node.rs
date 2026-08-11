@@ -23,18 +23,18 @@ use winnow::{
 };
 use {
     crate::{
-        AnsiRenderable,
         Color,
         Contrast,
         Error,
         Layer,
         RenderableColor,
         Reset,
+        ToAnsiEscSuffix,
         Value,
         // ansi_renderable::{
-        //     AnsiRenderable,
-        //     AnsiRenderableWithColor,
-        //     AnsiRenderableWithColorAndLayer,
+        //     ToAnsiEscSuffix,
+        //     ToAnsiEscSuffixWithColor,
+        //     ToAnsiEscSuffixWithColorAndLayer,
         // },
         setup_logging,
     },
@@ -100,8 +100,8 @@ impl Node {
     }
 }
 
-impl AnsiRenderable for Node {
-    fn render_without_prefix(&self) -> String {
+impl ToAnsiEscSuffix for Node {
+    fn to_ansi_esc_suffix(&self) -> String {
         match self {
             Node::Reset(node) => node.render(),           // node.reset(),
             Node::Color(node) => node.render(),           // node.color(),
@@ -141,7 +141,7 @@ impl Display for Node {
                     color.to_string()
                 }
                 Node::Array(nodes) => {
-                    nodes.iter().map(|node| AnsiRenderable::render(node)).collect::<String>()
+                    nodes.iter().map(|node| ToAnsiEscSuffix::render(node)).collect::<String>()
                 }
                 Node::EOI => {
                     String::new()
