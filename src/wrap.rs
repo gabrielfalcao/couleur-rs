@@ -6,6 +6,15 @@ use serde::{Deserialize, Serialize};
 
 /// Represents the intent of rendering a [`Color`] before, after or
 /// around the text being colored.
+///
+/// [`ColorPalette::name`]: crate::state::ColorPalette::name
+/// [`Prefix`]: crate::Prefix
+/// [`Color`]: crate::Color
+/// [`Contrast`]: crate::Contrast
+/// [`Layer`]: crate::Layer
+/// [`RenderableColor`]: crate::RenderableColor
+/// [`Reset`]: crate::Reset
+/// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Wrap {
     #[default]

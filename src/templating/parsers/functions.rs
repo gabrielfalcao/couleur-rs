@@ -1,45 +1,17 @@
-#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
-#[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
+use std::fmt::{Debug, Display};
+
+#[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 use winnow::{
     ModalResult,
     Parser,
-    ascii::{dec_uint, digit1, float, hex_digit1},
-    combinator::{
-        alt,
-        cut_err,
-        delimited,
-        eof,
-        iterator,
-        preceded,
-        repeat,
-        separated,
-        separated_pair,
-        seq,
-        terminated,
-    },
+    ascii::{dec_uint, hex_digit1},
+    combinator::{alt, preceded, repeat, terminated},
     error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-    prelude::*,
-    token::{any, none_of, rest, take, take_while},
+    token::take_while,
 };
-use {
-    crate::{
-        Color,
-        Contrast,
-        Error,
-        Layer,
-        RenderableColor,
-        Reset,
-        ToAnsiEscSuffix,
-        Value,
-        // ansi_renderable::{
-        //     ToAnsiEscSuffix,
-        //     ToAnsiEscSuffixWithColor,
-        //     ToAnsiEscSuffixWithColorAndLayer,
-        // },
-        setup_logging,
-    },
-    std::fmt::{Debug, Display},
-};
+
+use super::within_curly_braces;
+use crate::{Color, Contrast, Error, Layer, Node, RenderableColor, Reset, Stream, ToAnsiEscSuffix};
 
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -50,7 +22,6 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
     if input.is_empty() {
         return Err(ErrMode::Cut(ParserError::from_input(input)));
     }
-    // log::debug!("parse_node called with input: {input:#?}", &input);
     alt((
         renderable_color::<E>.map(Node::RenderableColor), // RenderableColor
         reset::<E>.map(Node::Reset),                      // Reset
@@ -217,14 +188,25 @@ pub fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 }
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
-    mut input: &mut Stream<'i>,
+    input: &mut Stream<'i>,
 ) -> ModalResult<Node, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
-    let mut winnow_it = iterator(input, parse_node::<ContextError>);
-    let res = winnow_it.map(|node| node).collect::<Vec<Node>>();
 
-    winnow_it.finish();
+    let initial_input = input.to_string();
+    if initial_input.len() == 0 {
+        log::error!("empty input");
+        return Ok(Node::EOI);
+    }
+
+    let mut res = Vec::<Node>::new();
+    while input.len() > 0 {
+        let parsed = parse_node::<E>(input)?;
+        if parsed == Node::EOI {
+            break;
+        }
+        res.push(parsed);
+    }
     Ok(Node::Array(res))
 }
 
@@ -236,8 +218,8 @@ pub fn parse<
 >(
     input: T,
 ) -> crate::Result<Node> {
-    let mut input = input.to_string();
-    let mut input: &'i mut str = input.leak();
+    let input = input.to_string();
+    let input: &'i mut str = input.leak();
     let result = nodes::<ContextError>
         .parse(input)
         .map_err(|e| Error::TemplateParseError(format!("{e}")))?;
@@ -256,7 +238,7 @@ pub fn render<
 >(
     input: T,
 ) -> crate::Result<String> {
-    let mut input = input.to_string().leak();
+    let input = input.to_string().leak();
     let resolve = nodes::<ContextError>
         .parse(input)
         .map_err(|error| Error::TemplateParseError(error.to_string()))?;

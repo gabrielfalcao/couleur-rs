@@ -1,6 +1,7 @@
 use clap::Parser;
 use couleur_rs::{Error, Exit, Node, RenderableColor, Result, dispatch::ParserDispatcher, parse};
-use winnow::{Parser as _, error::ContextError};
+// use winnow::{Parser as _};
+use winnow::error::ContextError;
 #[derive(Parser, Debug, Clone)]
 #[command(
     author = "Gabriel Falcão <gabrielteratos@gmail.com",

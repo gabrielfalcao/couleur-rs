@@ -9,6 +9,16 @@ use crate::{Color, Contrast, Layer, Prefix, ToAnsiEscSuffix};
 /// that dictate how the color may be rendered as ANSI string and what
 /// contrast algorithm, if any, should be applied to a color before
 /// rendering.
+///
+/// [`ColorPalette::name`]: crate::state::ColorPalette::name
+/// [`Prefix`]: crate::Prefix
+/// [`Color`]: crate::Color
+/// [`Contrast`]: crate::Contrast
+/// [`Layer`]: crate::Layer
+/// [`RenderableColor`]: crate::RenderableColor
+/// [`Reset`]: crate::Reset
+/// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
+
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
     pub color: Color,
@@ -75,7 +85,8 @@ impl Display for RenderableColor {
 mod tests {
 
     use super::RenderableColor;
-    use crate::{Color, Layer, Result, ToAnsiEscSuffix};
+    use crate::{Color, Layer, Result};
+    // use crate::{ToAnsiEscSuffix};
 
     #[test]
     fn test_render_color_defaults_to_foreground_layer() -> Result<()> {

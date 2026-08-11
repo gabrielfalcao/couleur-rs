@@ -95,7 +95,31 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(hidden)] pub mod templating;
 #[cfg(any(feature = "tracing", feature = "logging"))]
 #[doc(inline)]
-pub use templating::{Node, parse, parse_node, render, render_nodes};
+pub use templating::{
+    Node,
+    Result as ParsingResult,
+    Stream,
+    color,
+    contrast,
+    layer,
+    nodes,
+    parse,
+    parse_color,
+    parse_contrast,
+    parse_layer,
+    parse_node,
+    parse_rgb_hex,
+    parse_rgb_triple,
+    parse_triple,
+    parse_u8,
+    render,
+    render_nodes,
+    renderable_color,
+    reset,
+    text,
+    ws,
+};
+
 #[doc(hidden)] pub mod util;
 #[doc(inline)]
 pub use util::{

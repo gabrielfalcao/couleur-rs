@@ -24,7 +24,7 @@ default-run = "couleur"
 # categories = [] # https://crates.io/category_slugs
 
 [features]
-# default = ["tracing", "logging"]
+default = ["tracing", "logging"]
 tracing = [
     "dep:tracing",
     "dep:tracing-subscriber",

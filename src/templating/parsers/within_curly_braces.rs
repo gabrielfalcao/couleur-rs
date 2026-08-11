@@ -1,50 +1,18 @@
-use std::{
-    fmt::{Debug, Display},
-    str::FromStr,
-};
-
-#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
+#[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 use winnow::{
     ModalResult,
     Parser,
-    ascii::{dec_uint, digit1, float, hex_digit1},
-    combinator::{
-        alt,
-        cut_err,
-        delimited,
-        eof,
-        iterator,
-        preceded,
-        repeat,
-        separated,
-        separated_pair,
-        seq,
-        terminated,
-    },
-    error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-    prelude::*,
-    token::{any, none_of, rest, take, take_while},
+    combinator::{alt, preceded},
+    error::{AddContext, ParserError, StrContext},
 };
 
 use super::*;
-use crate::{
-    Color,
-    Contrast,
-    Error,
-    Layer,
-    RenderableColor,
-    Reset,
-    Result,
-    ToAnsiEscSuffix,
-    Value,
-    setup_logging,
-};
+use crate::{Color, Contrast, Layer, Stream};
 
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Contrast, E> {
-    use super::*;
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     preceded(

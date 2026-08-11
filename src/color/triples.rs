@@ -1,5 +1,3 @@
-use std::hash::Hasher;
-
 use serde::{Deserialize, Serialize};
 
 /// U8Triple is a type alias which represents a tuple containing the three RGB bands as [`u8`]

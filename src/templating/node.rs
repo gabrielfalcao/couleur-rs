@@ -1,7 +1,6 @@
 use std::fmt::{Debug, Display};
 
-use winnow::Parser;
-
+// use winnow::Parser;
 use crate::{Color, Contrast, Layer, RenderableColor, Reset, ToAnsiEscSuffix};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -72,7 +71,7 @@ impl ToAnsiEscSuffix for Node {
             Node::Contrast(node) => node.render(),        // node.contrast(),
             Node::Text(node) => node.to_string(),         // node.to()_string(),
             Node::RenderableColor(node) => node.render(), // node.render(),
-            Node::Array(node) => node.render(), // node.iter().map(|node| node.render()).collect::<String>(),
+            Node::Array(node) => node.iter().map(|node| node.render()).collect::<String>(),
             Node::EOI => String::new(),
         }
     }

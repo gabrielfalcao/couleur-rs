@@ -1,5 +1,6 @@
-use std::{fs::File, io::Write};
+use std::fs::File;
 
+// use std::io::Write;
 #[cfg(any(feature = "logging", feature = "tracing"))] use chrono::Local;
 use iocore::{Path, env};
 #[cfg(any(feature = "logging", feature = "tracing"))] use log::LevelFilter;

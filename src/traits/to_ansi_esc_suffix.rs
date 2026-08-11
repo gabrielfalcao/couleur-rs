@@ -1,6 +1,6 @@
 use std::iter::{IntoIterator, Iterator};
 
-use crate::Node;
+use crate::templating::Node;
 
 /// The [`ToAnsiEscSuffix`] trait provides a way for elements of this
 /// crate to produce a string which represents one element of an [ANSI
