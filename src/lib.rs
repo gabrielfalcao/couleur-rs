@@ -31,7 +31,7 @@
 //! assert_eq!(darkest_pink.get_binary_contrast().to_hex_string(), "#FFFFFF");
 //! assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
 //! ```
-//! 
+//!
 //! ## Template Language
 //! ```rust
 //! parse::<&str, ContextError>("{color:#1EBC73}Hello{color:#1EBC73%contrast:web} World");
@@ -45,21 +45,21 @@
 //!     Node::Text(" World".to_string())
 //! ]))
 //! ```
-//! 
 //!
-//! <div class="note">
-//! <h1>NOTE</h1>
 //!
-//! This API can cause undefined behavior if the bounds checking is
-//! bypassed.  This library is currently a work-in-progress and
+//! <div class="important">
+//! <h1>IMPORTANT</h1>
+//!
+//! This library is currently a work-in-progress and
 //! provides the feature flags `logging` and `tracing` as debugging
 //! tools. All the tracing and logging annotations and calls will be
 //! removed before `couleur-rs` reaches version 1.0.0
 //!
+//! Until then, the API likely to undergo changes in design and
+//! usability.
+//!
 //! </div>
 use std::sync::LazyLock;
-#[doc(hidden)] pub mod ansi_colorizer;
-#[doc(inline)] pub use ansi_colorizer::AnsiColorizer;
 #[doc(hidden)] pub mod cmp;
 #[doc(inline)] pub use cmp::{max_rgb, min_rgb};
 #[doc(hidden)] pub mod color;
