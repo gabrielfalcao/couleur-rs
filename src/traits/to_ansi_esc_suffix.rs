@@ -1,9 +1,6 @@
-use std::{
-    fmt::{Debug, Display},
-    iter::{IntoIterator, Iterator},
-};
+use std::iter::{IntoIterator, Iterator};
 
-use crate::{Node, Prefix};
+use crate::Node;
 
 /// The [`ToAnsiEscSuffix`] trait provides a way for elements of this
 /// crate to produce a string which represents one element of an [ANSI
@@ -33,7 +30,7 @@ use crate::{Node, Prefix};
 /// [`Layer`]: crate::Layer
 /// [`RenderableColor`]: crate::RenderableColor
 /// [`Reset`]: crate::Reset
-/// [`ToAnsiSuffix`]: crate::ToAnsiSuffix
+/// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
 pub trait ToAnsiEscSuffix: Sized + Clone {
     fn render(&self) -> String {
         self.to_ansi_esc_suffix()
@@ -48,7 +45,6 @@ pub trait ToAnsiEscSuffix: Sized + Clone {
 
     fn to_ansi_esc_suffix(&self) -> String;
 }
-use std::{convert::AsRef, ops::Deref};
 
 // impl<T> ToAnsiEscSuffix for T
 // where

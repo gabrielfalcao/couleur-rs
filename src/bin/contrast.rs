@@ -1,22 +1,5 @@
-#![allow(unused)]
 use clap::Parser;
-use couleur_rs::{
-    BLACK,
-    Color,
-    Contrast,
-    Error,
-    Exit,
-    Layer,
-    Prefix,
-    Reset,
-    Result,
-    TERMINAL,
-    ToAnsiEscSuffix,
-    WHITE,
-    Wrap,
-    dispatch::ParserDispatcher,
-};
-use iocore::Path;
+use couleur_rs::{Color, Contrast, Error, Exit, Layer, Reset, Result, dispatch::ParserDispatcher};
 
 #[derive(Parser, Debug, Clone)]
 #[command(

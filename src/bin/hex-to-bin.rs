@@ -1,18 +1,13 @@
-#![allow(unused)]
 use clap::Parser;
 use couleur_rs::{
     BLACK,
     Color,
-    Contrast,
     Error,
     Exit,
     Layer,
-    Prefix,
-    Reset,
     Result,
     TERMINAL,
     WHITE,
-    Wrap,
     dispatch::ParserDispatcher,
 };
 use iocore::Path;
@@ -44,7 +39,7 @@ impl ParserDispatcher<Error> for Cli {
                 }
                 .to_ansi(Layer::FG);
 
-                let [r, g, b] = color.to_triple();
+                let [_r, _g, _b] = color.to_triple();
                 println!("{fg_contrast}{fg}{color}\x1b[0m{bg_contrast}{bg}{color}\x1b[0m");
             }
         }

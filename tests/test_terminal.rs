@@ -1,4 +1,3 @@
-#![allow(unused)]
 use couleur_rs::{Color, Error, Result, Terminal};
 
 #[test]

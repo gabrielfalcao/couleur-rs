@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 
 use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
 use crate::ToAnsiEscSuffix;
@@ -34,10 +34,14 @@ use crate::ToAnsiEscSuffix;
 /// crate to colorize, for example, the bash PS1 variable.
 #[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Prefix {
+    /// ANSI code `\033`
     Octal,
     #[default]
+    /// ANSI code `\x1b`
     Hex,
+    /// ANSI code `\u{1b}`
     Unicode,
+    /// ANSI code `\E`
     Escape,
 }
 impl Display for Prefix {

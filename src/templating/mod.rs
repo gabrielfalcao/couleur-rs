@@ -2,49 +2,21 @@ pub mod node;
 pub use node::Node;
 
 pub mod types;
-#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
-#[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
+use std::fmt::{Debug, Display};
+
+#[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 pub use types::{Result, Stream};
 use winnow::{
     ModalResult,
     Parser,
-    ascii::{dec_uint, digit1, float, hex_digit1},
-    combinator::{
-        alt,
-        cut_err,
-        delimited,
-        eof,
-        iterator,
-        preceded,
-        repeat,
-        separated,
-        separated_pair,
-        seq,
-        terminated,
-    },
+    ascii::{dec_uint, hex_digit1},
+    combinator::{alt, preceded, repeat, terminated},
     error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
     prelude::*,
-    token::{any, none_of, rest, take, take_while},
+    token::take_while,
 };
-use {
-    crate::{
-        Color,
-        Contrast,
-        Error,
-        Layer,
-        RenderableColor,
-        Reset,
-        ToAnsiEscSuffix,
-        Value,
-        // ansi_renderable::{
-        //     ToAnsiEscSuffix,
-        //     ToAnsiEscSuffixWithColor,
-        //     ToAnsiEscSuffixWithColorAndLayer,
-        // },
-        setup_logging,
-    },
-    std::fmt::{Debug, Display},
-};
+
+use crate::{Color, Contrast, Error, Layer, RenderableColor, Reset, ToAnsiEscSuffix};
 
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -224,7 +196,7 @@ pub fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 }
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
-    mut input: &mut Stream<'i>,
+    input: &mut Stream<'i>,
 ) -> ModalResult<Node, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
@@ -254,8 +226,8 @@ pub fn parse<
 >(
     input: T,
 ) -> crate::Result<Node> {
-    let mut input = input.to_string();
-    let mut input: &'i mut str = input.leak();
+    let input = input.to_string();
+    let input: &'i mut str = input.leak();
     let result = nodes::<ContextError>
         .parse(input)
         .map_err(|e| Error::TemplateParseError(format!("{e}")))?;
@@ -274,7 +246,7 @@ pub fn render<
 >(
     input: T,
 ) -> crate::Result<String> {
-    let mut input = input.to_string().leak();
+    let input = input.to_string().leak();
     let resolve = nodes::<ContextError>
         .parse(input)
         .map_err(|error| Error::TemplateParseError(error.to_string()))?;
@@ -282,47 +254,18 @@ pub fn render<
 }
 
 mod within_curly_braces {
-    use std::{
-        fmt::{Debug, Display},
-        str::FromStr,
-    };
 
-    #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
+    #[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
     use winnow::{
         ModalResult,
         Parser,
-        ascii::{dec_uint, digit1, float, hex_digit1},
-        combinator::{
-            alt,
-            cut_err,
-            delimited,
-            eof,
-            iterator,
-            preceded,
-            repeat,
-            separated,
-            separated_pair,
-            seq,
-            terminated,
-        },
-        error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
+        combinator::{alt, preceded},
+        error::{AddContext, ParserError, StrContext},
         prelude::*,
-        token::{any, none_of, rest, take, take_while},
     };
 
     use super::*;
-    use crate::{
-        Color,
-        Contrast,
-        Error,
-        Layer,
-        RenderableColor,
-        Reset,
-        Result,
-        ToAnsiEscSuffix,
-        Value,
-        setup_logging,
-    };
+    use crate::{Color, Contrast, Layer};
 
     #[cfg_attr(feature = "tracing", instrument)]
     pub fn parse_contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(

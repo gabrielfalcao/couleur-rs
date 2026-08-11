@@ -1,13 +1,10 @@
-use std::{
-    cmp::{Ordering, PartialOrd},
-    fmt::Display,
-};
+use std::{cmp::PartialOrd, fmt::Display};
 
 use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{Color, Error, Layer, Result, ToAnsiEscSuffix};
+use crate::{Color, Layer, ToAnsiEscSuffix};
 
 /// Set of contrast algorithms applicable to [`Color`]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]

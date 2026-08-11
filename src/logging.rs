@@ -1,16 +1,10 @@
 use std::{fs::File, io::Write};
 
 #[cfg(any(feature = "logging", feature = "tracing"))] use chrono::Local;
-use clap::Parser;
 use iocore::{Path, env};
-use is_terminal::IsTerminal;
 #[cfg(any(feature = "logging", feature = "tracing"))] use log::LevelFilter;
 #[cfg(any(feature = "logging", feature = "tracing"))]
-use tracing_subscriber::{
-    filter::{EnvFilter, LevelFilter as TracingLevelFilter},
-    layer::SubscriberExt,
-    util::SubscriberInitExt,
-};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{Error, Result};
 
@@ -70,7 +64,7 @@ pub fn get_log_path() -> Result<Path> {
 #[cfg(feature = "tracing")]
 pub fn setup_tracing() -> Result<()> {
     let log_path = get_log_path()?;
-    let mut file_appender = File::options().append(true).open(log_path)?;
+    let file_appender = File::options().append(true).open(log_path)?;
 
     let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
     tracing_subscriber::registry()

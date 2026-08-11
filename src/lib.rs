@@ -1,4 +1,3 @@
-#![allow(unused)]
 //! couleur-rs: parse, apply contrast algorithms to ANSI RGB colors and print text powered by a simple template language
 //!
 //! ## Parsing Colors
@@ -31,7 +30,7 @@
 //! assert_eq!(darkest_pink.get_binary_contrast().to_hex_string(), "#FFFFFF");
 //! assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
 //! ```
-//!
+//! 
 //! ## Template Language
 //! ```rust
 //! parse::<&str, ContextError>("{color:#1EBC73}Hello{color:#1EBC73%contrast:web} World");
@@ -45,7 +44,7 @@
 //!     Node::Text(" World".to_string())
 //! ]))
 //! ```
-//!
+//! 
 //!
 //! <div class="important">
 //! <h1>IMPORTANT</h1>
@@ -67,7 +66,7 @@ use std::sync::LazyLock;
 #[doc(hidden)] pub mod contrast;
 #[doc(inline)] pub use contrast::Contrast;
 #[doc(hidden)] pub mod dispatch;
-#[doc(inline)] pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
+#[doc(hidden)] pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
 #[doc(hidden)] pub mod errors;
 #[doc(hidden)] pub use errors::Exit;
 #[doc(inline)]

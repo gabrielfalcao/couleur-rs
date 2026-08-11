@@ -14,7 +14,7 @@ pub struct FloatMetadata<'a> {
 impl<'a> FloatMetadata<'a> {
     pub fn from_parts(parts: (f64, bool, i32, i32, i32)) -> FloatMetadata<'a> {
         let (value, negative, round, fraction, leading_zeros_fractional) = parts;
-        let mut value = value.to_string();
+        let value = value.to_string();
         FloatMetadata { value: value.leak(), negative, round, fraction, leading_zeros_fractional }
     }
 
@@ -33,7 +33,7 @@ impl<'a> FloatMetadata<'a> {
 
         let float_round = value.round();
 
-        let float_fract = value.fract();
+        let _float_fract = value.fract();
         let leading_fract = leading_zeros_fractional(&value);
         let nonzero_fract = 0;
         // dbg!(leading_fract, nonzero_fract);
@@ -79,7 +79,7 @@ pub fn leading_zeros_fractional<T: Copy + Deref<Target = f64>>(float: T) -> usiz
 pub fn leading_zeros_exp<T: Copy + Deref<Target = f32>>(float: T) -> i32 {
     let float = *float;
     let float_fract_leading_zeroes = leading_zeros_fractional(&(float as f64));
-    let float_fract = float.fract().copysign(1.0_f32);
+    let _float_fract = float.fract().copysign(1.0_f32);
     let mut exp = float.fract();
     for _ in 0..float_fract_leading_zeroes {
         exp = exp * 10.0;

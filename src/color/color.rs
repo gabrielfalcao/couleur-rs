@@ -3,34 +3,28 @@ use std::{
     hash::{Hash, Hasher},
     ops::Deref,
     str::FromStr,
-    sync::LazyLock,
 };
 
-use regex::Regex;
 use serde::{
     Deserialize,
     Deserializer,
     Serialize,
     Serializer,
-    de::{self, Error as SerdeError, Visitor},
+    de::{Error as SerdeError, Visitor},
 };
-use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
 use thiserror::Error as ThisError;
 
 use super::{BLACK, WHITE};
 use crate::{
     Contrast,
-    ConversionToU8Error,
     Error,
     HEX_RGB_REGEX,
     Layer,
     Prefix,
-    Reset,
     Result,
     Terminal,
     ToAnsiEscSuffix,
     Value,
-    Wrap,
     max_rgb,
     min_rgb,
 };
@@ -398,10 +392,10 @@ impl FromStr for Color {
     fn from_str(s: &str) -> Result<Color> {
         match HEX_RGB_REGEX.captures(s) {
             Some(captures) => {
-                let red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
-                let green_value =
+                let _red_value = captures.name("red").map(|s| s.as_str().to_string()).expect("red");
+                let _green_value =
                     captures.name("green").map(|s| s.as_str().to_string()).expect("green");
-                let blue_value =
+                let _blue_value =
                     captures.name("blue").map(|s| s.as_str().to_string()).expect("blue");
                 let red = u8::from_str_radix(
                     &captures.name("red").map(|s| s.as_str().to_string()).unwrap(),
@@ -545,7 +539,7 @@ impl Into<U8Triple> for RgbTriple {
 
 #[cfg(test)]
 mod test {
-    use crate::{Color, Error, Result};
+    use crate::{Color, Result};
     #[test]
     fn test_to_string() -> Result<()> {
         let color = "A4F681".parse::<Color>()?;

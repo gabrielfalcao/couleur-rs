@@ -23,9 +23,9 @@ use crate::{Color, Error, Result};
 /// [`Context::palettes`]: crate::state::Context::palettes
 #[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Serialize, Deserialize)]
 pub struct ColorPalette {
-    name: String,
-    colors: BTreeSet<Color>,
-    color_names: Option<BTreeMap<Color, String>>,
+    pub name: String,
+    pub colors: BTreeSet<Color>,
+    pub color_names: Option<BTreeMap<Color, String>>,
 }
 
 impl ColorPalette {

@@ -1,38 +1,6 @@
-use std::{
-    fmt,
-    hash::{Hash, Hasher},
-    ops::Deref,
-    str::FromStr,
-    sync::LazyLock,
-};
+use std::hash::Hasher;
 
-use regex::Regex;
-use serde::{
-    Deserialize,
-    Deserializer,
-    Serialize,
-    Serializer,
-    de::{self, Error as SerdeError, Visitor},
-};
-use terminal_colorsaurus::{QueryOptions, background_color, foreground_color};
-use thiserror::Error as ThisError;
-
-use crate::{
-    Contrast,
-    ConversionToU8Error,
-    Error,
-    HEX_RGB_REGEX,
-    Layer,
-    Prefix,
-    Reset,
-    Result,
-    Terminal,
-    ToAnsiEscSuffix,
-    Value,
-    Wrap,
-    max_rgb,
-    min_rgb,
-};
+use serde::{Deserialize, Serialize};
 
 /// U8Triple is a type alias which represents a tuple containing the three RGB bands as [`u8`]
 pub type U8Triple = (u8, u8, u8);

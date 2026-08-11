@@ -1,5 +1,3 @@
-use std::cmp::{max, min};
-
 use crate::Value;
 
 pub fn max_rgb(r: Value, g: Value, b: Value) -> Value {

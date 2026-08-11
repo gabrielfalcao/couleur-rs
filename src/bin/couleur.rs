@@ -1,19 +1,5 @@
-#![allow(unused)]
 use clap::Parser;
-use couleur_rs::{
-    Color,
-    Contrast,
-    Error,
-    Exit,
-    Layer,
-    Node,
-    Prefix,
-    Reset,
-    Result,
-    Wrap,
-    dispatch::ParserDispatcher,
-    parse,
-};
+use couleur_rs::{Error, Exit, Node, RenderableColor, Result, dispatch::ParserDispatcher, parse};
 use winnow::{Parser as _, error::ContextError};
 #[derive(Parser, Debug, Clone)]
 #[command(
@@ -33,7 +19,17 @@ impl Cli {
     }
     pub fn nodes(&self) -> Result<Vec<Node>> {
         let result = parse::<String, ContextError>(self.text())?;
-        Ok(result.to_vec())
+        Ok(result
+            .to_vec()
+            .into_iter()
+            .map(|node| {
+                if let Node::Color(color) = &node {
+                    Node::RenderableColor(RenderableColor::from(color))
+                } else {
+                    node
+                }
+            })
+            .collect::<Vec<Node>>())
     }
     pub fn parsed(&self) -> Result<Node> {
         let result = parse::<String, ContextError>(self.text())?;

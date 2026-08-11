@@ -1,22 +1,5 @@
-#![allow(unused)]
 use clap::Parser;
-use couleur_rs::{
-    BLACK,
-    Color,
-    Contrast,
-    Error,
-    Exit,
-    Layer,
-    Prefix,
-    Reset,
-    Result,
-    TERMINAL,
-    Terminal,
-    WHITE,
-    Wrap,
-    dispatch::ParserDispatcher,
-};
-use iocore::Path;
+use couleur_rs::{Error, Exit, Result, Terminal, dispatch::ParserDispatcher};
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = "couleur-rs command-line")]

@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
+#[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 
-use crate::{Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, ToAnsiEscSuffix, Wrap};
+use crate::{Color, Contrast, Layer, Prefix, ToAnsiEscSuffix};
 
 /// `RenderableColor` contains a [`Color`] and optional properties
 /// that dictate how the color may be rendered as ANSI string and what
@@ -55,6 +55,11 @@ impl RenderableColor {
         self
     }
 }
+impl From<&Color> for RenderableColor {
+    fn from(color: &Color) -> RenderableColor {
+        RenderableColor::new(*color)
+    }
+}
 impl From<Color> for RenderableColor {
     fn from(color: Color) -> RenderableColor {
         RenderableColor::new(color)
@@ -68,10 +73,9 @@ impl Display for RenderableColor {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
 
     use super::RenderableColor;
-    use crate::{Color, Contrast, Error, Layer, Result, ToAnsiEscSuffix, global_setup};
+    use crate::{Color, Layer, Result, ToAnsiEscSuffix};
 
     #[test]
     fn test_render_color_defaults_to_foreground_layer() -> Result<()> {

@@ -2,9 +2,10 @@ MAKEFILE_PATH		:= $(realpath $(firstword $(MAKEFILE_LIST)))
 PROJECT_ROOT		:= $(shell dirname $(MAKEFILE_PATH))
 SRC_ROOT		:= $(PROJECT_ROOT)/src
 TEST_ROOT		:= $(PROJECT_ROOT)/tests
+# export RUSTFLAGS	:= "-Awarnings"
 
 
-all: cls run-couleur #test
+all: cls run-couleur test docs
 # all: cls run-couleur test
 
 

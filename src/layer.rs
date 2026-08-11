@@ -1,17 +1,19 @@
 use std::fmt::Display;
 
 use clap::{ValueEnum, builder::PossibleValue};
-use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
+#[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 
-use crate::{Color, Error, Result, ToAnsiEscSuffix};
+use crate::{Color, ToAnsiEscSuffix};
 
 /// Represents the concept of "background" and "foreground" colors in a terminal
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Layer {
+    /// ANSI code `38`
     #[default]
     FG,
+    /// ANSI code `48`
     BG,
 }
 impl Layer {

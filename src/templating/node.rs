@@ -1,45 +1,8 @@
-#[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
-#[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
-use winnow::{
-    ModalResult,
-    Parser,
-    ascii::{dec_uint, digit1, float, hex_digit1},
-    combinator::{
-        alt,
-        cut_err,
-        delimited,
-        eof,
-        iterator,
-        preceded,
-        repeat,
-        separated,
-        separated_pair,
-        seq,
-        terminated,
-    },
-    error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-    prelude::*,
-    token::{any, none_of, rest, take, take_while},
-};
-use {
-    crate::{
-        Color,
-        Contrast,
-        Error,
-        Layer,
-        RenderableColor,
-        Reset,
-        ToAnsiEscSuffix,
-        Value,
-        // ansi_renderable::{
-        //     ToAnsiEscSuffix,
-        //     ToAnsiEscSuffixWithColor,
-        //     ToAnsiEscSuffixWithColorAndLayer,
-        // },
-        setup_logging,
-    },
-    std::fmt::{Debug, Display},
-};
+use std::fmt::{Debug, Display};
+
+use winnow::Parser;
+
+use crate::{Color, Contrast, Layer, RenderableColor, Reset, ToAnsiEscSuffix};
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Node {
@@ -88,12 +51,12 @@ impl Node {
     }
     pub fn to_vec(&self) -> Vec<Node> {
         match self {
-            Node::Reset(node) => vec![self.clone()],
-            Node::Color(node) => vec![self.clone()],
-            Node::Layer(node) => vec![self.clone()],
-            Node::Contrast(node) => vec![self.clone()],
-            Node::Text(node) => vec![self.clone()],
-            Node::RenderableColor(node) => vec![self.clone()],
+            Node::Reset(_node) => vec![self.clone()],
+            Node::Color(_node) => vec![self.clone()],
+            Node::Layer(_node) => vec![self.clone()],
+            Node::Contrast(_node) => vec![self.clone()],
+            Node::Text(_node) => vec![self.clone()],
+            Node::RenderableColor(_node) => vec![self.clone()],
             Node::Array(nodes) => nodes.to_vec(),
             Node::EOI => Vec::new(),
         }
