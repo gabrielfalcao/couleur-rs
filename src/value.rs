@@ -51,7 +51,7 @@ use crate::{
 /// convert from [`f32`] to [`u8`] and vice-versa so that other items
 /// of this crate can calculate color luminance, contrast etc.
 #[derive(Clone, Copy, Debug)]
-pub struct Value(f32);
+pub struct Value(pub f32);
 
 impl Value {
     pub fn new<T: Copy + Into<f32> + std::string::ToString>(value: T) -> Result<Value> {

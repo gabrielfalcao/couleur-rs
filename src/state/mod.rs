@@ -1,5 +1,5 @@
-pub(crate) mod color_palette;
+pub mod color_palette;
 pub use color_palette::ColorPalette;
 
-pub(crate) mod context;
+pub mod context;
 pub use context::Context;

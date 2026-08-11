@@ -1,4 +1,5 @@
 #![allow(unused)]
+//! couleur-rs: parse, print, manipulate and apply contrast algorithms to ANSI RGB colors
 //!
 //! ```rust
 //! let dark_pink = "#C32454".parse::<Color>()?;
@@ -68,8 +69,7 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(inline)] pub use triples::{RgbTriple, U8Triple};
 
 #[doc(hidden)] pub mod state;
-// #[doc(inline)]
-pub use state::{ColorPalette, Context};
+#[doc(inline)] pub use state::{ColorPalette, Context};
 
 #[doc(hidden)] pub mod value;
 #[doc(inline)] pub use value::Value;
@@ -83,6 +83,12 @@ pub use state::{ColorPalette, Context};
 #[doc(hidden)] pub mod renderable_color;
 #[doc(inline)] pub use renderable_color::RenderableColor;
 
+#[doc(hidden)] pub mod templating;
+#[cfg(any(feature = "tracing", feature = "logging"))]
+#[doc(inline)]
+pub use templating::{Level, event, instrument, span};
+#[doc(inline)] pub use templating::{Node, parse, parse_node, render, render_nodes};
+
 #[doc(hidden)] pub mod util;
 #[doc(inline)]
 pub use util::{
@@ -94,17 +100,11 @@ pub use util::{
     serialize_static_str_to_string,
 };
 
+#[doc(hidden)] pub mod logging;
+#[doc(inline)] pub use logging::{setup_logging, setup_tracing};
+
+#[doc(hidden)] pub mod testing;
+#[doc(inline)] pub use testing::global_setup;
+
+
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
-
-#[doc(hidden)] pub mod templating;
-
-#[cfg(any(feature = "tracing", feature = "logging"))]
-#[doc(inline)]
-pub use templating::{Level, event, instrument, span};
-#[doc(inline)] pub use templating::{Node, parse, parse_node, render, render_nodes};
-
-pub(crate) mod logging;
-pub use logging::{setup_logging, setup_tracing};
-
-pub(crate) mod testing;
-pub(crate) use testing::global_setup;

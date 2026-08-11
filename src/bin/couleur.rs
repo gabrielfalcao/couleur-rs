@@ -7,46 +7,47 @@ use couleur_rs::{
     Error,
     Exit,
     Layer,
+    Node,
     Prefix,
     Reset,
     Result,
     Wrap,
     dispatch::ParserDispatcher,
+    parse,
 };
+use winnow::{Parser as _, error::ContextError};
 #[derive(Parser, Debug, Clone)]
-#[command(author, version, about, long_about = "couleur-rs command-line")]
+#[command(
+    author = "Gabriel Falcão <gabrielteratos@gmail.com",
+    version,
+    about,
+    long_about = "parse, manipulate, apply contrast algorithms to RGB colors and print in ANSI code"
+)]
 pub struct Cli {
-    #[arg(long, required_unless_present_any = ["fg", "contrast"])]
-    bg: Option<Color>,
-    #[arg(long, required_unless_present_any = ["bg", "contrast"])]
-    fg: Option<Color>,
-    #[arg(long, required_unless_present_all = ["bg", "fg"])]
-    contrast: Option<Contrast>,
-    #[arg(short, long)]
-    prefix: Option<Prefix>,
-    #[arg(short, long)]
-    reset: Option<Reset>,
-    #[arg(short, short, long)]
-    wrap: Option<Wrap>,
-    #[arg(short, long, help="detect terminal default colors for background and foreground instead of using contrast", required_unless_present_any=["contrast"])]
-    detect: bool,
-    #[arg()]
+    #[arg(required = true)]
     text: Vec<String>,
 }
 
-impl Cli {}
+impl Cli {
+    pub fn text(&self) -> String {
+        self.text.join(" ")
+    }
+    pub fn parsed(&self) -> Result<Node> {
+        let result = parse::<String, ContextError>(self.text())?;
+        Ok(result)
+    }
+    pub fn rendered(&self) -> Result<String> {
+        let parsed = self.parsed()?;
+        Ok(parsed.render())
+    }
+}
 
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
-        let bg = self.bg;
-        let fg = self.fg;
-        let contrast = self.contrast.unwrap_or_default();
-        let prefix = self.prefix;
-        let reset = self.reset.unwrap_or_default();
-        let wrap = self.wrap.unwrap_or_default();
-        let colorizer = AnsiColorizer { bg, fg, contrast, prefix, wrap, reset };
-        let result = colorizer.colorize(self.text.join(" "))?;
-        println!("{result}");
+        let input = self.text();
+        println!("input: {input}");
+        let result = self.rendered()?;
+        println!("rendered: {result}");
 
         Ok(())
     }

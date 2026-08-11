@@ -6,10 +6,10 @@ use serde::{Deserialize, Serialize};
 use crate::{AnsiRenderable, Color, Contrast, Error, Exit, Layer, Prefix, Reset, Result, Wrap};
 #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
-    pub(crate) color: Color,
-    pub(crate) prefix: Option<Prefix>,
-    pub(crate) layer: Option<Layer>,
-    pub(crate) contrast: Option<Contrast>,
+    pub color: Color,
+    pub prefix: Option<Prefix>,
+    pub layer: Option<Layer>,
+    pub contrast: Option<Contrast>,
 }
 impl RenderableColor {
     pub fn new(color: Color) -> RenderableColor {

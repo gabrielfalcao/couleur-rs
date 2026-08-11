@@ -6,16 +6,21 @@ TEST_ROOT		:= $(PROJECT_ROOT)/tests
 
 # # all: run test
 # all: cls hex-to-bin
-all: test
+all: cls run-couleur test
 
 
-hex-to-bin:
+hex-to-bin: cls
 	cargo run --bin hex-to-bin ./palettes/cs108.hex
 
-contrast:
+contrast: cls
 	cargo run --bin contrast web "#E83B3B" "Hello World"
 
-run: cls
+run: cls run-couleur
+
+run-couleur: cls
+	cargo run --bin couleur -- "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"
+
+run-contrast: cls
 	@printf "testing background\n\n"
 	cargo run -q -- --bg FFCC00  --fg CCCCCC --detect test background
 	cargo run -q -- --contrast web  --fg CCCCCC --detect test background
@@ -44,4 +49,4 @@ cls:
 	@1>&2 printf "\x1b[2J\x1b[3J\x1b[H"
 	@rm -f couleur.log
 
-.PHONY: run test format cls all clean nextest hex-to-bin
+.PHONY: run test format cls all clean nextest hex-to-bin run-contrast run-couleur
