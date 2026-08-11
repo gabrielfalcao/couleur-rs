@@ -61,7 +61,7 @@
 //! </div>
 use std::sync::LazyLock;
 #[doc(hidden)] pub mod cmp;
-#[doc(inline)] pub use cmp::{max_rgb, min_rgb};
+#[doc(hidden)] pub use cmp::{max_rgb, min_rgb};
 #[doc(hidden)] pub mod color;
 #[doc(inline)] pub use color::{BLACK, Color, RGBParseError, RgbTriple, U8Triple, WHITE};
 #[doc(hidden)] pub mod contrast;
@@ -73,7 +73,8 @@ use std::sync::LazyLock;
 #[doc(inline)]
 pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, Result};
 #[doc(hidden)] pub mod float;
-#[doc(inline)] pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
+#[doc(hidden)] pub use float::{leading_zeros_exp, leading_zeros_fractional};
+#[doc(inline)] pub use float::{FloatMetadata};
 #[doc(hidden)] pub mod layer;
 #[doc(inline)] pub use layer::Layer;
 #[doc(hidden)] pub mod macros;
@@ -95,7 +96,7 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(inline)] pub use traits::ToAnsiEscSuffix;
 #[doc(hidden)] pub mod templating;
 #[cfg(any(feature = "tracing", feature = "logging"))]
-#[doc(inline)]
+#[doc(hidden)]
 pub use templating::{
     Node,
     Result as ParsingResult,
@@ -122,7 +123,7 @@ pub use templating::{
 };
 
 #[doc(hidden)] pub mod util;
-#[doc(inline)]
+#[doc(hidden)]
 pub use util::{
     HEX_RGB_REGEX,
     SINGLE_BAND_DECIMAL_RGB_REGEX,
@@ -132,7 +133,7 @@ pub use util::{
     serialize_static_str_to_string,
 };
 #[doc(hidden)] pub mod logging;
-#[doc(inline)] pub use logging::{setup_logging, setup_tracing};
+#[doc(hidden)] pub use logging::{setup_logging, setup_tracing};
 #[doc(hidden)] pub mod testing;
-#[doc(inline)] pub use testing::global_setup;
+#[doc(hidden)] pub use testing::global_setup;
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
