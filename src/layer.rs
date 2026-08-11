@@ -46,7 +46,7 @@ impl Display for Layer {
     }
 }
 impl AnsiRenderable for Layer {
-    fn render(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         let code = self.code();
         format!("{code};")
     }

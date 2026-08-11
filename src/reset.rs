@@ -4,7 +4,9 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{AnsiRenderable, Prefix, ToAnsi};
+use crate::{AnsiRenderable, Prefix};
+
+pub const RESET: &'static str = "[0m";
 
 /// Represents the intent of adding an "ansi reset" sequence before,
 /// after or around an ANSI color sequence.
@@ -23,28 +25,8 @@ impl Reset {
 }
 
 impl AnsiRenderable for Reset {
-    fn render(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         self.render_with_prefix(Prefix::default())
-    }
-}
-impl ToAnsi for Reset {
-    fn as_ansi_suffix(&self) -> String {
-        Self::ansi_suffix().unwrap()
-    }
-    fn ansi_suffix() -> Option<String> {
-        Some(Reset::code_string())
-    }
-    fn render_ansi<T: Display>(&self, text: T, prefix: Option<Prefix>) -> String {
-        let text = text.to_string();
-        let mut output_parts = Vec::<String>::new();
-        if *self == Reset::Before || *self == Reset::Around {
-            output_parts.push(Self::to_ansi(prefix));
-        }
-        output_parts.push(text);
-        if *self == Reset::After || *self == Reset::Around {
-            output_parts.push(Self::to_ansi(prefix));
-        }
-        output_parts.join("")
     }
 }
 
@@ -59,13 +41,6 @@ impl Reset {
     }
     pub fn code_string() -> String {
         Self::code().to_string()
-    }
-    pub fn to_ansi(prefix: Option<Prefix>) -> String {
-        format!(
-            "{prefix}{code}",
-            prefix = prefix.unwrap_or_default(),
-            code = Self::ansi_suffix().unwrap()
-        )
     }
 
     pub fn variant_name_snake(&self) -> &'static str {

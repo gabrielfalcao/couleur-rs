@@ -96,7 +96,7 @@ impl Node {
 }
 
 impl AnsiRenderable for Node {
-    fn render(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         match self {
             Node::Reset(node) => node.render(),           // node.reset(),
             Node::Color(node) => node.render(),           // node.color(),

@@ -1,4 +1,3 @@
-
 use couleur_rs::{Color, Result, Value};
 
 #[test]
@@ -55,10 +54,7 @@ fn test_parse_and_get_accessible_contrast() -> Result<()> {
         lightest.get_accessible_contrast(),
         Color::from_triple(0.into(), 0.into(), 0.into())
     );
-    assert_eq!(
-        darkest.get_accessible_contrast(),
-        Color::from_triple(0.into(), 0.into(), 0.into())
-    );
+    assert_eq!(darkest.get_accessible_contrast(), Color::from_triple(0.into(), 0.into(), 0.into()));
     Ok(())
 }
 #[test]
@@ -70,11 +66,11 @@ fn test_parse_and_get_binary_contrast() -> Result<()> {
     // #8FF8E2  \x1b[38;2;143;248;226m  143, 248, 226
     let lightest: Color = "#8FF8E2".parse()?;
     let darkest: Color = "#0B5E65".parse()?;
-    assert_eq!(lightest.get_binary_contrast(), Color::from_triple(255.into(), 255.into(), 255.into()));
     assert_eq!(
-        darkest.get_binary_contrast(),
-        Color::from_triple(0.into(), 0.into(), 0.into())
+        lightest.get_binary_contrast(),
+        Color::from_triple(255.into(), 255.into(), 255.into())
     );
+    assert_eq!(darkest.get_binary_contrast(), Color::from_triple(0.into(), 0.into(), 0.into()));
     Ok(())
 }
 

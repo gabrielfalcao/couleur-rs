@@ -5,7 +5,18 @@ use std::{
 
 use crate::{Node, Prefix};
 pub trait AnsiRenderable: Sized + Clone {
-    fn render(&self) -> String;
+    fn render(&self) -> String {
+        self.render_without_prefix()
+    }
+    // fn to_ansi(&self, prefix: Option<Prefix>) -> String {
+    //     format!(
+    //         "{prefix}{code}",
+    //         prefix = prefix.unwrap_or_default(),
+    //         code = self.render_without_prefix()
+    //     )
+    // }
+
+    fn render_without_prefix(&self) -> String;
 }
 use std::{convert::AsRef, ops::Deref};
 
@@ -18,18 +29,18 @@ use std::{convert::AsRef, ops::Deref};
 //     }
 // }
 impl AnsiRenderable for &str {
-    fn render(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         self.to_string()
     }
 }
 impl AnsiRenderable for String {
-    fn render(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         self.to_string()
     }
 }
 
 impl AnsiRenderable for &Vec<Node> {
-    fn render(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         self.into_iter().map(|node| node.render()).collect::<String>()
     }
 }

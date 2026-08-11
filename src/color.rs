@@ -26,9 +26,7 @@ use crate::{
     Prefix,
     Reset,
     Result,
-    RgbTriple,
     Terminal,
-    ToAnsi,
     Value,
     Wrap,
     max_rgb,
@@ -483,7 +481,7 @@ impl Hash for Color {
     }
 }
 impl AnsiRenderable for Color {
-    fn render(&self) -> String {
+ fn render_without_prefix(&self) -> String {
         let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
         let color = triple.join(";");
         format!("2;{color}m")
@@ -549,6 +547,44 @@ impl<'de> Deserialize<'de> for Color {
 // <<<   ///        SS  EE       RR  RR   DD   DD  EE       >>>
 //  <<< ///     SSSSS   EEEEEEE  RR   RR  DDDDDD   EEEEEEE >>>
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// U8Triple is a type alias which represents a tuple containing the three RGB bands as [`u8`]
+pub type U8Triple = (u8, u8, u8);
+
+/// RgbTriple is an intermediary container which holds each of the
+/// three bands of an RGB color as [`u8`] values.
+#[derive(Clone, Copy, Debug, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RgbTriple(u8, u8, u8);
+
+impl RgbTriple {
+    pub fn red(&self) -> u8 {
+        self.0
+    }
+
+    pub fn green(&self) -> u8 {
+        self.1
+    }
+
+    pub fn blue(&self) -> u8 {
+        self.2
+    }
+
+    pub fn into_triple(self) -> U8Triple {
+        (self.red(), self.green(), self.blue())
+    }
+}
+impl From<U8Triple> for RgbTriple {
+    fn from(input: U8Triple) -> RgbTriple {
+        let (red, green, blue) = input;
+        RgbTriple(red, green, blue)
+    }
+}
+
+impl Into<U8Triple> for RgbTriple {
+    fn into(self) -> U8Triple {
+        self.into_triple()
+    }
+}
 
 #[cfg(test)]
 mod test {

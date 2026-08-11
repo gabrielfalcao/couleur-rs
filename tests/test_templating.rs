@@ -14,7 +14,6 @@ use winnow::{
 };
 type Result<T> = std::result::Result<T, ContextError>;
 
-
 /// # TDD TODO:
 ///
 /// ### first set of red -> green -> refactor rounds:

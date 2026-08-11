@@ -1,6 +1,5 @@
 #[cfg(feature = "tracing")] use tracing::{Level, event, instrument, span};
 #[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
-
 use winnow::{
     ModalResult,
     Parser,

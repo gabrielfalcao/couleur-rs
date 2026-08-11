@@ -21,7 +21,7 @@ pub enum Contrast {
 }
 
 impl AnsiRenderable for Contrast {
-    fn render(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         format!("")
     }
 }

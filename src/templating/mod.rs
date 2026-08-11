@@ -2,12 +2,9 @@ pub mod node;
 pub use node::Node;
 
 pub mod types;
-pub use types::{Result, Stream};
-
-
 #[cfg(feature = "tracing")] pub use tracing::{Level, event, instrument, span};
 #[cfg(feature = "tracing")] use tracing_subscriber::fmt::writer::EitherWriter;
-
+pub use types::{Result, Stream};
 use winnow::{
     ModalResult,
     Parser,

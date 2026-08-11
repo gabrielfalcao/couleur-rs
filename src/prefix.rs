@@ -35,7 +35,7 @@ impl Display for Prefix {
     }
 }
 impl AnsiRenderable for Prefix {
-    fn render(&self) -> String {
+    fn render_without_prefix(&self) -> String {
         format!("{self}[")
     }
 }

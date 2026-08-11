@@ -10,7 +10,6 @@
 //! let lightest_pink = "#FDCBB0".parse::<Color>()?;
 //!
 //! ## Applying Contrast
-//!
 //! ```rust
 //! let dark_pink = "#C32454".parse::<Color>()?;
 //! let darkest_pink = "#831C5D".parse::<Color>()?;
@@ -43,7 +42,7 @@ use std::sync::LazyLock;
 #[doc(inline)] pub use cmp::{max_rgb, min_rgb};
 
 #[doc(hidden)] pub mod color;
-#[doc(inline)] pub use color::{BLACK, Color, RGBParseError, WHITE};
+#[doc(inline)] pub use color::{BLACK, Color, RGBParseError, RgbTriple, U8Triple, WHITE};
 
 #[doc(hidden)] pub mod contrast;
 #[doc(inline)] pub use contrast::Contrast;
@@ -68,13 +67,10 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(inline)] pub use prefix::Prefix;
 
 #[doc(hidden)] pub mod reset;
-#[doc(inline)] pub use reset::Reset;
+#[doc(inline)] pub use reset::{RESET, Reset};
 
 #[doc(hidden)] pub mod terminal;
 #[doc(inline)] pub use terminal::{Terminal, TerminalInfo, TerminalInfoError};
-
-#[doc(hidden)] pub mod triples;
-#[doc(inline)] pub use triples::{RgbTriple, U8Triple};
 
 #[doc(hidden)] pub mod state;
 #[doc(inline)] pub use state::{ColorPalette, Context};
@@ -89,7 +85,7 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(inline)] pub use renderable_color::RenderableColor;
 
 #[doc(hidden)] pub mod traits;
-#[doc(inline)] pub use traits::{AnsiRenderable, ToAnsi};
+#[doc(inline)] pub use traits::AnsiRenderable;
 
 #[doc(hidden)] pub mod templating;
 #[cfg(any(feature = "tracing", feature = "logging"))]

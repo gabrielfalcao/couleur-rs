@@ -1,4 +1,3 @@
-
 use couleur_rs::{Color, Result, Value};
 
 #[test]

@@ -1,6 +1,7 @@
 #![allow(unused)]
 use clap::Parser;
 use couleur_rs::{
+    AnsiRenderable,
     BLACK,
     Color,
     Contrast,
@@ -8,6 +9,7 @@ use couleur_rs::{
     Exit,
     Layer,
     Prefix,
+    RESET,
     Reset,
     Result,
     TERMINAL,
@@ -51,7 +53,6 @@ impl ParserDispatcher<Error> for Cli {
         let (color_layer, contrast_layer) =
             if !self.invert_layer { (Layer::FG, Layer::BG) } else { (Layer::BG, Layer::FG) };
         let contrast_color = contrast.apply(color, contrast_layer);
-        let reset = Reset::to_ansi(None);
 
         // first let's ansi-render the color and contrast color in the
         // layers defined by command-line flags
@@ -65,11 +66,11 @@ impl ParserDispatcher<Error> for Cli {
 
         let input_text = self.text.join(" ");
         let text_lines = vec![
-            format!("{reset}color: {color_ansi_normal}{color}{reset}"),
-            format!("{reset}contrast: {contrast_ansi_inverted}{contrast_color}{reset}"),
+            format!("{RESET}color: {color_ansi_normal}{color}{RESET}"),
+            format!("{RESET}contrast: {contrast_ansi_inverted}{contrast_color}{RESET}"),
             String::new(),
-            format!("{color_ansi_normal}{contrast_ansi_normal}{input_text}{reset}"),
-            format!("{color_ansi_inverted}{contrast_ansi_inverted}{input_text}{reset}"),
+            format!("{color_ansi_normal}{contrast_ansi_normal}{input_text}{RESET}"),
+            format!("{color_ansi_inverted}{contrast_ansi_inverted}{input_text}{RESET}"),
         ];
 
         let output_text = text_lines.join("\n");
