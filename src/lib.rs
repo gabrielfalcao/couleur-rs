@@ -7,6 +7,7 @@
 //! let darkest_pink = "#831C5D".parse::<Color>()?;
 //! let light_pink = "#FCA790".parse::<Color>()?;
 //! let lightest_pink = "#FDCBB0".parse::<Color>()?;
+//! ```
 //!
 //! ## Applying Contrast
 //! ```rust
@@ -30,7 +31,7 @@
 //! assert_eq!(darkest_pink.get_binary_contrast().to_hex_string(), "#FFFFFF");
 //! assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
 //! ```
-//! 
+//!
 //! ## Template Language
 //! ```rust
 //! parse::<&str, ContextError>("{color:#1EBC73}Hello{color:#1EBC73%contrast:web} World");
@@ -44,7 +45,7 @@
 //!     Node::Text(" World".to_string())
 //! ]))
 //! ```
-//! 
+//!
 //!
 //! <div class="important">
 //! <h1>IMPORTANT</h1>
