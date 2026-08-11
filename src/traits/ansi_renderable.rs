@@ -19,12 +19,13 @@ use crate::{Prefix, ToAnsiEscSuffix, templating::Node};
 /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
 pub trait AnsiRenderable: ToAnsiEscSuffix {
     /// This method must return the [`Prefix`] contained in the
-    /// implementor, then the [`render`] method can combine the prefix
+    /// implementor, then the [`render()`] method can combine the prefix
     /// with the suffix provided by
     /// [`ToAnsiEscSuffix::to_ansi_esc_suffix()`] resulting in a full
     /// ANSI sequence.
     ///
     /// [`Prefix`]: crate::Prefix
+    /// [`render()`]: crate::ToAnsiEscSuffix::render
     /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
     /// [`ToAnsiEscSuffix::to_ansi_esc_suffix()`]: crate::ToAnsiEscSuffix::to_ansi_esc_suffix
     fn prefix(&self) -> String;
