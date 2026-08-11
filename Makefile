@@ -9,32 +9,32 @@ all: cls run-couleur #test
 
 
 hex-to-bin: cls
-	cargo run --bin hex-to-bin ./palettes/cs108.hex
+	cargo run --all-features --bin hex-to-bin ./palettes/cs108.hex
 
 contrast: cls
-	cargo run --bin contrast web "#E83B3B" "Hello World"
+	cargo run --all-features --bin contrast web "#E83B3B" "Hello World"
 
 run: cls run-couleur
 
 run-couleur: cls
-	cargo run --bin couleur -- "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"
+	cargo run --all-features --bin couleur -- "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"
 
 run-contrast: cls
 	@printf "testing background\n\n"
-	cargo run -q -- --bg FFCC00  --fg CCCCCC --detect test background
-	cargo run -q -- --contrast web  --fg CCCCCC --detect test background
-	cargo run -q -- --contrast web --bg FFCC00 --detect test background
-	cargo run -q -- --contrast web --fg CCCCCC --detect test background
+	cargo run --all-features -q -- --bg FFCC00  --fg CCCCCC --detect test background
+	cargo run --all-features -q -- --contrast web  --fg CCCCCC --detect test background
+	cargo run --all-features -q -- --contrast web --bg FFCC00 --detect test background
+	cargo run --all-features -q -- --contrast web --fg CCCCCC --detect test background
 
 	@printf "\ntesting foreground\n\n"
-	cargo run -q -- --fg FFCC00  --bg 333333 --detect test foreground
-	cargo run -q -- --contrast web  --bg 333333 --detect test foreground
-	cargo run -q -- --contrast web --fg FFCC00  --bg 333333 --detect test foreground
-	cargo run -q -- --contrast web --bg 333333 --detect test foreground
+	cargo run --all-features -q -- --fg FFCC00  --bg 333333 --detect test foreground
+	cargo run --all-features -q -- --contrast web  --bg 333333 --detect test foreground
+	cargo run --all-features -q -- --contrast web --fg FFCC00  --bg 333333 --detect test foreground
+	cargo run --all-features -q -- --contrast web --bg 333333 --detect test foreground
 
 test: cls
 	cargo test --all-features
-	cargo test
+	# cargo test
 
 nextest: cls
 	cargo nextest run

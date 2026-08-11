@@ -50,6 +50,8 @@ pub enum Node {
     Text(String),
     RenderableColor(RenderableColor),
     Array(Vec<Node>),
+    // End Of input
+    EOI,
 }
 impl Node {
     pub fn render(&self) -> String {
@@ -64,6 +66,7 @@ impl Node {
             Node::Array(nodes) => {
                 nodes.iter().map(|n| n.render()).collect::<Vec<String>>().join("")
             }
+            Node::EOI => String::new(),
         };
         [rendered, Reset::default().render()].into_iter().collect::<String>()
     }
@@ -76,6 +79,7 @@ impl Node {
             Node::Text(_) => "string",
             Node::RenderableColor(_) => "renderable_color",
             Node::Array(_) => "array_of_value",
+            Node::EOI => "end_of_input",
             // Node::Array(nodes) => {
             //     nodes.iter().map(|n| n.to_string()).collect::<Vec<String>>().join(",")
             // }
@@ -91,6 +95,7 @@ impl Node {
             Node::Text(node) => vec![self.clone()],
             Node::RenderableColor(node) => vec![self.clone()],
             Node::Array(nodes) => nodes.to_vec(),
+            Node::EOI => Vec::new(),
         }
     }
 }
@@ -105,6 +110,7 @@ impl AnsiRenderable for Node {
             Node::Text(node) => node.to_string(),         // node.to()_string(),
             Node::RenderableColor(node) => node.render(), // node.render(),
             Node::Array(node) => node.render(), // node.iter().map(|node| node.render()).collect::<String>(),
+            Node::EOI => String::new(),
         }
     }
 }
@@ -136,6 +142,9 @@ impl Display for Node {
                 }
                 Node::Array(nodes) => {
                     nodes.iter().map(|node| AnsiRenderable::render(node)).collect::<String>()
+                }
+                Node::EOI => {
+                    String::new()
                 }
             }
         )

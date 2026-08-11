@@ -53,9 +53,11 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     if input.is_empty() {
-        return Err(ErrMode::Cut(ParserError::from_input(input)));
+        return Ok(Node::EOI)
     }
-    // log::debug!("parse_node called with input: {input:#?}", &input);
+    #[cfg(any(feature = "tracing", feature = "logging"))]
+    log::debug!("parse_node called with input: {input:#?}");
+
     alt((
         renderable_color::<E>.map(Node::RenderableColor), // RenderableColor
         reset::<E>.map(Node::Reset),                      // Reset
@@ -226,10 +228,21 @@ pub fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>
 ) -> ModalResult<Node, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
-    let mut winnow_it = iterator(input, parse_node::<ContextError>);
-    let res = winnow_it.map(|node| node).collect::<Vec<Node>>();
 
-    winnow_it.finish();
+    let initial_input = input.to_string();
+    if initial_input.len() == 0 {
+        log::error!("empty input");
+        return Ok(Node::EOI)
+    }
+
+    let mut res = Vec::<Node>::new();
+    while input.len() > 0 {
+        let parsed = parse_node::<E>(input)?;
+        if parsed == Node::EOI {
+            break
+        }
+        res.push(parsed);
+    }
     Ok(Node::Array(res))
 }
 
