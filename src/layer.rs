@@ -10,10 +10,10 @@ use crate::{Color, ToAnsiEscSuffix};
 /// Represents the concept of "background" and "foreground" colors in a terminal
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Layer {
-    /// ANSI code `38`
+    /// foreground layer, ANSI code `38`
     #[default]
     FG,
-    /// ANSI code `48`
+    /// background layer, ANSI code `48`
     BG,
 }
 impl Layer {

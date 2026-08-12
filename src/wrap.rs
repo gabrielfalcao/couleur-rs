@@ -4,7 +4,7 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-/// Represents the intent of rendering a [`Color`] before, after or
+/// Represents the intent of rendering a [`Layer`] or [`Color`] before, after or
 /// around the text being colored.
 ///
 /// [`ColorPalette::name`]: crate::state::ColorPalette::name

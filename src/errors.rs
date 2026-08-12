@@ -11,6 +11,7 @@ use winnow::{
 
 use crate::color::RGBParseError;
 
+/// Main error used across the crate
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Error {
     IOError(String),
@@ -154,6 +155,9 @@ impl ParserError<&str> for Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// Specialized error containing the error message and, optionally,
+/// the input string which underwent parsing and failed, as well as
+/// optional context regarding the error.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ParseError {
     message: String,

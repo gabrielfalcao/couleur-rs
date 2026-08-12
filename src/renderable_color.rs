@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{AnsiRenderable, Color, Contrast, Layer, Prefix, ToAnsiEscSuffix};
 
-/// `RenderableColor` contains a [`Color`] and optional properties
+/// [`RenderableColor`] contains a [`Color`] and optional properties
 /// that dictate how the color may be rendered as ANSI string and what
 /// contrast algorithm, if any, should be applied to a color before
 /// rendering.

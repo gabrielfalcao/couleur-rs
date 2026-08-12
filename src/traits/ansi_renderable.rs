@@ -14,6 +14,7 @@ use crate::{Prefix, ToAnsiEscSuffix, templating::Node};
 /// [`Contrast`]: crate::Contrast
 /// [`Layer`]: crate::Layer
 /// [`Prefix`]: crate::Prefix
+/// [`Prefix-aware`]: crate::Prefix
 /// [`RenderableColor`]: crate::RenderableColor
 /// [`Reset`]: crate::Reset
 /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
@@ -25,7 +26,7 @@ pub trait AnsiRenderable: ToAnsiEscSuffix {
     /// ANSI sequence.
     ///
     /// [`Prefix`]: crate::Prefix
-    /// [`render()`]: crate::ToAnsiEscSuffix::render
+    /// [`render()`]: crate::AnsiRenderable::render
     /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
     /// [`ToAnsiEscSuffix::to_ansi_esc_suffix()`]: crate::ToAnsiEscSuffix::to_ansi_esc_suffix
     fn prefix(&self) -> String;
