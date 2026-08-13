@@ -1,9 +1,10 @@
 use std::fmt::{Debug, Display};
 
+use serde::{Deserialize, Serialize};
+
 // use winnow::Parser;
 use crate::{AnsiRenderable, Color, Contrast, Layer, RenderableColor, Reset, ToAnsiEscSuffix};
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Node {
     Reset(Reset),
     Color(Color),
@@ -16,6 +17,12 @@ pub enum Node {
     /// End Of input
     EOI,
 }
+impl Debug for Node {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", serde_yaml::to_string(&self).unwrap())
+    }
+}
+
 impl ToAnsiEscSuffix for Node {
     fn to_ansi_esc_suffix(&self) -> String {
         let rendered = match self {
@@ -31,15 +38,17 @@ impl ToAnsiEscSuffix for Node {
             }
             Node::EOI => String::new(),
         };
-        [rendered, Reset::default().to_ansi_esc_suffix()].into_iter().collect::<String>()
+        [rendered].into_iter().collect::<String>()
     }
 }
+
 impl AnsiRenderable for Node {
     fn prefix(&self) -> String {
         let reset = if let Node::Reset(reset) = self.clone() { reset } else { Reset::default() };
-        format!("{reset}")
+        format!("{}", reset.render())
     }
 }
+
 impl Node {
     pub fn variant(&self) -> String {
         match self {
@@ -112,8 +121,69 @@ impl From<Reset> for Node {
         Node::Reset(reset)
     }
 }
+
 impl From<Color> for Node {
     fn from(color: Color) -> Node {
         Node::Color(color)
+    }
+}
+
+pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
+    nodes.fold(Vec::new(), |mut vec, node| match node.clone() {
+        Node::Reset(_reset) => {
+            vec.push(node.clone());
+            vec
+        }
+        Node::Color(color) => {
+            vec.push(Node::RenderableColor(RenderableColor::new(color)));
+            vec
+        }
+        Node::Layer(_layer) => {
+            vec.push(node.clone());
+            vec
+        }
+        Node::Contrast(_contrast) => {
+            vec.push(node.clone());
+            vec
+        }
+        Node::Text(_string) => {
+            vec.push(node.clone());
+            vec
+        }
+        Node::RenderableColor(_renderable_color) => {
+            vec.push(node.clone());
+            vec
+        }
+        Node::Array(nodes) => {
+            vec.extend(fold_nodes(nodes.into_iter()));
+            vec
+        }
+        Node::EOI => vec,
+    })
+}
+
+#[cfg(test)]
+mod node_tests {
+    use crate::{
+        AnsiRenderable,
+        Color,
+        Error,
+        Layer,
+        Node,
+        RenderableColor,
+        Result,
+        ToAnsiEscSuffix,
+    };
+
+    #[test]
+    fn test_renderable_color() -> Result<()> {
+        let color = RenderableColor::new("#F9C22B".parse::<Color>()?);
+        let node = Node::RenderableColor(color);
+
+        assert_eq!(color.to_ansi_esc_suffix(), "38;2;249;194;43m");
+        assert_eq!(node.to_ansi_esc_suffix(), "38;2;249;194;43m");
+        assert_eq!(color.render(), "\x1b[38;2;249;194;43m");
+        assert_eq!(node.render(), "\x1b[38;2;249;194;43m");
+        Ok(())
     }
 }

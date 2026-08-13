@@ -4,7 +4,7 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::ToAnsiEscSuffix;
+use crate::{ToAnsiEscSuffix, AnsiRenderable};
 
 /// Represents an [ANSI Escape
 /// character](https://en.wikipedia.org/wiki/Escape_character#ASCII_escape_character)
@@ -124,15 +124,20 @@ impl ValueEnum for Prefix {
         return Err(val.to_string());
     }
 }
-//impl PartialEq<&Prefix> for Prefix {
-//    fn eq(&self, other: &Prefix) -> bool {
-//        self == *other
-//    }
-//}
-//
-//impl PartialOrd<&Prefix> for Prefix {
-//    fn partial_cmp(&self, other: &Rhs) -> Option<Ordering> {
-//        self.partial_cmp(*other)
-//    }
-//}
-//
+
+impl ToAnsiEscSuffix for Prefix {
+    fn to_ansi_esc_suffix(&self) -> String {
+        String::new()
+    }
+}
+impl AnsiRenderable for Prefix {
+    fn prefix(&self) -> String {
+        self.to_string()
+    }
+}
+
+impl From<Option<Prefix>> for Prefix {
+    fn from(value: Option<Prefix>) -> Prefix {
+        value.unwrap_or_default()
+    }
+}

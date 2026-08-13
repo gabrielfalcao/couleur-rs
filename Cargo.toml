@@ -59,6 +59,7 @@ tracing = { version = "0.1.44", features = ["log", "log-always"], optional = tru
 tracing-subscriber = { version = "0.3.23", features = ["serde", "serde_json", "json", "chrono", "env-filter"], optional = true }
 tracing-appender = { version = "0.2.5", optional = true }
 dirs = { version = "6.0.0", optional = true }
+lazy_mut = "0.2.1"
 
 
 # cargo add --optional tracing tracing-subscriber tracing-appender

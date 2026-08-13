@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Display, Debug};
 
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
@@ -19,7 +19,7 @@ use crate::{AnsiRenderable, Color, Contrast, Layer, Prefix, ToAnsiEscSuffix};
 /// [`Reset`]: crate::Reset
 /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
 
-#[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
     pub color: Color,
     pub prefix: Option<Prefix>,
@@ -80,6 +80,11 @@ impl Display for RenderableColor {
         write!(f, "{}", self.render_all())
     }
 }
+impl Debug for RenderableColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", serde_yaml::to_string(&self).unwrap())
+    }
+}
 impl ToAnsiEscSuffix for RenderableColor {
     fn to_ansi_esc_suffix(&self) -> String {
         let layer = self.layer.unwrap_or_default().to_ansi_esc_suffix();
@@ -103,10 +108,16 @@ impl AnsiRenderable for RenderableColor {
 
 #[cfg(test)]
 mod tests {
-
-    use super::RenderableColor;
-    use crate::{Color, Layer, Result, ToAnsiEscSuffix, AnsiRenderable};
-    // use crate::{ToAnsiEscSuffix};
+    use crate::{
+        AnsiRenderable,
+        Color,
+        Error,
+        Layer,
+        Node,
+        RenderableColor,
+        Result,
+        ToAnsiEscSuffix,
+    };
 
     #[test]
     fn test_render_color_defaults_to_foreground_layer() -> Result<()> {

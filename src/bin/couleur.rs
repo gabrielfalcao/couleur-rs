@@ -7,6 +7,7 @@ use couleur_rs::{
     RenderableColor,
     Result,
     dispatch::ParserDispatcher,
+    fold_nodes,
     parse,
 };
 // use winnow::{Parser as _};
@@ -22,41 +23,6 @@ pub struct Cli {
     #[arg(default_value = "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World")]
     text: Vec<String>,
 }
-pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
-    nodes.fold(Vec::new(), |mut vec, node| {
-        match node.clone() {
-            Node::Reset(_reset) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::Color(color) => {
-                vec.push(Node::RenderableColor(RenderableColor::new(color)));
-                vec
-            }
-            Node::Layer(_layer) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::Contrast(_contrast) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::Text(_string) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::RenderableColor(_renderable_color) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::Array(nodes) => {
-                vec.extend(fold_nodes(nodes.into_iter()));
-                vec
-            }
-            Node::EOI => vec,
-        }
-    })
-}
 impl Cli {
     pub fn text(&self) -> String {
         self.text.join(" ")
@@ -71,14 +37,10 @@ impl Cli {
             }
         })))
     }
-    pub fn parsed(&self) -> Result<Node> {
-        let result = parse::<String, ContextError>(self.text())?;
-        Ok(result)
-    }
     pub fn rendered(&self) -> Result<String> {
-        let parsed = self.parsed()?;
-        // let mut result = Vec::<String>::new();
-        Ok(parsed.render())
+        let nodes = self.nodes()?;
+        let result = nodes.into_iter().map(|node| node.render()).collect::<String>();
+        Ok(result)
     }
 }
 

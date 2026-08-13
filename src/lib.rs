@@ -61,6 +61,8 @@
 //!
 //! </div>
 use std::sync::LazyLock;
+use lazy_mut::LazyMut;
+
 #[doc(hidden)] pub mod cmp;
 #[doc(hidden)] pub use cmp::{max_rgb, min_rgb};
 #[doc(hidden)] pub mod color;
@@ -74,8 +76,8 @@ use std::sync::LazyLock;
 #[doc(inline)]
 pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, Result};
 #[doc(hidden)] pub mod float;
+#[doc(inline)] pub use float::FloatMetadata;
 #[doc(hidden)] pub use float::{leading_zeros_exp, leading_zeros_fractional};
-#[doc(inline)] pub use float::{FloatMetadata};
 #[doc(hidden)] pub mod layer;
 #[doc(inline)] pub use layer::Layer;
 #[doc(hidden)] pub mod macros;
@@ -104,6 +106,7 @@ pub use templating::{
     Stream,
     color,
     contrast,
+    fold_nodes,
     layer,
     nodes,
     parse,
@@ -137,3 +140,9 @@ pub use util::{
 #[doc(hidden)] pub mod testing;
 #[doc(hidden)] pub use testing::global_setup;
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
+pub static PREFIX: LazyMut<TerminalInfo> = LazyMut::new(|| Prefix::default());
+
+pub fn set_runtime_prefix(prefix: Prefix) {
+    let mut current = PREFIX.get_mut();
+    current.set(prefix);
+}
