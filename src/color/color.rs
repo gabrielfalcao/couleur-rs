@@ -181,7 +181,7 @@ impl Color {
 
     /// Returns either [`BLACK`] or [`WHITE`] as the contrasting color based on the [`binary luminance algorithm`](`crate::Color::get_binary_luminance`)
     pub fn get_binary_contrast(&self) -> Color {
-        if self.is_dark() { BLACK } else { WHITE }
+        if self.is_dark() { WHITE } else { BLACK }
     }
 
     /// Returns the contrast of the current color based on the simple
