@@ -1,3 +1,4 @@
+#![allow(unused)]
 //! couleur-rs: parse, apply contrast algorithms to ANSI RGB colors and print text powered by a simple template language
 //!
 //! ## Parsing Colors
