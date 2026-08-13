@@ -66,7 +66,7 @@ use std::sync::LazyLock;
 use lazy_mut::LazyMut;
 
 #[doc(hidden)] pub mod cli;
-#[doc(hidden)] pub use cli::SharedRenderingOpts;
+#[doc(hidden)] pub use cli::RenderingOptions;
 #[doc(hidden)] pub mod cmp;
 #[doc(hidden)] pub use cmp::{max_rgb, min_rgb};
 #[doc(hidden)] pub mod color;

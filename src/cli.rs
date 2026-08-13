@@ -3,7 +3,7 @@ use clap::Parser;
 use crate::{Prefix, set_runtime_prefix};
 
 #[derive(Parser, Debug, Clone)]
-pub struct SharedRenderingOpts {
+pub struct RenderingOptions {
     #[arg(
         long,
         help = "automatically adds a reset code after rendering colored text",
@@ -21,27 +21,27 @@ pub struct SharedRenderingOpts {
     #[arg(skip)]
     initialized: bool,
 }
-impl SharedRenderingOpts {
+impl RenderingOptions {
     pub fn init(&mut self) {
         set_runtime_prefix(self.prefix);
         self.initialized = true;
     }
     pub fn prefix(&self) -> Prefix {
         if !self.initialized {
-            todo!("SharedRenderingOpts must be initialized with .init() ");
+            todo!("RenderingOptions must be initialized with .init() ");
         }
         self.prefix
     }
     pub fn dont_append(&self) -> bool {
         if !self.initialized {
-            todo!("SharedRenderingOpts must be initialized with .init() ");
+            todo!("RenderingOptions must be initialized with .init() ");
         }
         self.no_auto_reset || !self.auto_reset
     }
 
     pub fn add_reset_to_last_node(&self) -> bool {
         if !self.initialized {
-            todo!("SharedRenderingOpts must be initialized with .init() ");
+            todo!("RenderingOptions must be initialized with .init() ");
         }
         self.auto_reset || !self.no_auto_reset
     }

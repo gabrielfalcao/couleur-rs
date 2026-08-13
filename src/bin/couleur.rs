@@ -7,7 +7,7 @@ use couleur_rs::{
     RenderableColor,
     Reset,
     Result,
-    SharedRenderingOpts,
+    RenderingOptions,
     dispatch::ParserDispatcher,
     fold_nodes,
     parse,
@@ -22,11 +22,11 @@ use winnow::error::ContextError;
     long_about = "parse, manipulate, apply contrast algorithms to RGB colors and print in ANSI code"
 )]
 pub struct Cli {
-    #[arg(default_value = "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World")]
+    #[arg(required = true)]
     text: Vec<String>,
 
     #[clap(flatten)]
-    opts: SharedRenderingOpts,
+    opts: RenderingOptions,
 }
 impl Cli {
     pub fn text(&self) -> String {

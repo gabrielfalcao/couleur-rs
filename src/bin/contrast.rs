@@ -7,7 +7,7 @@ use couleur_rs::{
     Layer,
     Reset,
     Result,
-    SharedRenderingOpts,
+    RenderingOptions,
     dispatch::ParserDispatcher,
 };
 
@@ -36,7 +36,7 @@ pub struct Cli {
     text: Vec<String>,
 
     #[clap(flatten)]
-    opts: SharedRenderingOpts,
+    opts: RenderingOptions,
 }
 
 impl Cli {}
