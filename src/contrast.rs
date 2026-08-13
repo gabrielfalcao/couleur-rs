@@ -75,7 +75,7 @@ impl Contrast {
     }
 
     pub fn variants<'a>() -> &'a [Contrast] {
-        &[Contrast::Read, Contrast::HighBit, Contrast::Harmonic, Contrast::Web]
+        &[Contrast::None, Contrast::Read, Contrast::HighBit, Contrast::Harmonic, Contrast::Web]
     }
 
     fn to_possible_strings(&self) -> [String; 4] {
