@@ -44,8 +44,11 @@ impl ToAnsiEscSuffix for Node {
 
 impl AnsiRenderable for Node {
     fn prefix(&self) -> String {
-        let reset = if let Node::Reset(reset) = self.clone() { reset } else { Reset::default() };
-        format!("{}", reset.render())
+        if let Node::Text(_) = self.clone() {
+            String::new()
+        } else {
+            crate::PREFIX.get_mut().get().to_string()
+        }
     }
 }
 
@@ -184,6 +187,16 @@ mod node_tests {
         assert_eq!(node.to_ansi_esc_suffix(), "38;2;249;194;43m");
         assert_eq!(color.render(), "\x1b[38;2;249;194;43m");
         assert_eq!(node.render(), "\x1b[38;2;249;194;43m");
+        Ok(())
+    }
+    #[test]
+    fn test_text() -> Result<()> {
+        let text = format!("hello world");
+        let node = Node::Text(text.clone());
+
+        assert_eq!(&text, "hello world");
+        assert_eq!(node.to_ansi_esc_suffix(), "hello world");
+        assert_eq!(node.render(), "hello world");
         Ok(())
     }
 }

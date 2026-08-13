@@ -1,5 +1,16 @@
 use clap::Parser;
-use couleur_rs::{Color, Prefix, Contrast, Error, Exit, Layer, Reset, Result, dispatch::ParserDispatcher};
+use couleur_rs::{
+    Color,
+    Contrast,
+    Error,
+    Exit,
+    Layer,
+    Prefix,
+    Reset,
+    Result,
+    dispatch::ParserDispatcher,
+    set_runtime_prefix,
+};
 
 #[derive(Parser, Debug, Clone)]
 #[command(
@@ -33,6 +44,7 @@ impl Cli {}
 
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&self) -> Result<()> {
+        set_runtime_prefix(self.prefix.unwrap_or_default());
         let reset = Reset::new(self.prefix);
         let color = self.color;
         let contrast = self.contrast;

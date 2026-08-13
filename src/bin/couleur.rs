@@ -51,7 +51,7 @@ impl ParserDispatcher<Error> for Cli {
         // let parsed = self.parsed()?;
         // println!("parsed: {parsed:#?}");
         let result = self.rendered()?;
-        println!("rendered: {result}");
+        println!("rendered: {result:#?}");
 
         Ok(())
     }

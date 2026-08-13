@@ -32,8 +32,10 @@ pub trait AnsiRenderable: ToAnsiEscSuffix + Debug {
     /// [`ToAnsiEscSuffix::to_ansi_esc_suffix()`]: crate::ToAnsiEscSuffix::to_ansi_esc_suffix
     fn prefix(&self) -> String;
     fn render(&self) -> String {
-        dbg!(&self, type_name_of_val(&self));
-        [dbg!(self.prefix()), dbg!(self.to_ansi_esc_suffix())].into_iter().collect::<String>()
+        let prefix = self.prefix();
+        let suffix = self.to_ansi_esc_suffix();
+        // dbg!(&self, type_name_of_val(&self), &prefix, &suffix);
+        [prefix, suffix].into_iter().collect::<String>()
     }
 }
 

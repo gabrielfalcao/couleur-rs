@@ -61,6 +61,7 @@
 //!
 //! </div>
 use std::sync::LazyLock;
+
 use lazy_mut::LazyMut;
 
 #[doc(hidden)] pub mod cmp;
@@ -82,7 +83,8 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(inline)] pub use layer::Layer;
 #[doc(hidden)] pub mod macros;
 #[doc(hidden)] pub mod prefix;
-#[doc(inline)] pub use prefix::Prefix;
+#[doc(inline)] pub use prefix::{Prefix, PrefixContainer};
+
 #[doc(hidden)] pub mod reset;
 #[doc(inline)] pub use reset::Reset;
 #[doc(hidden)] pub mod terminal;
@@ -140,7 +142,7 @@ pub use util::{
 #[doc(hidden)] pub mod testing;
 #[doc(hidden)] pub use testing::global_setup;
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
-pub static PREFIX: LazyMut<TerminalInfo> = LazyMut::new(|| Prefix::default());
+pub static PREFIX: LazyMut<PrefixContainer> = LazyMut::new(|| PrefixContainer::default());
 
 pub fn set_runtime_prefix(prefix: Prefix) {
     let mut current = PREFIX.get_mut();
