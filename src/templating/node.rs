@@ -12,6 +12,7 @@ pub enum Node {
     RenderableColor(RenderableColor),
     /// Sequence of Nodes
     Array(Vec<Node>),
+    InvalidSyntax(String),
     /// End Of input
     EOI,
 }
@@ -22,6 +23,7 @@ impl ToAnsiEscSuffix for Node {
             Node::Reset(reset) => reset.to_ansi_esc_suffix(),
             Node::Color(color) => color.to_ansi_esc_suffix(),
             Node::Text(string) => string.to_string(),
+            Node::InvalidSyntax(string) => string.to_string(),
             Node::RenderableColor(renderable_color) => renderable_color.to_ansi_esc_suffix(),
             // Node::Array(array_of_value) => array_of_value.to_ansi_esc_suffix(),
             Node::Array(nodes) => {
@@ -46,6 +48,7 @@ pub enum NodeType {
     Reset,
     Color,
     Text,
+    InvalidSyntax,
     RenderableColor,
     Array,
     EOI,
@@ -56,6 +59,7 @@ impl NodeType {
             NodeType::Reset => "reset",
             NodeType::Color => "color",
             NodeType::Text => "text",
+            NodeType::InvalidSyntax => "invalid_syntax",
             NodeType::RenderableColor => "renderable_color",
             NodeType::Array => "array",
             NodeType::EOI => "eoi",
@@ -68,24 +72,28 @@ impl Node {
             Node::Reset(_) => NodeType::Reset,
             Node::Color(_) => NodeType::Color,
             Node::Text(_) => NodeType::Text,
+            Node::InvalidSyntax(_) => NodeType::InvalidSyntax,
             Node::RenderableColor(_) => NodeType::RenderableColor,
             Node::Array(_) => NodeType::Array,
             Node::EOI => NodeType::EOI,
         }
     }
-    pub fn is_reset(self) -> bool {
+    pub fn is_reset(&self) -> bool {
         self.node_type() == NodeType::Reset
     }
-    pub fn is_color(self) -> bool {
+    pub fn is_color(&self) -> bool {
         self.node_type() == NodeType::Color
     }
-    pub fn is_text(self) -> bool {
+    pub fn is_text(&self) -> bool {
         self.node_type() == NodeType::Text
     }
-    pub fn is_renderablecolor(&self) -> bool {
+    pub fn is_invalid_syntax(&self) -> bool {
+        self.node_type() == NodeType::InvalidSyntax
+    }
+    pub fn is_renderable_color(&self) -> bool {
         self.node_type() == NodeType::RenderableColor
     }
-    pub fn is_array(self) -> bool {
+    pub fn is_array(&self) -> bool {
         self.node_type() == NodeType::Array
     }
     pub fn is_eoi(&self) -> bool {
@@ -96,7 +104,8 @@ impl Node {
         match self {
             Node::Reset(_) => "reset",
             Node::Color(_) => "color",
-            Node::Text(_) => "string",
+            Node::Text(_) => "text",
+            Node::InvalidSyntax(_) => "invalid_syntax",
             Node::RenderableColor(_) => "renderable_color",
             Node::Array(_) => "array_of_value",
             Node::EOI => "end_of_input",
@@ -111,6 +120,7 @@ impl Node {
             Node::Reset(_node) => vec![self.clone()],
             Node::Color(_node) => vec![self.clone()],
             Node::Text(_node) => vec![self.clone()],
+            Node::InvalidSyntax(_node) => vec![self.clone()],
             Node::RenderableColor(_node) => vec![self.clone()],
             Node::Array(nodes) => nodes.to_vec(),
             Node::EOI => Vec::new(),
@@ -132,6 +142,9 @@ impl Display for Node {
                 }
                 Node::Text(text) => {
                     text.to_string()
+                }
+                Node::InvalidSyntax(invalid_syntax) => {
+                    invalid_syntax.to_string()
                 }
                 Node::RenderableColor(color) => {
                     color.to_string()
@@ -168,6 +181,9 @@ pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
         }
         Node::Text(_string) => {
             vec.push(node.clone());
+            vec
+        }
+        Node::InvalidSyntax(_string) => {
             vec
         }
         Node::RenderableColor(_renderable_color) => {

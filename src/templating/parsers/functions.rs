@@ -3,9 +3,9 @@ use winnow::{
     ModalResult,
     Parser,
     ascii::{dec_uint, hex_digit1},
-    combinator::{alt, preceded, repeat, terminated},
+    combinator::{alt, cut_err, preceded, repeat, terminated},
     error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-    token::take_while,
+    token::{take_until, take_while},
 };
 
 use super::within_curly_braces;
@@ -26,8 +26,23 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         color::<E>.map(Node::Color),                      // Color
         text::<E>.map(Node::Text),                        // Text
         nodes::<E>,                                       // Array
+        invalid_syntax::<E>.map(String::from).map(Node::InvalidSyntax), // InvalidSyntax
+        |input: &mut &'i str| Err(ErrMode::Cut(ParserError::from_input(input))), // invalidSyntax
     ))
     .parse_next(input)
+}
+
+#[cfg_attr(feature = "tracing", instrument)]
+pub fn invalid_syntax<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Node, E> {
+    #[cfg(feature = "tracing")]
+    span!(Level::TRACE, "input", input);
+    preceded('{', terminated(take_until(0.., "}"), '}'))
+        .map(String::from)
+        .map(Node::InvalidSyntax)
+        .context(StrContext::Expected("invalid syntax".into()))
+        .parse_next(input)
 }
 
 #[cfg_attr(feature = "tracing", instrument)]
@@ -177,7 +192,7 @@ pub fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>
     let mut res = Vec::<Node>::new();
     while input.len() > 0 {
         let parsed = parse_node::<E>(input)?;
-        if parsed == Node::EOI {
+        if parsed.is_eoi() {
             break;
         }
         res.push(parsed);

@@ -274,3 +274,14 @@ fn test_parse_contrast_of_color() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_parse_error() -> Result<()> {
+    global_setup();
+    assert_eq!(
+        nodes::<ContextError>.parse_peek("{invalid_syntax}"),
+        Err(ErrMode::Cut(ContextError::new()))
+    );
+
+    Ok(())
+}
