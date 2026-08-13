@@ -25,9 +25,9 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         reset::<E>.map(Node::Reset),                      // Reset
         color::<E>.map(Node::Color),                      // Color
         text::<E>.map(Node::Text),                        // Text
-        nodes::<E>,                                       // Array
-        invalid_syntax::<E>.map(String::from).map(Node::InvalidSyntax), // InvalidSyntax
+        // invalid_syntax::<E>.map(String::from).map(Node::InvalidSyntax), // InvalidSyntax
         |input: &mut &'i str| Err(ErrMode::Cut(ParserError::from_input(input))), // invalidSyntax
+        nodes::<E>,                                       // Array
     ))
     .parse_next(input)
 }

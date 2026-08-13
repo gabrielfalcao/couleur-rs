@@ -2,7 +2,7 @@
 use winnow::{
     ModalResult,
     Parser,
-    combinator::{alt, preceded, separated_pair},
+    combinator::{alt, cut_err, preceded, separated_pair},
     error::{AddContext, ParserError, StrContext},
 };
 
@@ -58,10 +58,11 @@ pub fn parse_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCo
         preceded(
             "contrasted_color:",
             separated_pair(rgb_color_declaration::<E>, ":", contrast_alternatives::<E>)
-                .map(|(color, contrast): (Color, Contrast)| contrast.of(color))
+                .map(|(color, contrast): (Color, Contrast)| contrast.of(color)),
         ),
-        preceded("color:", rgb_color_declaration::<E>)
-    )).parse_next(input)
+        preceded("color:", rgb_color_declaration::<E>),
+    ))
+    .parse_next(input)
 }
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
