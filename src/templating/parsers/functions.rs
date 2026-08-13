@@ -230,17 +230,17 @@ pub fn render_nodes<T: ToAnsiEscSuffix, I: Iterator<Item = T>>(items: I) -> Stri
     p
 }
 
-pub fn render<
-    'i,
-    I: Iterator<Item = T>,
-    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Debug + Display,
-    T: ToAnsiEscSuffix + Display,
->(
-    input: T,
-) -> crate::Result<String> {
-    let input = input.to_string().leak();
-    let resolve = nodes::<ContextError>
-        .parse(input)
-        .map_err(|error| Error::TemplateParseError(error.to_string()))?;
-    Ok(resolve.render())
-}
+// pub fn render<
+//     'i,
+//     I: Iterator<Item = T>,
+//     E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Debug + Display,
+//     T: ToAnsiEscSuffix + Display,
+// >(
+//     input: T,
+// ) -> crate::Result<String> {
+//     let input = input.to_string().leak();
+//     let resolve = nodes::<ContextError>
+//         .parse(input)
+//         .map_err(|error| Error::TemplateParseError(error.to_string()))?;
+//     Ok(resolve.render())
+// }

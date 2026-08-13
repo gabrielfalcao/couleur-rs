@@ -105,7 +105,7 @@ impl AnsiRenderable for RenderableColor {
 mod tests {
 
     use super::RenderableColor;
-    use crate::{Color, Layer, Result, ToAnsiEscSuffix};
+    use crate::{Color, Layer, Result, ToAnsiEscSuffix, AnsiRenderable};
     // use crate::{ToAnsiEscSuffix};
 
     #[test]
@@ -113,12 +113,14 @@ mod tests {
         let color = RenderableColor::new("#F9C22B".parse::<Color>()?);
 
         assert_eq!(color.to_ansi_esc_suffix(), "38;2;249;194;43m");
+        assert_eq!(color.render(), "\x1b[38;2;249;194;43m");
         Ok(())
     }
     #[test]
     fn test_render_color_defaults_to_background_layer() -> Result<()> {
         let color = RenderableColor::new("#F9C22B".parse::<Color>()?).with_layer(Layer::BG);
         assert_eq!(color.to_ansi_esc_suffix(), "48;2;249;194;43m");
+        assert_eq!(color.render(), "\x1b[48;2;249;194;43m");
         Ok(())
     }
 }

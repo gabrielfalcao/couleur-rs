@@ -48,7 +48,7 @@ impl Display for Prefix {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "{}",
+            "{}[",
             match self {
                 Prefix::Octal => "\033",
                 Prefix::Hex => "\x1b",
