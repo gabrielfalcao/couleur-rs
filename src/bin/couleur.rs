@@ -5,9 +5,9 @@ use couleur_rs::{
     Exit,
     Node,
     RenderableColor,
+    RenderingOptions,
     Reset,
     Result,
-    RenderingOptions,
     dispatch::ParserDispatcher,
     fold_nodes,
     parse,
@@ -24,6 +24,9 @@ use winnow::error::ContextError;
 pub struct Cli {
     #[arg(required = true)]
     text: Vec<String>,
+
+    #[arg(short, long, help = "escape the ANSI sequences")]
+    escape: bool,
 
     #[clap(flatten)]
     opts: RenderingOptions,
@@ -62,13 +65,13 @@ impl Cli {
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&mut self) -> Result<()> {
         self.opts.init();
-        let input = self.text();
-        println!("input: {input}");
-        // let parsed = self.parsed()?;
-        // println!("parsed: {parsed:#?}");
         let result = self.rendered()?;
-        println!("rendered: {result:#?}");
-        println!("rendered: {result}");
+
+        if self.escape {
+            println!("{result:#?}");
+        } else {
+            println!("{result}");
+        }
 
         Ok(())
     }
