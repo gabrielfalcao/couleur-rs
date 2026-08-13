@@ -17,7 +17,7 @@ impl Reset {
 
 impl ToAnsiEscSuffix for Reset {
     fn to_ansi_esc_suffix(&self) -> String {
-        "[0m".to_string()
+        "0m".to_string()
     }
 }
 impl AnsiRenderable for Reset {

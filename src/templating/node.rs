@@ -239,7 +239,9 @@ mod node_tests {
         Error,
         Layer,
         Node,
+        Prefix,
         RenderableColor,
+        Reset,
         Result,
         ToAnsiEscSuffix,
     };
@@ -260,6 +262,16 @@ mod node_tests {
         assert_eq!(&text, "hello world");
         assert_eq!(node.to_ansi_esc_suffix(), "hello world");
         assert_eq!(node.render(), "hello world");
+        Ok(())
+    }
+    #[test]
+    fn test_reset() -> Result<()> {
+        let color = Reset::new(Prefix::default());
+        let node = Node::Reset(color);
+        assert_eq!(color.to_ansi_esc_suffix(), "0m");
+        assert_eq!(node.to_ansi_esc_suffix(), "0m");
+        assert_eq!(color.render(), "\x1b[0m");
+        assert_eq!(node.render(), "\x1b[0m");
         Ok(())
     }
 }
