@@ -39,6 +39,15 @@ impl Contrast {
             Contrast::Web => color.get_msb_invert_contrast(),
         }
     }
+    pub fn of<T: Into<Color>>(&self, color: T) -> Color {
+        let color = color.into();
+        let layer = if color.is_dark() && Layer::BG.default_color().is_dark() {
+            Layer::FG
+        } else {
+            Layer::BG
+        };
+        self.apply(color, layer)
+    }
 
     pub fn is_none(self) -> bool {
         self == Contrast::None

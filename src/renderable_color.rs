@@ -27,8 +27,8 @@ pub struct RenderableColor {
     pub contrast: Option<Contrast>,
 }
 impl RenderableColor {
-    pub fn new(color: Color) -> RenderableColor {
-        RenderableColor { color, prefix: None, layer: None, contrast: None }
+    pub fn new<T: Into<Color>>(color: T) -> RenderableColor {
+        RenderableColor { color: color.into(), prefix: None, layer: None, contrast: None }
     }
     #[cfg_attr(feature = "tracing", instrument)]
     pub fn render_all(&self) -> String {
@@ -73,6 +73,11 @@ impl From<&Color> for RenderableColor {
 impl From<Color> for RenderableColor {
     fn from(color: Color) -> RenderableColor {
         RenderableColor::new(color)
+    }
+}
+impl Into<Color> for RenderableColor {
+    fn into(self) -> Color {
+        self.color
     }
 }
 impl Display for RenderableColor {
