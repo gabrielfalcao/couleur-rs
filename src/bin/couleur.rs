@@ -6,11 +6,9 @@ use couleur_rs::{
     Node,
     RenderableColor,
     Result,
-    ToAnsiEscSuffix,
     dispatch::ParserDispatcher,
     parse,
 };
-use debug_et_diagnostics::dbg;
 // use winnow::{Parser as _};
 use winnow::error::ContextError;
 #[derive(Parser, Debug, Clone)]
@@ -21,13 +19,11 @@ use winnow::error::ContextError;
     long_about = "parse, manipulate, apply contrast algorithms to RGB colors and print in ANSI code"
 )]
 pub struct Cli {
-    #[arg(required = true)]
+    #[arg(default_value = "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World")]
     text: Vec<String>,
 }
 pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
     nodes.fold(Vec::new(), |mut vec, node| {
-        dbg!(&vec, &node);
-
         match node.clone() {
             Node::Reset(_reset) => {
                 vec.push(node.clone());

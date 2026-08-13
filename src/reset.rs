@@ -16,6 +16,6 @@ impl ToAnsiEscSuffix for Reset {
 
 impl Display for Reset {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", self.to_ansi_esc_suffix())
     }
 }

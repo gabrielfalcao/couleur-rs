@@ -1,6 +1,6 @@
 [package]
 name = "couleur-rs"
-version = "0.1.0"
+version = "0.1.1"
 description = "parse, apply contrast algorithms to ANSI RGB colors and print text powered by a simple template language"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
@@ -59,7 +59,6 @@ tracing = { version = "0.1.44", features = ["log", "log-always"], optional = tru
 tracing-subscriber = { version = "0.3.23", features = ["serde", "serde_json", "json", "chrono", "env-filter"], optional = true }
 tracing-appender = { version = "0.2.5", optional = true }
 dirs = { version = "6.0.0", optional = true }
-debug-et-diagnostics = "0.3.1"
 
 
 # cargo add --optional tracing tracing-subscriber tracing-appender
