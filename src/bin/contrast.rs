@@ -36,10 +36,11 @@ impl ParserDispatcher<Error> for Cli {
         self.opts.init();
         let reset = Reset::new(self.opts.prefix()).render();
         let color = self.color;
-        let renderable_color = RenderableColor::new(color);
-        // let text = "#".repeat(6);
-        let colorize = renderable_color.render();
-        println!("{color} => {colorize}{color}{reset}");
+        let colorize_fg = RenderableColor::new(color).with_layer(Layer::FG);
+        let colorize_bg = RenderableColor::new(color).with_layer(Layer::BG);
+
+        println!("{color} => {colorize_fg}{color}{reset} => {colorize_bg}{color}{reset}");
+
         for variant in Contrast::variants() {
             let contrast_color_fg =  variant.apply(color, Layer::FG);
             let renderable_color = RenderableColor::new(contrast_color_fg).with_layer(Layer::FG);
