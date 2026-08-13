@@ -16,8 +16,8 @@ pub enum Node {
     /// End Of input
     EOI,
 }
-impl Node {
-    pub fn render(&self) -> String {
+impl ToAnsiEscSuffix for Node {
+    fn to_ansi_esc_suffix(&self) -> String {
         let rendered = match self {
             Node::Reset(reset) => reset.to_ansi_esc_suffix(),
             Node::Color(color) => color.to_ansi_esc_suffix(),
@@ -33,6 +33,14 @@ impl Node {
         };
         [rendered, Reset::default().to_ansi_esc_suffix()].into_iter().collect::<String>()
     }
+}
+impl AnsiRenderable for Node {
+    fn prefix(&self) -> String {
+        let reset = if let Node::Reset(reset) = self.clone() { reset } else { Reset::default() };
+        format!("{reset}")
+    }
+}
+impl Node {
     pub fn variant(&self) -> String {
         match self {
             Node::Reset(_) => "reset",
@@ -59,23 +67,6 @@ impl Node {
             Node::RenderableColor(_node) => vec![self.clone()],
             Node::Array(nodes) => nodes.to_vec(),
             Node::EOI => Vec::new(),
-        }
-    }
-}
-
-impl ToAnsiEscSuffix for Node {
-    fn to_ansi_esc_suffix(&self) -> String {
-        match self {
-            Node::Reset(node) => node.to_ansi_esc_suffix(), // node.reset(),
-            Node::Color(node) => node.to_ansi_esc_suffix(), // node.color(),
-            Node::Layer(node) => node.to_ansi_esc_suffix(), // node.layer(),
-            Node::Contrast(node) => node.to_ansi_esc_suffix(), // node.contrast(),
-            Node::Text(node) => node.to_string(),           // node.to()_string(),
-            Node::RenderableColor(node) => node.to_ansi_esc_suffix(), // node.to_ansi_esc_suffix(),
-            Node::Array(node) => {
-                node.iter().map(|node| node.to_ansi_esc_suffix()).collect::<String>()
-            }
-            Node::EOI => String::new(),
         }
     }
 }

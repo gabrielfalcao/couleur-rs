@@ -5,7 +5,7 @@ TEST_ROOT		:= $(PROJECT_ROOT)/tests
 # export RUSTFLAGS	:= "-Awarnings"
 
 
-all: cls run-couleur test docs
+all: cls  test build-docs run-couleur
 # all: cls run-couleur test
 
 

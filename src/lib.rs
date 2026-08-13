@@ -115,7 +115,6 @@ pub use templating::{
     parse_rgb_triple,
     parse_triple,
     parse_u8,
-    render,
     render_nodes,
     renderable_color,
     reset,

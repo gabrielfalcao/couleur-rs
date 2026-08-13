@@ -1,5 +1,16 @@
 use clap::Parser;
-use couleur_rs::{Error, Exit, Node, RenderableColor, Result, dispatch::ParserDispatcher, parse};
+use couleur_rs::{
+    AnsiRenderable,
+    Error,
+    Exit,
+    Node,
+    RenderableColor,
+    Result,
+    ToAnsiEscSuffix,
+    dispatch::ParserDispatcher,
+    parse,
+};
+use debug_et_diagnostics::dbg;
 // use winnow::{Parser as _};
 use winnow::error::ContextError;
 #[derive(Parser, Debug, Clone)]
@@ -13,24 +24,56 @@ pub struct Cli {
     #[arg(required = true)]
     text: Vec<String>,
 }
+pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
+    nodes.fold(Vec::new(), |mut vec, node| {
+        dbg!(&vec, &node);
 
+        match node.clone() {
+            Node::Reset(_reset) => {
+                vec.push(node.clone());
+                vec
+            }
+            Node::Color(color) => {
+                vec.push(Node::RenderableColor(RenderableColor::new(color)));
+                vec
+            }
+            Node::Layer(_layer) => {
+                vec.push(node.clone());
+                vec
+            }
+            Node::Contrast(_contrast) => {
+                vec.push(node.clone());
+                vec
+            }
+            Node::Text(_string) => {
+                vec.push(node.clone());
+                vec
+            }
+            Node::RenderableColor(_renderable_color) => {
+                vec.push(node.clone());
+                vec
+            }
+            Node::Array(nodes) => {
+                vec.extend(fold_nodes(nodes.into_iter()));
+                vec
+            }
+            Node::EOI => vec,
+        }
+    })
+}
 impl Cli {
     pub fn text(&self) -> String {
         self.text.join(" ")
     }
     pub fn nodes(&self) -> Result<Vec<Node>> {
         let result = parse::<String, ContextError>(self.text())?;
-        Ok(result
-            .to_vec()
-            .into_iter()
-            .map(|node| {
-                if let Node::Color(color) = &node {
-                    Node::RenderableColor(RenderableColor::from(color))
-                } else {
-                    node
-                }
-            })
-            .collect::<Vec<Node>>())
+        Ok(fold_nodes(result.to_vec().into_iter().map(|node| {
+            if let Node::Color(color) = &node {
+                Node::RenderableColor(RenderableColor::from(color))
+            } else {
+                node
+            }
+        })))
     }
     pub fn parsed(&self) -> Result<Node> {
         let result = parse::<String, ContextError>(self.text())?;
@@ -38,6 +81,7 @@ impl Cli {
     }
     pub fn rendered(&self) -> Result<String> {
         let parsed = self.parsed()?;
+        // let mut result = Vec::<String>::new();
         Ok(parsed.render())
     }
 }
@@ -49,7 +93,7 @@ impl ParserDispatcher<Error> for Cli {
         // let parsed = self.parsed()?;
         // println!("parsed: {parsed:#?}");
         let result = self.rendered()?;
-        println!("rendered: \x1b[{result}");
+        println!("rendered: {result}");
 
         Ok(())
     }
