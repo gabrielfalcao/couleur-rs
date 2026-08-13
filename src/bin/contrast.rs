@@ -1,5 +1,15 @@
 use clap::Parser;
-use couleur_rs::{Color, Contrast, Error, Exit, Layer, Reset, Result, dispatch::ParserDispatcher};
+use couleur_rs::{
+    Color,
+    Contrast,
+    Error,
+    Exit,
+    Layer,
+    Reset,
+    Result,
+    SharedRenderingOpts,
+    dispatch::ParserDispatcher,
+};
 
 #[derive(Parser, Debug, Clone)]
 #[command(
@@ -24,12 +34,17 @@ pub struct Cli {
     /// the command defaults to "Hello World"
     #[arg(default_value = "Hello World")]
     text: Vec<String>,
+
+    #[clap(flatten)]
+    opts: SharedRenderingOpts,
 }
 
 impl Cli {}
 
 impl ParserDispatcher<Error> for Cli {
-    fn dispatch(&self) -> Result<()> {
+    fn dispatch(&mut self) -> Result<()> {
+        self.opts.init();
+        let reset = Reset::new(self.opts.prefix());
         let color = self.color;
         let contrast = self.contrast;
         let (color_layer, contrast_layer) =
@@ -48,11 +63,11 @@ impl ParserDispatcher<Error> for Cli {
 
         let input_text = self.text.join(" ");
         let text_lines = vec![
-            format!("{Reset}color: {color_ansi_normal}{color}{Reset}"),
-            format!("{Reset}contrast: {contrast_ansi_inverted}{contrast_color}{Reset}"),
+            format!("{reset}color: {color_ansi_normal}{color}{reset}"),
+            format!("{reset}contrast: {contrast_ansi_inverted}{contrast_color}{reset}"),
             String::new(),
-            format!("{color_ansi_normal}{contrast_ansi_normal}{input_text}{Reset}"),
-            format!("{color_ansi_inverted}{contrast_ansi_inverted}{input_text}{Reset}"),
+            format!("{color_ansi_normal}{contrast_ansi_normal}{input_text}{reset}"),
+            format!("{color_ansi_inverted}{contrast_ansi_inverted}{input_text}{reset}"),
         ];
 
         let output_text = text_lines.join("\n");

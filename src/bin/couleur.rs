@@ -5,8 +5,11 @@ use couleur_rs::{
     Exit,
     Node,
     RenderableColor,
+    Reset,
     Result,
+    SharedRenderingOpts,
     dispatch::ParserDispatcher,
+    fold_nodes,
     parse,
 };
 // use winnow::{Parser as _};
@@ -21,41 +24,9 @@ use winnow::error::ContextError;
 pub struct Cli {
     #[arg(default_value = "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World")]
     text: Vec<String>,
-}
-pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
-    nodes.fold(Vec::new(), |mut vec, node| {
-        match node.clone() {
-            Node::Reset(_reset) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::Color(color) => {
-                vec.push(Node::RenderableColor(RenderableColor::new(color)));
-                vec
-            }
-            Node::Layer(_layer) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::Contrast(_contrast) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::Text(_string) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::RenderableColor(_renderable_color) => {
-                vec.push(node.clone());
-                vec
-            }
-            Node::Array(nodes) => {
-                vec.extend(fold_nodes(nodes.into_iter()));
-                vec
-            }
-            Node::EOI => vec,
-        }
-    })
+
+    #[clap(flatten)]
+    opts: SharedRenderingOpts,
 }
 impl Cli {
     pub fn text(&self) -> String {
@@ -63,32 +34,40 @@ impl Cli {
     }
     pub fn nodes(&self) -> Result<Vec<Node>> {
         let result = parse::<String, ContextError>(self.text())?;
-        Ok(fold_nodes(result.to_vec().into_iter().map(|node| {
+        let mut nodes = fold_nodes(result.to_vec().into_iter().map(|node| {
             if let Node::Color(color) = &node {
                 Node::RenderableColor(RenderableColor::from(color))
             } else {
                 node
             }
-        })))
-    }
-    pub fn parsed(&self) -> Result<Node> {
-        let result = parse::<String, ContextError>(self.text())?;
-        Ok(result)
+        }));
+        if nodes.is_empty() {
+            return Ok(nodes);
+        }
+        let last_node_does_not_reset_sequence =
+            nodes.last().map(|node| !node.clone().is_reset()).unwrap_or_default();
+        if last_node_does_not_reset_sequence && !self.opts.add_reset_to_last_node() {
+            nodes.push(Node::Reset(Reset::new(self.opts.prefix())));
+        }
+
+        Ok(nodes)
     }
     pub fn rendered(&self) -> Result<String> {
-        let parsed = self.parsed()?;
-        // let mut result = Vec::<String>::new();
-        Ok(parsed.render())
+        let nodes = self.nodes()?;
+        let result = nodes.into_iter().map(|node| node.render()).collect::<String>();
+        Ok(result)
     }
 }
 
 impl ParserDispatcher<Error> for Cli {
-    fn dispatch(&self) -> Result<()> {
+    fn dispatch(&mut self) -> Result<()> {
+        self.opts.init();
         let input = self.text();
         println!("input: {input}");
         // let parsed = self.parsed()?;
         // println!("parsed: {parsed:#?}");
         let result = self.rendered()?;
+        println!("rendered: {result:#?}");
         println!("rendered: {result}");
 
         Ok(())

@@ -22,7 +22,7 @@ pub struct Cli {
 impl Cli {}
 
 impl ParserDispatcher<Error> for Cli {
-    fn dispatch(&self) -> Result<()> {
+    fn dispatch(&mut self) -> Result<()> {
         for path in self.palette_filenames.iter() {
             let lines = path.read_lines()?;
             for line in lines {

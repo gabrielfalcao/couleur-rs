@@ -1,9 +1,9 @@
 use std::{
-    fmt::Display,
+    fmt::{Debug, Display},
     iter::{IntoIterator, Iterator},
 };
 
-use crate::{Prefix, ToAnsiEscSuffix, templating::Node};
+use crate::{Prefix, ToAnsiEscSuffix};
 
 /// The [`AnsiRenderable`] trait allow [`Prefix-aware`] implementors
 /// that implement the [`ToAnsiEscSuffix`] trait in order to produce a
@@ -18,7 +18,7 @@ use crate::{Prefix, ToAnsiEscSuffix, templating::Node};
 /// [`RenderableColor`]: crate::RenderableColor
 /// [`Reset`]: crate::Reset
 /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
-pub trait AnsiRenderable: ToAnsiEscSuffix {
+pub trait AnsiRenderable: ToAnsiEscSuffix + Debug {
     /// This method must return the [`Prefix`] contained in the
     /// implementor, then the [`render()`] method can combine the prefix
     /// with the suffix provided by
@@ -31,13 +31,16 @@ pub trait AnsiRenderable: ToAnsiEscSuffix {
     /// [`ToAnsiEscSuffix::to_ansi_esc_suffix()`]: crate::ToAnsiEscSuffix::to_ansi_esc_suffix
     fn prefix(&self) -> String;
     fn render(&self) -> String {
-        [self.prefix(), self.to_ansi_esc_suffix()].into_iter().collect::<String>()
+        let prefix = self.prefix();
+        let suffix = self.to_ansi_esc_suffix();
+        // dbg!(&self, type_name_of_val(&self), &prefix, &suffix);
+        [prefix, suffix].into_iter().collect::<String>()
     }
 }
 
 impl<T> ToAnsiEscSuffix for (Prefix, T)
 where
-    T: ToAnsiEscSuffix + Clone + Display,
+    T: ToAnsiEscSuffix + Clone + Display + Debug,
 {
     fn to_ansi_esc_suffix(&self) -> String {
         let (_, suffix) = self.clone();
@@ -47,11 +50,10 @@ where
 
 impl<T> AnsiRenderable for (Prefix, T)
 where
-    T: ToAnsiEscSuffix + Clone + Display,
+    T: ToAnsiEscSuffix + Clone + Display + Debug,
 {
     fn prefix(&self) -> String {
         let (prefix, _) = self.clone();
-        format!("prefix")
-
+        format!("{prefix}")
     }
 }

@@ -1,4 +1,3 @@
-use std::fmt::{Debug, Display};
 
 #[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 use winnow::{

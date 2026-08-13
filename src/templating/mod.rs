@@ -1,10 +1,7 @@
 pub mod node;
-pub use node::Node;
-
+pub use node::{Node, fold_nodes};
 pub mod types;
-
 pub use types::{Result, Stream};
-
 pub mod parsers;
 pub use parsers::{
     color,

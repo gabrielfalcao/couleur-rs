@@ -8,7 +8,7 @@ pub struct Cli {}
 impl Cli {}
 
 impl ParserDispatcher<Error> for Cli {
-    fn dispatch(&self) -> Result<()> {
+    fn dispatch(&mut self) -> Result<()> {
         let info = Terminal::info();
         let yaml = serde_yaml::to_string(&info)?;
         if info.is_valid {
