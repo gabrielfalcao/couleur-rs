@@ -64,6 +64,8 @@ use std::sync::LazyLock;
 
 use lazy_mut::LazyMut;
 
+#[doc(hidden)] pub mod cli;
+#[doc(hidden)] pub use cli::SharedRenderingOpts;
 #[doc(hidden)] pub mod cmp;
 #[doc(hidden)] pub use cmp::{max_rgb, min_rgb};
 #[doc(hidden)] pub mod color;
@@ -144,7 +146,10 @@ pub use util::{
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
 pub static PREFIX: LazyMut<PrefixContainer> = LazyMut::new(|| PrefixContainer::default());
 
-pub fn set_runtime_prefix(prefix: Prefix) {
+pub fn set_runtime_prefix<T: Into<Prefix>>(prefix: T) {
     let mut current = PREFIX.get_mut();
-    current.set(prefix);
+    current.set(prefix.into());
+}
+pub fn get_runtime_prefix() -> Prefix {
+    crate::PREFIX.get_mut().get()
 }

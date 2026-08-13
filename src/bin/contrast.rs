@@ -8,6 +8,7 @@ use couleur_rs::{
     Prefix,
     Reset,
     Result,
+    SharedRenderingOpts,
     dispatch::ParserDispatcher,
     set_runtime_prefix,
 };
@@ -31,21 +32,21 @@ pub struct Cli {
     #[arg(short, long, help = "prints the color in the background and contrast in foreground")]
     invert_layer: bool,
 
-    #[arg(short, long, help = "the ANSI sequence prefix")]
-    prefix: Option<Prefix>,
-
     /// text used in the output, optionally provide your own or else
     /// the command defaults to "Hello World"
     #[arg(default_value = "Hello World")]
     text: Vec<String>,
+
+    #[clap(flatten)]
+    opts: SharedRenderingOpts,
 }
 
 impl Cli {}
 
 impl ParserDispatcher<Error> for Cli {
-    fn dispatch(&self) -> Result<()> {
-        set_runtime_prefix(self.prefix.unwrap_or_default());
-        let reset = Reset::new(self.prefix);
+    fn dispatch(&mut self) -> Result<()> {
+        self.opts.init();
+        let reset = Reset::new(self.opts.prefix());
         let color = self.color;
         let contrast = self.contrast;
         let (color_layer, contrast_layer) =

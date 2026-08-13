@@ -3,7 +3,16 @@ use std::fmt::{Debug, Display};
 use serde::{Deserialize, Serialize};
 
 // use winnow::Parser;
-use crate::{AnsiRenderable, Color, Contrast, Layer, RenderableColor, Reset, ToAnsiEscSuffix};
+use crate::{
+    AnsiRenderable,
+    Color,
+    Contrast,
+    Layer,
+    RenderableColor,
+    Reset,
+    ToAnsiEscSuffix,
+    get_runtime_prefix,
+};
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Node {
     Reset(Reset),
@@ -17,12 +26,12 @@ pub enum Node {
     /// End Of input
     EOI,
 }
+
 impl Debug for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", serde_yaml::to_string(&self).unwrap())
     }
 }
-
 impl ToAnsiEscSuffix for Node {
     fn to_ansi_esc_suffix(&self) -> String {
         let rendered = match self {
@@ -41,18 +50,79 @@ impl ToAnsiEscSuffix for Node {
         [rendered].into_iter().collect::<String>()
     }
 }
-
 impl AnsiRenderable for Node {
     fn prefix(&self) -> String {
         if let Node::Text(_) = self.clone() {
             String::new()
         } else {
-            crate::PREFIX.get_mut().get().to_string()
+            get_runtime_prefix().to_string()
         }
     }
 }
-
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum NodeType {
+    Reset,
+    Color,
+    Layer,
+    Contrast,
+    Text,
+    RenderableColor,
+    Array,
+    EOI,
+}
+impl NodeType {
+    pub fn name(&self) -> &'static str {
+        match self {
+            NodeType::Reset => "reset",
+            NodeType::Color => "color",
+            NodeType::Layer => "layer",
+            NodeType::Contrast => "contrast",
+            NodeType::Text => "text",
+            NodeType::RenderableColor => "renderable_color",
+            NodeType::Array => "array",
+            NodeType::EOI => "eoi",
+        }
+    }
+}
 impl Node {
+    pub fn node_type(&self) -> NodeType {
+        match self {
+            Node::Reset(_) => NodeType::Reset,
+            Node::Color(_) => NodeType::Color,
+            Node::Layer(_) => NodeType::Layer,
+            Node::Contrast(_) => NodeType::Contrast,
+            Node::Text(_) => NodeType::Text,
+            Node::RenderableColor(_) => NodeType::RenderableColor,
+            Node::Array(_) => NodeType::Array,
+            Node::Array(_) => NodeType::Array,
+            Node::EOI => NodeType::EOI,
+        }
+    }
+    pub fn is_reset(self) -> bool {
+        self.node_type() == NodeType::Reset
+    }
+    pub fn is_color(self) -> bool {
+        self.node_type() == NodeType::Color
+    }
+    pub fn is_layer(self) -> bool {
+        self.node_type() == NodeType::Layer
+    }
+    pub fn is_contrast(self) -> bool {
+        self.node_type() == NodeType::Contrast
+    }
+    pub fn is_text(self) -> bool {
+        self.node_type() == NodeType::Text
+    }
+    pub fn is_renderablecolor(&self) -> bool {
+        self.node_type() == NodeType::RenderableColor
+    }
+    pub fn is_array(self) -> bool {
+        self.node_type() == NodeType::Array
+    }
+    pub fn is_eoi(&self) -> bool {
+        self.node_type() == NodeType::EOI
+    }
+
     pub fn variant(&self) -> String {
         match self {
             Node::Reset(_) => "reset",
@@ -82,7 +152,6 @@ impl Node {
         }
     }
 }
-
 impl Display for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
@@ -118,21 +187,18 @@ impl Display for Node {
         )
     }
 }
-
 impl From<Reset> for Node {
     fn from(reset: Reset) -> Node {
         Node::Reset(reset)
     }
 }
-
 impl From<Color> for Node {
     fn from(color: Color) -> Node {
         Node::Color(color)
     }
 }
-
 pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
-    nodes.fold(Vec::new(), |mut vec, node| match node.clone() {
+    let mut nodes = nodes.fold(Vec::new(), |mut vec, node| match node.clone() {
         Node::Reset(_reset) => {
             vec.push(node.clone());
             vec
@@ -162,9 +228,9 @@ pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
             vec
         }
         Node::EOI => vec,
-    })
+    });
+    nodes
 }
-
 #[cfg(test)]
 mod node_tests {
     use crate::{
@@ -177,12 +243,10 @@ mod node_tests {
         Result,
         ToAnsiEscSuffix,
     };
-
     #[test]
     fn test_renderable_color() -> Result<()> {
         let color = RenderableColor::new("#F9C22B".parse::<Color>()?);
         let node = Node::RenderableColor(color);
-
         assert_eq!(color.to_ansi_esc_suffix(), "38;2;249;194;43m");
         assert_eq!(node.to_ansi_esc_suffix(), "38;2;249;194;43m");
         assert_eq!(color.render(), "\x1b[38;2;249;194;43m");
@@ -193,7 +257,6 @@ mod node_tests {
     fn test_text() -> Result<()> {
         let text = format!("hello world");
         let node = Node::Text(text.clone());
-
         assert_eq!(&text, "hello world");
         assert_eq!(node.to_ansi_esc_suffix(), "hello world");
         assert_eq!(node.render(), "hello world");

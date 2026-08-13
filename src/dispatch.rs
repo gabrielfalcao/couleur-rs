@@ -2,16 +2,16 @@ pub trait ParserDispatcher<E: std::error::Error>: clap::Parser
 where
     crate::Exit: From<std::result::Result<(), E>>,
 {
-    fn dispatch(&self) -> Result<(), E>;
-    fn dispatch_cargo(&self) -> Result<(), E> {
+    fn dispatch(&mut self) -> Result<(), E>;
+    fn dispatch_cargo(&mut self) -> Result<(), E> {
         Ok(self.dispatch()?)
     }
     fn run() -> Result<(), E> {
         let (args, is_cargo) = Self::args();
         if is_cargo {
-            Self::dispatch_cargo(&Self::parse_from(&args))?;
+            Self::dispatch_cargo(&mut Self::parse_from(&args))?;
         } else {
-            Self::dispatch(&Self::parse_from(&args))?;
+            Self::dispatch(&mut Self::parse_from(&args))?;
         }
         Ok(())
     }
@@ -25,9 +25,9 @@ where
     }
 }
 pub trait SubcommandDispatcher<E: std::error::Error>: clap::Subcommand {
-    fn dispatch(&self) -> Result<(), E>;
+    fn dispatch(&mut self) -> Result<(), E>;
 }
 
 pub trait ArgsDispatcher<E: std::error::Error>: clap::Args {
-    fn dispatch(&self) -> Result<(), E>;
+    fn dispatch(&mut self) -> Result<(), E>;
 }
