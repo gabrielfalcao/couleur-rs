@@ -7,7 +7,7 @@ use winnow::{
 };
 
 use super::*;
-use crate::{Color, Contrast, Layer, Stream};
+use crate::{Color, Contrast, Layer, RenderableColor, Stream};
 
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -30,7 +30,7 @@ pub fn parse_contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, St
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<Color, E> {
+) -> ModalResult<RenderableColor, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     preceded("color:", alt((parse_rgb_triple, preceded("#", parse_rgb_hex), parse_rgb_hex)))

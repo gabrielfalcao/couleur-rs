@@ -24,12 +24,12 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
     }
     alt((
         renderable_color::<E>.map(Node::RenderableColor), // RenderableColor
-        reset::<E>.map(Node::Reset),                      // Reset
-        color::<E>.map(Node::Color),                      // Color
-        layer::<E>.map(Node::Layer),                      // Layer
-        contrast::<E>.map(Node::Contrast),                // Contrast
-        text::<E>.map(Node::Text),                        // Text
-        nodes::<E>,                                       // Array
+        // reset::<E>.map(Node::Reset),                      // Reset
+        // color::<E>.map(Node::Color),                      // Color
+        // layer::<E>.map(Node::Layer),                      // Layer
+        // contrast::<E>.map(Node::Contrast),                // Contrast
+        text::<E>.map(Node::Text), // Text
+        nodes::<E>,                // Array
     ))
     .parse_next(input)
 }
@@ -47,7 +47,7 @@ pub fn reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<Color, E> {
+) -> ModalResult<RenderableColor, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     preceded('{', terminated(within_curly_braces::parse_color::<E>, '}'))
@@ -71,24 +71,26 @@ pub fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, 
                     preceded("@", within_curly_braces::parse_layer::<E>),
                     preceded("%", within_curly_braces::parse_contrast::<E>),
                 )
-                    .map(|(color, layer, contrast): (Color, Layer, Contrast)| {
-                        RenderableColor::new(color).with_layer(layer).with_contrast(contrast)
-                    }),
+                    .map(
+                        |(color, layer, contrast): (RenderableColor, Layer, Contrast)| {
+                            color.with_layer(layer).with_contrast(contrast)
+                        },
+                    ),
                 (
                     // Color + Layer
                     within_curly_braces::parse_color::<E>,
                     preceded("@", within_curly_braces::parse_layer::<E>),
                 )
-                    .map(|(color, layer): (Color, Layer)| {
-                        RenderableColor::new(color).with_layer(layer)
+                    .map(|(color, layer): (RenderableColor, Layer)| {
+                        color.with_layer(layer)
                     }),
                 (
                     // Color + Contrast
                     within_curly_braces::parse_color::<E>,
                     preceded("%", within_curly_braces::parse_contrast::<E>),
                 )
-                    .map(|(color, contrast): (Color, Contrast)| {
-                        RenderableColor::new(color).with_contrast(contrast)
+                    .map(|(color, contrast): (RenderableColor, Contrast)| {
+                        color.with_contrast(contrast)
                     }),
             )),
             '}',
@@ -143,23 +145,25 @@ pub fn parse_u8<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrConte
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<Color, E> {
+) -> ModalResult<RenderableColor, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     repeat(0..5, hex_digit1)
         .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
         .context(StrContext::Expected("6 hex digits".into()))
-        .map(|string| string.parse::<Color>().expect("6 hex digits"))
+        .map(|string| RenderableColor::new(string.parse::<Color>().expect("6 hex digits")))
         .parse_next(input)
 }
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_rgb_triple<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<Color, E> {
+) -> ModalResult<RenderableColor, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     parse_triple
-        .map(|(red, green, blue)| Color::from_triple(red.into(), green.into(), blue.into()))
+        .map(|(red, green, blue)| {
+            RenderableColor::new(Color::from_triple(red.into(), green.into(), blue.into()))
+        })
         .parse_next(input)
 }
 #[cfg_attr(feature = "tracing", instrument)]
