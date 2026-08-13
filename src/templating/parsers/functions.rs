@@ -169,6 +169,7 @@ pub fn nodes<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>
 
     let initial_input = input.to_string();
     if initial_input.len() == 0 {
+        #[cfg(any(feature = "logging", feature = "tracing"))]
         log::error!("empty input");
         return Ok(Node::EOI);
     }

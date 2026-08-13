@@ -260,7 +260,6 @@ fn test_render_string() -> Result<()> {
 
 #[test]
 fn test_parse_contrast_of_color() -> Result<()> {
-    global_setup();
     assert_eq!(
         nodes::<ContextError>.parse_peek("{contrasted_color:#676633:web}Hello World{reset}"),
         Ok((

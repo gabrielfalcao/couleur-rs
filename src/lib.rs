@@ -105,7 +105,7 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(hidden)] pub mod traits;
 #[doc(inline)] pub use traits::{AnsiRenderable, ToAnsiEscSuffix};
 #[doc(hidden)] pub mod templating;
-#[cfg(any(feature = "tracing", feature = "logging"))]
+
 #[doc(hidden)]
 pub use templating::{
     Node,
@@ -140,8 +140,12 @@ pub use util::{
     deserialize_string_to_str,
     serialize_static_str_to_string,
 };
+
+// #[cfg(any(feature = "tracing", feature = "logging"))]
 #[doc(hidden)] pub mod logging;
-#[doc(hidden)] pub use logging::{setup_logging, setup_tracing};
+#[doc(inline)]
+pub use logging::{get_log_path, local_data_dir, setup_logging, setup_tracing};
+
 #[doc(hidden)] pub mod testing;
 #[doc(hidden)] pub use testing::global_setup;
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
