@@ -17,12 +17,12 @@ fn test_contrast_functions() -> Result<()> {
 
     assert_eq!(lightest_pink.get_adobe_complementary().to_hex_string(), "#B0E2FD");
     assert_eq!(lightest_pink.get_accessible_contrast().to_hex_string(), "#000000");
-    assert_eq!(lightest_pink.get_binary_contrast().to_hex_string(), "#FFFFFF");
+    assert_eq!(lightest_pink.get_binary_contrast().to_hex_string(), "#000000");
     assert_eq!(lightest_pink.get_msb_invert_contrast().to_hex_string(), "#7D4B30");
 
     assert_eq!(darkest_pink.get_adobe_complementary().to_hex_string(), "#1C8342");
     assert_eq!(darkest_pink.get_accessible_contrast().to_hex_string(), "#FFFFFF");
-    assert_eq!(darkest_pink.get_binary_contrast().to_hex_string(), "#000000");
+    assert_eq!(darkest_pink.get_binary_contrast().to_hex_string(), "#FFFFFF");
     assert_eq!(darkest_pink.get_msb_invert_contrast().to_hex_string(), "#039CDD");
     Ok(())
 }
@@ -68,9 +68,9 @@ fn test_parse_and_get_binary_contrast() -> Result<()> {
     let darkest: Color = "#0B5E65".parse()?;
     assert_eq!(
         lightest.get_binary_contrast(),
-        Color::from_triple(255.into(), 255.into(), 255.into())
+        Color::from_triple(0.into(), 0.into(), 0.into())
     );
-    assert_eq!(darkest.get_binary_contrast(), Color::from_triple(0.into(), 0.into(), 0.into()));
+    assert_eq!(darkest.get_binary_contrast(), Color::from_triple(255.into(), 255.into(), 255.into()));
     Ok(())
 }
 
