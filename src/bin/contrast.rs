@@ -5,9 +5,11 @@ use couleur_rs::{
     Error,
     Exit,
     Layer,
+    RenderingOptions,
+    RenderableColor,
+    AnsiRenderable,
     Reset,
     Result,
-    RenderingOptions,
     dispatch::ParserDispatcher,
 };
 
@@ -16,24 +18,12 @@ use couleur_rs::{
     author,
     version,
     about,
-    long_about = "command-line tool to explore the variants of contrast against a color"
+    long_about = "displays the given color followed by each contrast algorithm available in the tool"
 )]
 pub struct Cli {
-    /// which contrast to use in the background (or foreground if `--invert-layer` is active)
-    #[arg()]
-    contrast: Contrast,
-
     /// an RGB color to use in the foreground (or background if `--invert-layer` is active)
     #[arg()]
     color: Color,
-
-    #[arg(short, long, help = "prints the color in the background and contrast in foreground")]
-    invert_layer: bool,
-
-    /// text used in the output, optionally provide your own or else
-    /// the command defaults to "Hello World"
-    #[arg(default_value = "Hello World")]
-    text: Vec<String>,
 
     #[clap(flatten)]
     opts: RenderingOptions,
@@ -44,34 +34,32 @@ impl Cli {}
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&mut self) -> Result<()> {
         self.opts.init();
-        let reset = Reset::new(self.opts.prefix());
+        let reset = Reset::new(self.opts.prefix()).render();
         let color = self.color;
-        let contrast = self.contrast;
-        let (color_layer, contrast_layer) =
-            if !self.invert_layer { (Layer::FG, Layer::BG) } else { (Layer::BG, Layer::FG) };
-        let contrast_color = contrast.apply(color, contrast_layer);
+        let renderable_color = RenderableColor::new(color);
+        // let text = "#".repeat(6);
+        let colorize = renderable_color.render();
+        println!("{color} => {colorize}{color}{reset}");
+        for variant in Contrast::variants() {
+            let contrast_color_fg =  variant.apply(color, Layer::FG);
+            let renderable_color = RenderableColor::new(contrast_color_fg).with_layer(Layer::FG);
+            let colorize_fg = renderable_color.render();
 
-        // first let's ansi-render the color and contrast color in the
-        // layers defined by command-line flags
-        let color_ansi_normal = color.to_ansi(color_layer);
-        let contrast_ansi_normal = contrast_color.to_ansi(contrast_layer);
+            let contrast_color_bg =  variant.apply(color, Layer::BG);
+            let renderable_color = RenderableColor::new(contrast_color_bg).with_layer(Layer::BG);
+            let colorize_bg = renderable_color.render();
 
-        // now let's invert the color layers so we can make the output
-        // occasionaly contrast with itself
-        let color_ansi_inverted = color.to_ansi(contrast_layer);
-        let contrast_ansi_inverted = contrast_color.to_ansi(color_layer);
+            let contrast_color_fg_bg =  variant.apply(contrast_color_fg, Layer::BG);
+            let renderable_color = RenderableColor::new(contrast_color_fg_bg).with_layer(Layer::BG);
+            let colorize_fg_bg = renderable_color.render();
 
-        let input_text = self.text.join(" ");
-        let text_lines = vec![
-            format!("{reset}color: {color_ansi_normal}{color}{reset}"),
-            format!("{reset}contrast: {contrast_ansi_inverted}{contrast_color}{reset}"),
-            String::new(),
-            format!("{color_ansi_normal}{contrast_ansi_normal}{input_text}{reset}"),
-            format!("{color_ansi_inverted}{contrast_ansi_inverted}{input_text}{reset}"),
-        ];
+            let contrast_color_bg_fg =  variant.apply(contrast_color_bg, Layer::FG);
+            let renderable_color = RenderableColor::new(contrast_color_bg_fg).with_layer(Layer::FG);
+            let colorize_bg_fg = renderable_color.render();
 
-        let output_text = text_lines.join("\n");
-        println!("{output_text}");
+            let name = variant.variant_name_snake();
+            println!("{contrast_color_fg} => {colorize_fg}{colorize_fg_bg}{contrast_color_fg}{reset} => {colorize_bg}{colorize_bg_fg}{name}{reset}");
+        }
         Ok(())
     }
 }
