@@ -32,7 +32,7 @@ impl Display for Contrast {
 impl Contrast {
     pub fn apply(&self, color: Color, layer: Layer) -> Color {
         match self {
-            Contrast::None => layer.default_color(),
+            Contrast::None => layer.inverted().default_color(),
             Contrast::Read => color.get_accessible_contrast(),
             Contrast::HighBit => color.get_binary_contrast(),
             Contrast::Harmonic => color.get_adobe_complementary(),
