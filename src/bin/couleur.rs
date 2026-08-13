@@ -20,17 +20,25 @@ impl Cli {
     }
     pub fn nodes(&self) -> Result<Vec<Node>> {
         let result = parse::<String, ContextError>(self.text())?;
-        Ok(result
-            .to_vec()
-            .into_iter()
-            .map(|node| {
-                if let Node::Color(color) = &node {
-                    Node::RenderableColor(RenderableColor::from(color))
-                } else {
-                    node
+        Ok(result.to_vec().into_iter().fold(Vec::<Node>::new(), |vec, node| {
+            let mut vec = vec.clone();
+            vec.push(match node {
+                Node::Color(color) => Node::RenderableColor(RenderableColor::from(color)),
+                Node::RenderableColor(color) => Node::RenderableColor(color),
+                Node::Text(text) => Node::Text(text),
+                other => {
+                    other
+                    // if vec.len() > 0 {
+                    //     match vec[vec.len()-1] {
+                    //         Node::RenderableColor(renderable) => {
+                    //
+                    //         }
+                    //     }
+                    // }
                 }
-            })
-            .collect::<Vec<Node>>())
+            });
+            vec
+        }))
     }
     pub fn parsed(&self) -> Result<Node> {
         let result = parse::<String, ContextError>(self.text())?;

@@ -4,6 +4,7 @@
 //! ## Parsing Colors
 //!
 //! ```rust
+//! use couleur_rs::{Node, Color};
 //! let dark_pink = "#C32454".parse::<Color>()?;
 //! let darkest_pink = "#831C5D".parse::<Color>()?;
 //! let light_pink = "#FCA790".parse::<Color>()?;
@@ -35,6 +36,7 @@
 //!
 //! ## Template Language
 //! ```rust
+//! use couleur_rs::{Node, Color, parse};
 //! parse::<&str, ContextError>("{color:#1EBC73}Hello{color:#1EBC73%contrast:web} World");
 //! Ok(Node::Array(vec![
 //!     Node::Color("#1EBC73".parse::<couleur_rs::Color>().unwrap()),

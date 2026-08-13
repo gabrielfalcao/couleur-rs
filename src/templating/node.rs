@@ -17,6 +17,18 @@ pub enum Node {
     EOI,
 }
 impl Node {
+    pub fn is_renderable_color(&self) -> bool {
+        match self {
+            Node::Reset(_node) => false,
+            Node::Color(_node) => false,
+            Node::Layer(_node) => false,
+            Node::Contrast(_node) => false,
+            Node::Text(_node) => false,
+            Node::RenderableColor(_node) => true,
+            Node::Array(nodes) => false,
+            Node::EOI => false,
+        }
+    }
     pub fn render(&self) -> String {
         let rendered = match self {
             Node::Reset(reset) => reset.to_ansi_esc_suffix(),
