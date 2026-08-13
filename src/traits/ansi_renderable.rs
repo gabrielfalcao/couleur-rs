@@ -1,10 +1,9 @@
 use std::{
-    any::type_name_of_val,
     fmt::{Debug, Display},
     iter::{IntoIterator, Iterator},
 };
 
-use crate::{Prefix, ToAnsiEscSuffix, templating::Node};
+use crate::{Prefix, ToAnsiEscSuffix};
 
 /// The [`AnsiRenderable`] trait allow [`Prefix-aware`] implementors
 /// that implement the [`ToAnsiEscSuffix`] trait in order to produce a

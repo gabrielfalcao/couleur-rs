@@ -1,4 +1,4 @@
-use std::fmt::{Display, Debug};
+use std::fmt::{Debug, Display};
 
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
@@ -111,9 +111,7 @@ mod tests {
     use crate::{
         AnsiRenderable,
         Color,
-        Error,
         Layer,
-        Node,
         RenderableColor,
         Result,
         ToAnsiEscSuffix,

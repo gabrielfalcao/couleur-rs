@@ -4,16 +4,13 @@ use couleur_rs::{
     Error,
     Exit,
     Node,
-    Prefix,
     RenderableColor,
     Reset,
     Result,
     SharedRenderingOpts,
     dispatch::ParserDispatcher,
     fold_nodes,
-    get_runtime_prefix,
     parse,
-    set_runtime_prefix,
 };
 // use winnow::{Parser as _};
 use winnow::error::ContextError;

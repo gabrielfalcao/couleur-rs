@@ -4,7 +4,7 @@ use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
 
-use crate::{ToAnsiEscSuffix, AnsiRenderable};
+use crate::{AnsiRenderable, ToAnsiEscSuffix};
 
 /// Represents an [ANSI Escape
 /// character](https://en.wikipedia.org/wiki/Escape_character#ASCII_escape_character)

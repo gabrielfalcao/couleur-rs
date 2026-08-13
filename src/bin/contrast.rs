@@ -5,12 +5,10 @@ use couleur_rs::{
     Error,
     Exit,
     Layer,
-    Prefix,
     Reset,
     Result,
     SharedRenderingOpts,
     dispatch::ParserDispatcher,
-    set_runtime_prefix,
 };
 
 #[derive(Parser, Debug, Clone)]

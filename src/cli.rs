@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use crate::{Prefix, Reset, set_runtime_prefix};
+use crate::{Prefix, set_runtime_prefix};
 
 #[derive(Parser, Debug, Clone)]
 pub struct SharedRenderingOpts {

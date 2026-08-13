@@ -94,7 +94,6 @@ impl Node {
             Node::Text(_) => NodeType::Text,
             Node::RenderableColor(_) => NodeType::RenderableColor,
             Node::Array(_) => NodeType::Array,
-            Node::Array(_) => NodeType::Array,
             Node::EOI => NodeType::EOI,
         }
     }
@@ -198,7 +197,7 @@ impl From<Color> for Node {
     }
 }
 pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
-    let mut nodes = nodes.fold(Vec::new(), |mut vec, node| match node.clone() {
+    let nodes = nodes.fold(Vec::new(), |mut vec, node| match node.clone() {
         Node::Reset(_reset) => {
             vec.push(node.clone());
             vec
@@ -236,8 +235,6 @@ mod node_tests {
     use crate::{
         AnsiRenderable,
         Color,
-        Error,
-        Layer,
         Node,
         Prefix,
         RenderableColor,
