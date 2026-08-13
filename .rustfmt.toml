@@ -1,13 +1,13 @@
 # https://rust-lang.github.io/rustfmt/?version=main&search=
 max_width =  100
 
-array_width =  100
-attr_fn_like_width =  100
-chain_width =  100
-comment_width =  100
-doc_comment_code_block_width =  100
-fn_call_width =  100
-inline_attribute_width =  100
+array_width =  88
+attr_fn_like_width =  88
+chain_width =  88
+comment_width =  88
+doc_comment_code_block_width =  88
+fn_call_width =  88
+inline_attribute_width =  88
 
 single_line_if_else_max_width =  88
 single_line_let_else_max_width =  88

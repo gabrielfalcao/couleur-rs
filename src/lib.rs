@@ -34,7 +34,9 @@
 //!
 //! ## Template Language
 //! ```rust
-//! parse::<&str, ContextError>("{color:#1EBC73}Hello{color:#1EBC73%contrast:web} World");
+//! parse::<&str, ContextError>(
+//!     "{color:#1EBC73}Hello{color:#1EBC73%contrast:web} World",
+//! );
 //! Ok(Node::Array(vec![
 //!     Node::Color("#1EBC73".parse::<couleur_rs::Color>().unwrap()),
 //!     Node::Text("Hello".to_string()),
@@ -72,7 +74,8 @@ use lazy_mut::LazyMut;
 #[doc(hidden)] pub mod contrast;
 #[doc(inline)] pub use contrast::Contrast;
 #[doc(hidden)] pub mod dispatch;
-#[doc(hidden)] pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
+#[doc(hidden)]
+pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
 #[doc(hidden)] pub mod errors;
 #[doc(hidden)] pub use errors::Exit;
 #[doc(inline)]

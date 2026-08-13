@@ -3,15 +3,8 @@ use std::fmt::{Debug, Display};
 use serde::{Deserialize, Serialize};
 
 // use winnow::Parser;
-use crate::{
-    AnsiRenderable,
-    Color,
-    RenderableColor,
-    Reset,
-    ToAnsiEscSuffix,
-    get_runtime_prefix,
-};
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+use crate::{AnsiRenderable, Color, RenderableColor, Reset, ToAnsiEscSuffix, get_runtime_prefix};
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Node {
     Reset(Reset),
     Color(Color),
@@ -23,11 +16,6 @@ pub enum Node {
     EOI,
 }
 
-impl Debug for Node {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", serde_yaml::to_string(&self).unwrap())
-    }
-}
 impl ToAnsiEscSuffix for Node {
     fn to_ansi_esc_suffix(&self) -> String {
         let rendered = match self {

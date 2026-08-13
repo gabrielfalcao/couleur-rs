@@ -19,7 +19,7 @@ use crate::{AnsiRenderable, Color, Contrast, Layer, Prefix, ToAnsiEscSuffix};
 /// [`Reset`]: crate::Reset
 /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
 
-#[derive(Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Copy, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RenderableColor {
     pub color: Color,
     pub prefix: Option<Prefix>,
@@ -80,11 +80,6 @@ impl Display for RenderableColor {
         write!(f, "{}", self.render_all())
     }
 }
-impl Debug for RenderableColor {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", serde_yaml::to_string(&self).unwrap())
-    }
-}
 impl ToAnsiEscSuffix for RenderableColor {
     fn to_ansi_esc_suffix(&self) -> String {
         let layer = self.layer.unwrap_or_default().to_ansi_esc_suffix();
@@ -108,14 +103,7 @@ impl AnsiRenderable for RenderableColor {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        AnsiRenderable,
-        Color,
-        Layer,
-        RenderableColor,
-        Result,
-        ToAnsiEscSuffix,
-    };
+    use crate::{AnsiRenderable, Color, Layer, RenderableColor, Result, ToAnsiEscSuffix};
 
     #[test]
     fn test_render_color_defaults_to_foreground_layer() -> Result<()> {

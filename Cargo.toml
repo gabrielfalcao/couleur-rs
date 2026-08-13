@@ -49,7 +49,6 @@ supports-color = "3.0.2"
 terminal-colorsaurus = "1.0.3"
 thiserror = "2.0.18"
 serde_json = "1.0.150"
-serde_yaml = "0.9.34"
 winnow = "1.0.4"
 log = { version = "0.4.33", features = ["serde", "kv", "kv_serde"], optional = true }
 fern = { version = "0.7.1", features = ["chrono", "colored"], optional = true }
@@ -60,6 +59,7 @@ tracing-subscriber = { version = "0.3.23", features = ["serde", "serde_json", "j
 tracing-appender = { version = "0.2.5", optional = true }
 dirs = { version = "6.0.0", optional = true }
 lazy_mut = "0.2.1"
+serde_yaml = "0.9.34"
 
 
 # cargo add --optional tracing tracing-subscriber tracing-appender

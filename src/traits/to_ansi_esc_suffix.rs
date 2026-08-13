@@ -1,5 +1,3 @@
-
-
 /// The [`ToAnsiEscSuffix`] trait provides a way for elements of this
 /// crate to produce a string which represents one element of an [ANSI
 /// escape sequence](https://en.wikipedia.org/wiki/ANSI_escape_code)

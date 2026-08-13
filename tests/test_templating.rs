@@ -8,12 +8,12 @@ use couleur_rs::{
     RenderableColor,
     Reset,
 };
+use pretty_assertions::assert_eq;
 use winnow::{
     Parser,
     error::{ContextError, ErrMode, StrContext},
 };
 type Result<T> = std::result::Result<T, ContextError>;
-
 
 #[test]
 fn test_parse_u8() {
@@ -186,43 +186,53 @@ fn test_parse_renderable_color_with_layer_and_contrast() -> Result<()> {
 #[test]
 fn test_parse_renderable_color_with_layer_contrast_and_text() -> Result<()> {
     assert_eq!(
-        nodes::<ContextError>.parse_peek("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+        nodes::<ContextError>
+            .parse_peek("{color:#C32454}Hello{color:#C32454%contrast:web} World{reset}"),
         Ok((
             "",
             Node::Array(vec![
-                Node::Color("#E83B3B".parse::<couleur_rs::Color>().unwrap()),
+                Node::Color("#C32454".parse::<couleur_rs::Color>().unwrap()),
                 Node::Text("Hello".to_string()),
                 Node::RenderableColor(
-                    RenderableColor::new("#E83B3B".parse::<couleur_rs::Color>().unwrap())
+                    RenderableColor::new("#C32454".parse::<couleur_rs::Color>().unwrap())
                         .with_contrast(Contrast::Web)
                 ),
-                Node::Text(" World".to_string())
+                Node::Text(" World".to_string()),
+                Node::Reset(Default::default())
             ])
         ))
     );
     assert_eq!(
-        parse::<&str, ContextError>("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+        parse::<&str, ContextError>(
+            "{color:#C32454}Hello{color:#C32454%contrast:web} World{reset}"
+        ),
         Ok(Node::Array(vec![
-            Node::Color("#E83B3B".parse::<couleur_rs::Color>().unwrap()),
+            Node::Color("#C32454".parse::<couleur_rs::Color>().unwrap()),
             Node::Text("Hello".to_string()),
             Node::RenderableColor(
-                RenderableColor::new("#E83B3B".parse::<couleur_rs::Color>().unwrap())
+                RenderableColor::new("#C32454".parse::<couleur_rs::Color>().unwrap())
                     .with_contrast(Contrast::Web)
             ),
-            Node::Text(" World".to_string())
+            Node::Text(" World".to_string()),
+            Node::Reset(Default::default())
         ]))
     );
 
     Ok(())
 }
+
 #[test]
 fn test_render_string() -> Result<()> {
     assert_eq!(
-        nodes::<ContextError>.parse_peek("{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"),
+        nodes::<ContextError>
+            .parse_peek("{color:#E83B3B@layer:bg}Hello{color:#E83B3B%contrast:web} World"),
         Ok((
             "",
             Node::Array(vec![
-                Node::Color("#E83B3B".parse::<couleur_rs::Color>().unwrap()),
+                Node::RenderableColor(
+                    RenderableColor::new("#E83B3B".parse::<couleur_rs::Color>().unwrap())
+                        .with_layer(Layer::BG)
+                ),
                 Node::Text("Hello".to_string()),
                 Node::RenderableColor(
                     RenderableColor::new("#E83B3B".parse::<couleur_rs::Color>().unwrap())
