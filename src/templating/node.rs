@@ -6,8 +6,6 @@ use serde::{Deserialize, Serialize};
 use crate::{
     AnsiRenderable,
     Color,
-    Contrast,
-    Layer,
     RenderableColor,
     Reset,
     ToAnsiEscSuffix,
@@ -17,8 +15,6 @@ use crate::{
 pub enum Node {
     Reset(Reset),
     Color(Color),
-    Layer(Layer),
-    Contrast(Contrast),
     Text(String),
     RenderableColor(RenderableColor),
     /// Sequence of Nodes
@@ -37,8 +33,6 @@ impl ToAnsiEscSuffix for Node {
         let rendered = match self {
             Node::Reset(reset) => reset.to_ansi_esc_suffix(),
             Node::Color(color) => color.to_ansi_esc_suffix(),
-            Node::Layer(layer) => layer.to_ansi_esc_suffix(),
-            Node::Contrast(contrast) => contrast.to_ansi_esc_suffix(),
             Node::Text(string) => string.to_string(),
             Node::RenderableColor(renderable_color) => renderable_color.to_ansi_esc_suffix(),
             // Node::Array(array_of_value) => array_of_value.to_ansi_esc_suffix(),
@@ -63,8 +57,6 @@ impl AnsiRenderable for Node {
 pub enum NodeType {
     Reset,
     Color,
-    Layer,
-    Contrast,
     Text,
     RenderableColor,
     Array,
@@ -75,8 +67,6 @@ impl NodeType {
         match self {
             NodeType::Reset => "reset",
             NodeType::Color => "color",
-            NodeType::Layer => "layer",
-            NodeType::Contrast => "contrast",
             NodeType::Text => "text",
             NodeType::RenderableColor => "renderable_color",
             NodeType::Array => "array",
@@ -89,8 +79,6 @@ impl Node {
         match self {
             Node::Reset(_) => NodeType::Reset,
             Node::Color(_) => NodeType::Color,
-            Node::Layer(_) => NodeType::Layer,
-            Node::Contrast(_) => NodeType::Contrast,
             Node::Text(_) => NodeType::Text,
             Node::RenderableColor(_) => NodeType::RenderableColor,
             Node::Array(_) => NodeType::Array,
@@ -102,12 +90,6 @@ impl Node {
     }
     pub fn is_color(self) -> bool {
         self.node_type() == NodeType::Color
-    }
-    pub fn is_layer(self) -> bool {
-        self.node_type() == NodeType::Layer
-    }
-    pub fn is_contrast(self) -> bool {
-        self.node_type() == NodeType::Contrast
     }
     pub fn is_text(self) -> bool {
         self.node_type() == NodeType::Text
@@ -126,8 +108,6 @@ impl Node {
         match self {
             Node::Reset(_) => "reset",
             Node::Color(_) => "color",
-            Node::Layer(_) => "layer",
-            Node::Contrast(_) => "contrast",
             Node::Text(_) => "string",
             Node::RenderableColor(_) => "renderable_color",
             Node::Array(_) => "array_of_value",
@@ -142,8 +122,6 @@ impl Node {
         match self {
             Node::Reset(_node) => vec![self.clone()],
             Node::Color(_node) => vec![self.clone()],
-            Node::Layer(_node) => vec![self.clone()],
-            Node::Contrast(_node) => vec![self.clone()],
             Node::Text(_node) => vec![self.clone()],
             Node::RenderableColor(_node) => vec![self.clone()],
             Node::Array(nodes) => nodes.to_vec(),
@@ -163,12 +141,6 @@ impl Display for Node {
                 }
                 Node::Color(color) => {
                     color.to_ansi_esc_suffix()
-                }
-                Node::Layer(layer) => {
-                    layer.to_ansi_esc_suffix()
-                }
-                Node::Contrast(contrast) => {
-                    contrast.to_ansi_esc_suffix()
                 }
                 Node::Text(text) => {
                     text.to_string()
@@ -204,14 +176,6 @@ pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
         }
         Node::Color(color) => {
             vec.push(Node::RenderableColor(RenderableColor::new(color)));
-            vec
-        }
-        Node::Layer(_layer) => {
-            vec.push(node.clone());
-            vec
-        }
-        Node::Contrast(_contrast) => {
-            vec.push(node.clone());
             vec
         }
         Node::Text(_string) => {

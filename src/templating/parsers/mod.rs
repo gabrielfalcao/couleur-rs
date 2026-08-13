@@ -1,8 +1,6 @@
 pub mod functions;
 pub use functions::{
     color,
-    contrast,
-    layer,
     nodes,
     parse,
     parse_node,

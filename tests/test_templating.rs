@@ -137,32 +137,6 @@ fn test_parse_node_array_color_text_and_reset() -> Result<()> {
     Ok(())
 }
 #[test]
-fn test_parse_layer_bg() -> Result<()> {
-    assert_eq!(
-        parse_node::<ContextError>.parse_peek("{layer:bg}"),
-        Ok(("", Node::Layer(Layer::BG)))
-    );
-    assert_eq!(
-        nodes::<ContextError>.parse_peek("{layer:bg}"),
-        Ok(("", Node::Array(vec![Node::Layer(Layer::BG)])))
-    );
-
-    Ok(())
-}
-#[test]
-fn test_parse_layer_fg() -> Result<()> {
-    assert_eq!(
-        parse_node::<ContextError>.parse_peek("{layer:fg}"),
-        Ok(("", Node::Layer(Layer::FG)))
-    );
-    assert_eq!(
-        nodes::<ContextError>.parse_peek("{layer:fg}"),
-        Ok(("", Node::Array(vec![Node::Layer(Layer::FG)])))
-    );
-
-    Ok(())
-}
-#[test]
 fn test_parse_renderable_color_with_layer() -> Result<()> {
     assert_eq!(
         parse_node::<ContextError>.parse_peek("{color:#F9C22B@layer:bg}"),
@@ -178,71 +152,6 @@ fn test_parse_renderable_color_with_layer() -> Result<()> {
     Ok(())
 }
 
-#[test]
-fn test_parse_contrast_none() -> Result<()> {
-    assert_eq!(
-        parse_node::<ContextError>.parse_peek("{contrast:none}"),
-        Ok(("", Node::Contrast(Contrast::None)))
-    );
-    assert_eq!(
-        nodes::<ContextError>.parse_peek("{contrast:none}"),
-        Ok(("", Node::Array(vec![Node::Contrast(Contrast::None)])))
-    );
-
-    Ok(())
-}
-#[test]
-fn test_parse_contrast_read() -> Result<()> {
-    assert_eq!(
-        parse_node::<ContextError>.parse_peek("{contrast:read}"),
-        Ok(("", Node::Contrast(Contrast::Read)))
-    );
-    assert_eq!(
-        nodes::<ContextError>.parse_peek("{contrast:read}"),
-        Ok(("", Node::Array(vec![Node::Contrast(Contrast::Read)])))
-    );
-
-    Ok(())
-}
-#[test]
-fn test_parse_contrast_high_bit() -> Result<()> {
-    assert_eq!(
-        parse_node::<ContextError>.parse_peek("{contrast:high_bit}"),
-        Ok(("", Node::Contrast(Contrast::HighBit)))
-    );
-    assert_eq!(
-        nodes::<ContextError>.parse_peek("{contrast:high_bit}"),
-        Ok(("", Node::Array(vec![Node::Contrast(Contrast::HighBit)])))
-    );
-
-    Ok(())
-}
-#[test]
-fn test_parse_contrast_harmonic() -> Result<()> {
-    assert_eq!(
-        parse_node::<ContextError>.parse_peek("{contrast:harmonic}"),
-        Ok(("", Node::Contrast(Contrast::Harmonic)))
-    );
-    assert_eq!(
-        nodes::<ContextError>.parse_peek("{contrast:harmonic}"),
-        Ok(("", Node::Array(vec![Node::Contrast(Contrast::Harmonic)])))
-    );
-
-    Ok(())
-}
-#[test]
-fn test_parse_contrast_web() -> Result<()> {
-    assert_eq!(
-        parse_node::<ContextError>.parse_peek("{contrast:web}"),
-        Ok(("", Node::Contrast(Contrast::Web)))
-    );
-    assert_eq!(
-        nodes::<ContextError>.parse_peek("{contrast:web}"),
-        Ok(("", Node::Array(vec![Node::Contrast(Contrast::Web)])))
-    );
-
-    Ok(())
-}
 #[test]
 fn test_parse_renderable_color_with_contrast() -> Result<()> {
     assert_eq!(

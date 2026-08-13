@@ -1,4 +1,3 @@
-
 #[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 use winnow::{
     ModalResult,
@@ -25,8 +24,6 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         renderable_color::<E>.map(Node::RenderableColor), // RenderableColor
         reset::<E>.map(Node::Reset),                      // Reset
         color::<E>.map(Node::Color),                      // Color
-        layer::<E>.map(Node::Layer),                      // Layer
-        contrast::<E>.map(Node::Contrast),                // Contrast
         text::<E>.map(Node::Text),                        // Text
         nodes::<E>,                                       // Array
     ))
@@ -95,28 +92,6 @@ pub fn renderable_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, 
     )
     .context(StrContext::Expected("rgb color".into()))
     .parse_next(input)
-}
-#[cfg_attr(feature = "tracing", instrument)]
-pub fn layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
-    input: &mut Stream<'i>,
-) -> ModalResult<Layer, E> {
-    #[cfg(feature = "tracing")]
-    span!(Level::TRACE, "input", input);
-
-    preceded('{', terminated(within_curly_braces::parse_layer::<E>, "}"))
-        .context(StrContext::Expected("ansi rendering contrast".into()))
-        .parse_next(input)
-}
-#[cfg_attr(feature = "tracing", instrument)]
-pub fn contrast<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
-    input: &mut Stream<'i>,
-) -> ModalResult<Contrast, E> {
-    #[cfg(feature = "tracing")]
-    span!(Level::TRACE, "input", input);
-
-    preceded('{', terminated(within_curly_braces::parse_contrast::<E>, '}'))
-        .context(StrContext::Expected("ansi rendering contrast".into()))
-        .parse_next(input)
 }
 
 #[cfg_attr(feature = "tracing", instrument)]
