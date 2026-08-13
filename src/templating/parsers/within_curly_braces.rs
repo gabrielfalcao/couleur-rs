@@ -59,10 +59,9 @@ pub fn parse_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCo
             "contrasted_color:",
             separated_pair(rgb_color_declaration::<E>, ":", contrast_alternatives::<E>)
                 .map(|(color, contrast): (Color, Contrast)| contrast.of(color))
-                .parse_next(input),
         ),
-        preceded("color:", rgb_color_declaration::<E>).parse_next(input),
-    ))
+        preceded("color:", rgb_color_declaration::<E>)
+    )).parse_next(input)
 }
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(

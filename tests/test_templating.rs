@@ -262,14 +262,11 @@ fn test_render_string() -> Result<()> {
 fn test_parse_contrast_of_color() -> Result<()> {
     global_setup();
     assert_eq!(
-        nodes::<ContextError>.parse_peek("{contrasted_color:#C32454:web}Hello World{reset}"),
+        nodes::<ContextError>.parse_peek("{contrasted_color:#676633:web}Hello World{reset}"),
         Ok((
             "",
             Node::Array(vec![
-                Node::RenderableColor(
-                    RenderableColor::new("#C32454".parse::<couleur_rs::Color>().unwrap())
-                        .with_contrast(Contrast::Web)
-                ),
+                Node::Color("#E7E6B3".parse::<couleur_rs::Color>().unwrap()),
                 Node::Text("Hello World".to_string()),
                 Node::Reset(Default::default())
             ])
