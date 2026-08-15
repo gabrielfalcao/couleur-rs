@@ -1,5 +1,4 @@
 // use couleur_rs::{Error, Result};
-use couleur_rs::templating::*;
 use couleur_rs::{
     Color,
     Contrast,
@@ -8,6 +7,7 @@ use couleur_rs::{
     RenderableColor,
     Reset,
 };
+use couleur_rs::{global_setup, templating::*};
 use pretty_assertions::assert_eq;
 use winnow::{
     Parser,
@@ -253,6 +253,23 @@ fn test_render_string() -> Result<()> {
             ),
             Node::Text(" World".to_string())
         ]))
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_contrast_of_color() -> Result<()> {
+    assert_eq!(
+        nodes::<ContextError>.parse_peek("{contrasted_color:#676633:web}Hello World{reset}"),
+        Ok((
+            "",
+            Node::Array(vec![
+                Node::Color("#E7E6B3".parse::<couleur_rs::Color>().unwrap()),
+                Node::Text("Hello World".to_string()),
+                Node::Reset(Default::default())
+            ])
+        ))
     );
 
     Ok(())

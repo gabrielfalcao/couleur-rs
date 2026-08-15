@@ -34,7 +34,16 @@ pub fn setup_logging() -> Result<()> {
 pub fn setup_logging() -> Result<()> {
     Ok(())
 }
+
+pub fn local_data_dir() -> Path {
+    dirs::data_local_dir()
+        .map(|data_local_dir| Path::from(data_local_dir))
+        .unwrap_or_else(|| Path::cwd())
+        .join("couleur_rs")
+}
+
 #[cfg(any(feature = "logging", feature = "tracing"))]
+#[cfg(not(feature = "trace-test-debug"))]
 pub fn get_log_path() -> Result<Path> {
     let log_path =
         if let Ok(log_path) = env::var("COULEUR_LOG_PATH").map(|log_path| Path::new(log_path)) {
@@ -43,8 +52,7 @@ pub fn get_log_path() -> Result<Path> {
             let log_dir = env::var("COULEUR_LOG_DIR")
                 .ok()
                 .map(|couleur_log_dir| Path::new(couleur_log_dir))
-                .or_else(|| dirs::data_local_dir().map(|data_local_dir| Path::from(data_local_dir)))
-                .unwrap_or_else(|| Path::cwd());
+                .unwrap_or_else(|| local_data_dir());
             let log_filename =
                 env::var("COULEUR_LOG_FILENAME").ok().unwrap_or_else(|| "couleur.log".to_string());
 
@@ -60,6 +68,16 @@ pub fn get_log_path() -> Result<Path> {
         log_path.delete()?;
     }
     Ok(log_path)
+}
+#[cfg(any(feature = "logging", feature = "tracing"))]
+#[cfg(feature = "trace-test-debug")]
+pub fn get_log_path() -> Result<Path> {
+    Ok(Path::new(env!("CARGO_MANIFEST_DIR")).join("couleur.log"))
+}
+
+#[cfg(not(any(feature = "logging", feature = "tracing")))]
+pub fn get_log_path() -> Result<Path> {
+    Ok(Path::new(env!("CARGO_MANIFEST_DIR")).join("couleur.log"))
 }
 
 #[cfg(feature = "tracing")]
