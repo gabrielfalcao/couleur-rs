@@ -18,7 +18,8 @@ contrast: cls
 run: cls run-couleur
 
 run-couleur: cls
-	cargo run -q --all-features --bin couleur -- "{color:#E83B3B}Hello{color:#E83B3B%contrast:web} World"
+	cargo run -q --all-features --bin couleur -- "{contrasted_color:#239063:web%contrast:harmonic}Hello{color:#239063%contrast:web} World"
+	cargo run -q --all-features --bin couleur -- "{color:#FB6B1D}Hello{color:#FB6B1D%contrast:web} World"
 	cargo run -q --all-features --bin couleur -- --escape "{color:#E83B3B}Hello{color:#E83B3B@layer:bg%contrast:web} World"
 
 run-contrast: cls
