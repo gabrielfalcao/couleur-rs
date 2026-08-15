@@ -5,7 +5,7 @@ TEST_ROOT		:= $(PROJECT_ROOT)/tests
 # export RUSTFLAGS	:= "-Awarnings"
 
 
-all: cls  test build-docs run-couleur
+all: cls  test-all build-docs run-couleur
 # all: cls run-couleur test
 
 
@@ -34,6 +34,8 @@ run-contrast: cls
 	cargo run -q --all-features -q -- --contrast web  --bg 333333 --detect test foreground
 	cargo run -q --all-features -q -- --contrast web --fg FFCC00  --bg 333333 --detect test foreground
 	cargo run -q --all-features -q -- --contrast web --bg 333333 --detect test foreground
+
+test-all: cls test nextest
 
 test: cls
 	cargo test --all-features

@@ -1,6 +1,7 @@
 #[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 use winnow::{
     ModalResult,
+    LocatingSlice,
     Parser,
     ascii::{dec_uint, hex_digit1},
     combinator::{alt, preceded, repeat, terminated},
@@ -156,7 +157,7 @@ pub fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 ) -> ModalResult<&'i str, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
-    take_while(1.., &[' ', '\t', '\r', '\n'])
+    take_while(0.., &[' ', '\t', '\r', '\n'])
         .context(StrContext::Expected("white space".into()))
         .parse_next(input)
 }

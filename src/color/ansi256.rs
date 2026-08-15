@@ -1,78 +1,43 @@
-use std::{
-    fmt,
-    hash::{Hash, Hasher},
-    ops::Deref,
-    str::FromStr,
-};
+use crate::U8Triple;
 
-use serde::{
-    Deserialize,
-    Deserializer,
-    Serialize,
-    Serializer,
-    de::{Error as SerdeError, Visitor},
-};
-use thiserror::Error as ThisError;
+pub fn convert_ansi256_to_rgb_triple(ansi: u8) -> U8Triple {
+    match ansi {
+        0 => (0u8, 0u8, 0u8),
+        1 => (205u8, 0u8, 0u8),
+        2 => (0u8, 205u8, 0u8),
+        3 => (205u8, 205u8, 0u8),
+        4 => (0u8, 0u8, 205u8),
+        5 => (205u8, 0u8, 205u8),
+        6 => (0u8, 205u8, 205u8),
+        7 => (229u8, 229u8, 229u8),
+        8 => (127u8, 127u8, 127u8),
+        9 => (255u8, 0u8, 0u8),
+        10 => (0u8, 255u8, 0u8),
+        11 => (255u8, 255u8, 0u8),
+        12 => (0u8, 0u8, 255u8),
+        13 => (255u8, 0u8, 255u8),
+        14 => (0u8, 255u8, 255u8),
+        15 => (255u8, 255u8, 255u8),
 
-use super::{BLACK, WHITE};
-use crate::{
-    Contrast,
-    Error,
-    HEX_RGB_REGEX,
-    Layer,
-    Prefix,
-    Result,
-    Terminal,
-    ToAnsiEscSuffix,
-    Value,
-    max_rgb,
-    min_rgb,
-};
+        // 6x6x6 Color Cube (16-231)
+        16..=231 => {
+            let code = ansi - 16u8;
+            let r = code / 36u8;
+            let g = (code / 6u8) % 6u8;
+            let b = code % 6u8;
 
-#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq)]
-pub struct Ansi256Color(
-    pub code: u8,
-);
-impl Ansi256Color {
-    pub fn new<T: Copy + Into<u8>>(code: T) -> Result<Ansi256Color> {
-        Ok(Ansi256Color {
-            code: Into::<u8>::into(code)
-        })
-    }
+            // Map the 0-5 range into 0-255.
+            // 0 -> 0, 1 -> 51, 2 -> 102, 3 -> 153, 4 -> 204, 5 -> 255
+            let map = |val| if val == 0 { 0u8 } else { val * 40u8 + 15u8 };
 
-}
-}
-impl std::fmt::Display for Ansi256Color {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.to_rgb_hex())
-    }
-}
+            (map(r), map(g), map(b))
+        }
 
-impl Hash for Ansi256Color {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.to_triple().hash(state);
-        self.to_rgb_hex().hash(state);
-    }
-}
-impl ToAnsiEscSuffix for Ansi256Color {
-    fn to_ansi_esc_suffix(&self) -> String {
-        let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
-        let color = triple.join(";");
-        format!("2;{color}m")
-    }
-}
-
-
-#[cfg(test)]
-mod test {
-    use crate::{Ansi256Color, Result};
-    #[test]
-    fn test_to_string() -> Result<()> {
-        Ok(())
-    }
-    #[test]
-    fn test_get_binary_luminance() -> Result<()> {
-
-        Ok(())
+        // Grayscale Ramp (232-255)
+        // 24 steps, starting slightly brighter than black (8) to slightly darker than white (238)
+        232..=255 => {
+            let level = 8u8 + (ansi - 232u8) * 10u8;
+            (level, level, level)
+        }
     }
 }

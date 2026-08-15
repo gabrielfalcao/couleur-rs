@@ -24,7 +24,9 @@ use crate::{
     Result,
     Terminal,
     ToAnsiEscSuffix,
+    RgbTriple,
     Value,
+    convert_ansi256_to_rgb_triple,
     max_rgb,
     min_rgb,
 };
@@ -45,7 +47,10 @@ impl Color {
     pub fn new<T: Copy + Into<f32>>(red: T, green: T, blue: T) -> Result<Color> {
         Ok(Color(Value::new(red.into())?, Value::new(green.into())?, Value::new(blue.into())?))
     }
-
+    pub fn from_ansi256<T: Into<u8>>(color: T) -> Result<Color> {
+        let (red, green, blue) = convert_ansi256_to_rgb_triple(color.into());
+        Ok(Color::new(red, green, blue)?)
+    }
     /// queries the [`Terminal`] for the background color,
     /// defaulting to [`BLACK`] in case
     /// [`Terminal::background_color`] fails.
@@ -359,6 +364,12 @@ impl From<RgbTriple> for Color {
         Color(Value::from(triple.red()), Value::from(triple.green()), Value::from(triple.blue()))
     }
 }
+impl From<u8> for Color {
+    fn from(ansi_256: u8) -> Color {
+        let (red, green, blue) = convert_ansi256_to_rgb_triple(ansi_256);
+        Color::new(red, green, blue).expect("Color from tuple of 3 u8 numbers")
+    }
+}
 
 /// Represents a failure to parse a [`Color`] from strings.
 ///
@@ -499,43 +510,6 @@ impl<'de> Deserialize<'de> for Color {
 //  <<< ///     SSSSS   EEEEEEE  RR   RR  DDDDDD   EEEEEEE >>>
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// U8Triple is a type alias which represents a tuple containing the three RGB bands as [`u8`]
-pub type U8Triple = (u8, u8, u8);
-
-/// RgbTriple is an intermediary container which holds each of the
-/// three bands of an RGB color as [`u8`] values.
-#[derive(Clone, Copy, Debug, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
-pub struct RgbTriple(u8, u8, u8);
-
-impl RgbTriple {
-    pub fn red(&self) -> u8 {
-        self.0
-    }
-
-    pub fn green(&self) -> u8 {
-        self.1
-    }
-
-    pub fn blue(&self) -> u8 {
-        self.2
-    }
-
-    pub fn into_triple(self) -> U8Triple {
-        (self.red(), self.green(), self.blue())
-    }
-}
-impl From<U8Triple> for RgbTriple {
-    fn from(input: U8Triple) -> RgbTriple {
-        let (red, green, blue) = input;
-        RgbTriple(red, green, blue)
-    }
-}
-
-impl Into<U8Triple> for RgbTriple {
-    fn into(self) -> U8Triple {
-        self.into_triple()
-    }
-}
 
 #[cfg(test)]
 mod test {
@@ -568,6 +542,12 @@ mod test {
         assert_eq!(color_cddf6c.is_dark(), false);
         assert_eq!(color_cddf6c.is_light(), true);
 
+        Ok(())
+    }
+    #[test]
+    fn test_convert_from_ansi_256() -> Result<()> {
+        let color = "A4F681".parse::<Color>()?;
+        assert_eq!(color.to_string(), "#A4F681");
         Ok(())
     }
 }

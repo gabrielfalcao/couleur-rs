@@ -70,8 +70,19 @@ use lazy_mut::LazyMut;
 #[doc(hidden)] pub use cli::RenderingOptions;
 #[doc(hidden)] pub mod cmp;
 #[doc(hidden)] pub use cmp::{max_rgb, min_rgb};
+
 #[doc(hidden)] pub mod color;
-#[doc(inline)] pub use color::{BLACK, Color, RGBParseError, RgbTriple, U8Triple, WHITE};
+#[doc(inline)]
+pub use color::{
+    BLACK,
+    Color,
+    RGBParseError,
+    RgbTriple,
+    U8Triple,
+    WHITE,
+    convert_ansi256_to_rgb_triple,
+};
+
 #[doc(hidden)] pub mod contrast;
 #[doc(inline)] pub use contrast::Contrast;
 #[doc(hidden)] pub mod dispatch;
