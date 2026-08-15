@@ -1,6 +1,8 @@
-pub mod functions;
+#[doc(hidden)] pub mod functions;
+#[doc(inline)]
 pub use functions::{
     color,
+    invalid_syntax,
     nodes,
     parse,
     parse_node,
@@ -12,8 +14,18 @@ pub use functions::{
     renderable_color,
     reset,
     text,
+    parse_within_curly_braces,
     ws,
 };
 
-pub mod within_curly_braces;
-pub use within_curly_braces::{parse_color, parse_contrast, parse_layer};
+#[doc(hidden)] pub mod within_curly_braces;
+#[doc(inline)]
+pub use within_curly_braces::{
+    contrast_alternatives,
+    parse_color,
+    parse_contrast,
+    parse_layer,
+    parse_renderable_color,
+    parse_reset,
+    rgb_color_declaration,
+};

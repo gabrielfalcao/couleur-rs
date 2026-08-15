@@ -7,7 +7,7 @@ use winnow::{
 };
 
 use super::*;
-use crate::{Color, Contrast, Layer, Stream};
+use crate::{Color, Contrast, Layer, RenderableColor, Reset, Stream};
 
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn rgb_color_declaration<
@@ -71,4 +71,49 @@ pub fn parse_layer<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCo
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
     preceded("layer:", alt(("bg".value(Layer::BG), "fg".value(Layer::FG)))).parse_next(input)
+}
+#[cfg_attr(feature = "tracing", instrument)]
+pub fn parse_reset<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Reset, E> {
+    #[cfg(feature = "tracing")]
+    span!(Level::TRACE, "input", input);
+    "reset".value(Reset::default()).parse_next(input)
+}
+#[cfg_attr(feature = "tracing", instrument)]
+pub fn parse_renderable_color<
+    'i,
+    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>,
+>(
+    input: &mut Stream<'i>,
+) -> ModalResult<RenderableColor, E> {
+    #[cfg(feature = "tracing")]
+    span!(Level::TRACE, "input", input);
+    alt((
+        (
+            // Color + Layer + Contrast
+            within_curly_braces::parse_color::<E>,
+            preceded("@", within_curly_braces::parse_layer::<E>),
+            preceded("%", within_curly_braces::parse_contrast::<E>),
+        )
+            .map(|(color, layer, contrast): (Color, Layer, Contrast)| {
+                RenderableColor::new(color).with_layer(layer).with_contrast(contrast)
+            }),
+        (
+            // Color + Layer
+            within_curly_braces::parse_color::<E>,
+            preceded("@", within_curly_braces::parse_layer::<E>),
+        )
+            .map(|(color, layer): (Color, Layer)| RenderableColor::new(color).with_layer(layer)),
+        (
+            // Color + Contrast
+            within_curly_braces::parse_color::<E>,
+            preceded("%", within_curly_braces::parse_contrast::<E>),
+        )
+            .map(|(color, contrast): (Color, Contrast)| {
+                RenderableColor::new(color).with_contrast(contrast)
+            }),
+    ))
+    .context(StrContext::Expected("rgb color".into()))
+    .parse_next(input)
 }

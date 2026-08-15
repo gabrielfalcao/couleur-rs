@@ -9,7 +9,20 @@ use winnow::{
 };
 
 use super::within_curly_braces;
-use crate::{Color, Contrast, Error, Layer, Node, RenderableColor, Reset, Stream, ToAnsiEscSuffix};
+use crate::{
+    Color,
+    Contrast,
+    Error,
+    Layer,
+    Node,
+    RenderableColor,
+    Reset,
+    Stream,
+    ToAnsiEscSuffix,
+    parse_color,
+    parse_renderable_color,
+    parse_reset,
+};
 
 #[cfg_attr(feature = "tracing", instrument)]
 pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
@@ -21,13 +34,11 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         return Err(ErrMode::Cut(ParserError::from_input(input)));
     }
     alt((
-        renderable_color::<E>.map(Node::RenderableColor), // RenderableColor
-        reset::<E>.map(Node::Reset),                      // Reset
-        color::<E>.map(Node::Color),                      // Color
-        text::<E>.map(Node::Text),                        // Text
+        parse_within_curly_braces::<E>,
+        text::<E>.map(Node::Text), // Text
         // invalid_syntax::<E>.map(String::from).map(Node::InvalidSyntax), // InvalidSyntax
         |input: &mut &'i str| Err(ErrMode::Cut(ParserError::from_input(input))), // invalidSyntax
-        nodes::<E>,                                       // Array
+        nodes::<E>,                                                              // Array
     ))
     .parse_next(input)
 }
@@ -220,17 +231,22 @@ pub fn render_nodes<T: ToAnsiEscSuffix, I: Iterator<Item = T>>(items: I) -> Stri
     p
 }
 
-// pub fn render<
-//     'i,
-//     I: Iterator<Item = T>,
-//     E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext> + Debug + Display,
-//     T: ToAnsiEscSuffix + Display,
-// >(
-//     input: T,
-// ) -> crate::Result<String> {
-//     let input = input.to_string().leak();
-//     let resolve = nodes::<ContextError>
-//         .parse(input)
-//         .map_err(|error| Error::TemplateParseError(error.to_string()))?;
-//     Ok(resolve.render())
-// }
+#[cfg_attr(feature = "tracing", instrument)]
+pub fn parse_within_curly_braces<
+    'i,
+    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>,
+>(
+    input: &mut Stream<'i>,
+) -> ModalResult<Node, E> {
+    #[cfg(feature = "tracing")]
+    span!(Level::TRACE, "input", input);
+    preceded(
+        '{',
+        cut_err(alt((
+            parse_renderable_color::<E>.map(Node::RenderableColor),
+            parse_reset::<E>.map(Node::Reset),
+            parse_color::<E>.map(Node::Color),
+        ))),
+    )
+    .parse_next(input)
+}

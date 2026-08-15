@@ -4,9 +4,11 @@ pub mod types;
 pub use types::{Result, Stream};
 
 #[doc(hidden)] pub mod parsers;
+
 #[doc(inline)]
 pub use parsers::functions::{
     color,
+    invalid_syntax,
     nodes,
     parse,
     parse_node,
@@ -20,5 +22,13 @@ pub use parsers::functions::{
     text,
     ws,
 };
-#[doc(inline)]
-pub use parsers::within_curly_braces::{parse_color, parse_contrast, parse_layer};
+pub use parsers::within_curly_braces;
+pub use parsers::within_curly_braces::{
+    contrast_alternatives,
+    parse_color,
+    parse_contrast,
+    parse_layer,
+    parse_renderable_color,
+    parse_reset,
+    rgb_color_declaration,
+};

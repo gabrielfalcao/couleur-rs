@@ -106,19 +106,22 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(inline)] pub use traits::{AnsiRenderable, ToAnsiEscSuffix};
 #[doc(hidden)] pub mod templating;
 
-#[doc(hidden)]
+#[doc(inline)]
 pub use templating::{
     Node,
-    Result as ParsingResult,
     Stream,
     color,
+    contrast_alternatives,
     fold_nodes,
+    invalid_syntax,
     nodes,
     parse,
     parse_color,
     parse_contrast,
     parse_layer,
     parse_node,
+    parse_renderable_color,
+    parse_reset,
     parse_rgb_hex,
     parse_rgb_triple,
     parse_triple,
@@ -126,7 +129,9 @@ pub use templating::{
     render_nodes,
     renderable_color,
     reset,
+    rgb_color_declaration,
     text,
+    within_curly_braces,
     ws,
 };
 
