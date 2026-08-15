@@ -81,7 +81,7 @@ pub fn leading_zeros_exp<T: Copy + Deref<Target = f32>>(float: T) -> i32 {
     let float_fract_leading_zeroes = leading_zeros_fractional(&(float as f64));
     let _float_fract = float.fract().copysign(1.0_f32);
     let mut exp = float.fract();
-    for _ in 0..float_fract_leading_zeroes {
+    for _ in 1..float_fract_leading_zeroes {
         exp = exp * 10.0;
     }
     assert!(exp >= 0.0, "expected {exp} to be >= 0.0");

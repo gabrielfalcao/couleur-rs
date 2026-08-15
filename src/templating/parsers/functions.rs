@@ -100,7 +100,7 @@ pub fn text<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>
 ) -> ModalResult<String, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
-    alt((take_while(0.., |c: char| c != '{').context(StrContext::Expected("text".into())),))
+    alt((take_while(1.., |c: char| c != '{').context(StrContext::Expected("text".into())),))
         .parse_next(input)
         .map(|s| s.to_string())
 }
@@ -120,7 +120,7 @@ pub fn parse_rgb_hex<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, Str
 ) -> ModalResult<Color, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
-    repeat(0..5, hex_digit1)
+    repeat(1..5, hex_digit1)
         .fold(|| String::new(), |acc, item| format!("{acc}{item}"))
         .context(StrContext::Expected("6 hex digits".into()))
         .map(|string| string.parse::<Color>().expect("6 hex digits"))
@@ -156,7 +156,7 @@ pub fn ws<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 ) -> ModalResult<&'i str, E> {
     #[cfg(feature = "tracing")]
     span!(Level::TRACE, "input", input);
-    take_while(0.., &[' ', '\t', '\r', '\n'])
+    take_while(1.., &[' ', '\t', '\r', '\n'])
         .context(StrContext::Expected("white space".into()))
         .parse_next(input)
 }

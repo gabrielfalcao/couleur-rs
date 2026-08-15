@@ -107,7 +107,7 @@ impl Value {
         let self_fract_leading_zeroes = self.leading_zeros_fractional();
         let _self_fract = self.fract().copysign(1.0_f32);
         let mut exp = self.fract();
-        for _ in 0..self_fract_leading_zeroes {
+        for _ in 1..self_fract_leading_zeroes {
             exp = exp * 10.0;
         }
         assert!(exp >= 0.0, "expected {exp} to be >= 0.0");
