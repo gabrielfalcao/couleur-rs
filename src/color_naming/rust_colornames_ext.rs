@@ -1,134 +1,134 @@
-pub const COLORI_NAMES: [(&'static str, (u8, u8, u8)); 132] = [
-    ("slate_gray", (112, 128, 144)),             // black
-    ("light_slate_gray", (119, 136, 153)),       // black
-    ("black", (0, 0, 0)),                        // black
-    ("dim_gray", (105, 105, 105)),               // black
-    ("dim_grey", (105, 105, 105)),               // black
-    ("gray", (128, 128, 128)),                   // black
-    ("grey", (128, 128, 128)),                   // black
-    ("dark_gray", (169, 169, 169)),              // black
-    ("dark_grey", (169, 169, 169)),              // black
-    ("silver", (192, 192, 192)),                 // black
-    ("light_gray", (211, 211, 211)),             // black
-    ("light_grey", (211, 211, 211)),             // black
-    ("gainsboro", (220, 220, 220)),              // black
-    ("powder_blue", (176, 224, 230)),            // blue
-    ("cadet_blue", (95, 158, 160)),              // blue
-    ("steel_blue", (70, 130, 180)),              // blue
-    ("cornflower_blue", (100, 149, 237)),        // blue
-    ("deep_sky_blue", (0, 191, 255)),            // blue
-    ("dodger_blue", (30, 144, 255)),             // blue
-    ("light_blue", (173, 216, 230)),             // blue
-    ("sky_blue", (135, 206, 235)),               // blue
-    ("light_steel_blue", (176, 196, 222)),       // blue
-    ("light_sky_blue", (135, 206, 250)),         // blue
-    ("midnight_blue", (25, 25, 112)),            // blue
-    ("navy", (0, 0, 128)),                       // blue
-    ("dark_blue", (0, 0, 139)),                  // blue
-    ("medium_blue", (0, 0, 205)),                // blue
-    ("blue", (0, 0, 255)),                       // blue
-    ("royal_blue", (65, 105, 225)),              // blue
-    ("azure", (240, 255, 255)),                  // blue
-    ("saddle_brown", (139, 69, 19)),             // brown
-    ("sienna", (160, 82, 45)),                   // brown
-    ("chocolate", (210, 105, 30)),               // brown
-    ("peru", (205, 133, 63)),                    // brown
-    ("sandy_brown", (244, 164, 96)),             // brown
-    ("burly_wood", (222, 184, 135)),             // brown
-    ("tan", (210, 180, 140)),                    // brown
-    ("rosy_brown", (188, 143, 143)),             // brown
-    ("medium_aqua_marine", (102, 205, 170)),     // cyan
-    ("medium_sea_green", (60, 179, 113)),        // cyan
-    ("light_sea_green", (32, 178, 170)),         // cyan
-    ("dark_slate_gray", (47, 79, 79)),           // cyan
-    ("teal", (0, 128, 128)),                     // cyan
-    ("dark_cyan", (0, 139, 139)),                // cyan
-    ("aqua", (0, 255, 255)),                     // cyan
-    ("cyan", (0, 255, 255)),                     // cyan
-    ("light_cyan", (224, 255, 255)),             // cyan
-    ("dark_turquoise", (0, 206, 209)),           // cyan
-    ("turquoise", (64, 224, 208)),               // cyan
-    ("medium_turquoise", (72, 209, 204)),        // cyan
-    ("pale_turquoise", (175, 238, 238)),         // cyan
-    ("aqua_marine", (127, 255, 212)),            // cyan
-    ("honeydew", (240, 255, 240)),               // cyan
-    ("yellow_green", (154, 205, 50)),            // green
-    ("dark_olive_green", (85, 107, 47)),         // green
-    ("olive_drab", (107, 142, 35)),              // green
-    ("lawn_green", (124, 252, 0)),               // green
-    ("chart_reuse", (127, 255, 0)),              // green
-    ("green_yellow", (173, 255, 47)),            // green
-    ("dark_green", (0, 100, 0)),                 // green
-    ("green", (0, 128, 0)),                      // green
-    ("forest_green", (34, 139, 34)),             // green
-    ("lime", (0, 255, 0)),                       // green
-    ("lime_green", (50, 205, 50)),               // green
-    ("light_green", (144, 238, 144)),            // green
-    ("pale_green", (152, 251, 152)),             // green
-    ("dark_sea_green", (143, 188, 143)),         // green
-    ("medium_spring_green", (0, 250, 154)),      // green
-    ("spring_green", (0, 255, 127)),             // green
-    ("sea_green", (46, 139, 87)),                // green
-    ("purple", (128, 0, 128)),                   // purple
-    ("thistle", (216, 191, 216)),                // purple
-    ("plum", (221, 160, 221)),                   // purple
-    ("violet", (238, 130, 238)),                 // purple
-    ("magenta", (255, 0, 255)),                  // purple
-    ("fuchsia", (255, 0, 255)),                  // purple
-    ("orchid", (218, 112, 214)),                 // purple
-    ("medium_violet_red", (199, 21, 133)),       // purple
-    ("pale_violet_red", (219, 112, 147)),        // purple
-    ("deep_pink", (255, 20, 147)),               // purple
-    ("hot_pink", (255, 105, 180)),               // purple
-    ("light_pink", (255, 182, 193)),             // purple
-    ("pink", (255, 192, 203)),                   // purple
-    ("maroon", (128, 0, 0)),                     // red
-    ("dark_red", (139, 0, 0)),                   // red
-    ("brown", (165, 42, 42)),                    // red
-    ("firebrick", (178, 34, 34)),                // red
-    ("crimson", (220, 20, 60)),                  // red
-    ("red", (255, 0, 0)),                        // red
-    ("tomato", (255, 99, 71)),                   // red
-    ("coral", (255, 127, 80)),                   // red
-    ("indian_red", (205, 92, 92)),               // red
-    ("light_coral", (240, 128, 128)),            // red
-    ("dark_salmon", (233, 150, 122)),            // red
-    ("salmon", (250, 128, 114)),                 // red
-    ("light_salmon", (255, 160, 122)),           // red
-    ("orange_red", (255, 69, 0)),                // red
-    ("dark_orange", (255, 140, 0)),              // red
-    ("orange", (255, 165, 0)),                   // red
-    ("antique_white", (250, 235, 215)),          // white
-    ("beige", (245, 245, 220)),                  // white
-    ("bisque", (255, 228, 196)),                 // white
-    ("blanched_almond", (255, 235, 205)),        // white
-    ("wheat", (245, 222, 179)),                  // white
-    ("corn_silk", (255, 248, 220)),              // white
-    ("white", (255, 255, 255)),                  // white
-    ("navajo_white", (255, 222, 173)),           // white
-    ("misty_rose", (255, 228, 225)),             // white
-    ("lavender_blush", (255, 240, 245)),         // white
-    ("linen", (250, 240, 230)),                  // white
-    ("old_lace", (253, 245, 230)),               // white
-    ("sea_shell", (255, 245, 238)),              // white
-    ("mint_cream", (245, 255, 250)),             // white
-    ("floral_white", (255, 250, 240)),           // white
-    ("ghost_white", (248, 248, 255)),            // white
-    ("ivory", (255, 255, 240)),                  // white
-    ("snow", (255, 250, 250)),                   // white
-    ("white_smoke", (245, 245, 245)),            // white
-    ("gold", (255, 215, 0)),                     // yellow
-    ("dark_goldenrod", (184, 134, 11)),          // yellow
-    ("goldenrod", (218, 165, 32)),               // yellow
-    ("pale_goldenrod", (238, 232, 170)),         // yellow
-    ("dark_khaki", (189, 183, 107)),             // yellow
-    ("khaki", (240, 230, 140)),                  // yellow
-    ("yellow", (255, 255, 0)),                   // yellow
-    ("yellow_green", (154, 205, 50)),            // yellow
-    ("peach_puff", (255, 218, 185)),             // yellow
-    ("moccasin", (255, 228, 181)),               // yellow
-    ("papaya_whip", (255, 239, 213)),            // yellow
-    ("lemon_chiffon", (255, 250, 205)),          // yellow
-    ("light_goldenrod_yellow", (250, 250, 210)), // yellow
-    ("light_yellow", (255, 255, 224)),           // yellow
-];
+pub static RUST_COLORNAMES_NAMES_EXT: phf::Map<&'static str, (u8, u8, u8)> = phf::phf_map! {
+    "slate_gray" => (112, 128, 144),             // black
+    "light_slate_gray" => (119, 136, 153),       // black
+    "black" => (0, 0, 0),                        // black
+    "dim_gray" => (105, 105, 105),               // black
+    "dim_grey" => (105, 105, 105),               // black
+    "gray" => (128, 128, 128),                   // black
+    "grey" => (128, 128, 128),                   // black
+    "dark_gray" => (169, 169, 169),              // black
+    "dark_grey" => (169, 169, 169),              // black
+    "silver" => (192, 192, 192),                 // black
+    "light_gray" => (211, 211, 211),             // black
+    "light_grey" => (211, 211, 211),             // black
+    "gainsboro" => (220, 220, 220),              // black
+    "powder_blue" => (176, 224, 230),            // blue
+    "cadet_blue" => (95, 158, 160),              // blue
+    "steel_blue" => (70, 130, 180),              // blue
+    "cornflower_blue" => (100, 149, 237),        // blue
+    "deep_sky_blue" => (0, 191, 255),            // blue
+    "dodger_blue" => (30, 144, 255),             // blue
+    "light_blue" => (173, 216, 230),             // blue
+    "sky_blue" => (135, 206, 235),               // blue
+    "light_steel_blue" => (176, 196, 222),       // blue
+    "light_sky_blue" => (135, 206, 250),         // blue
+    "midnight_blue" => (25, 25, 112),            // blue
+    "navy" => (0, 0, 128),                       // blue
+    "dark_blue" => (0, 0, 139),                  // blue
+    "medium_blue" => (0, 0, 205),                // blue
+    "blue" => (0, 0, 255),                       // blue
+    "royal_blue" => (65, 105, 225),              // blue
+    "azure" => (240, 255, 255),                  // blue
+    "saddle_brown" => (139, 69, 19),             // brown
+    "sienna" => (160, 82, 45),                   // brown
+    "chocolate" => (210, 105, 30),               // brown
+    "peru" => (205, 133, 63),                    // brown
+    "sandy_brown" => (244, 164, 96),             // brown
+    "burly_wood" => (222, 184, 135),             // brown
+    "tan" => (210, 180, 140),                    // brown
+    "rosy_brown" => (188, 143, 143),             // brown
+    "medium_aqua_marine" => (102, 205, 170),     // cyan
+    "medium_sea_green" => (60, 179, 113),        // cyan
+    "light_sea_green" => (32, 178, 170),         // cyan
+    "dark_slate_gray" => (47, 79, 79),           // cyan
+    "teal" => (0, 128, 128),                     // cyan
+    "dark_cyan" => (0, 139, 139),                // cyan
+    "aqua" => (0, 255, 255),                     // cyan
+    "cyan" => (0, 255, 255),                     // cyan
+    "light_cyan" => (224, 255, 255),             // cyan
+    "dark_turquoise" => (0, 206, 209),           // cyan
+    "turquoise" => (64, 224, 208),               // cyan
+    "medium_turquoise" => (72, 209, 204),        // cyan
+    "pale_turquoise" => (175, 238, 238),         // cyan
+    "aqua_marine" => (127, 255, 212),            // cyan
+    "honeydew" => (240, 255, 240),               // cyan
+    "yellow_green" => (154, 205, 50),            // green
+    "dark_olive_green" => (85, 107, 47),         // green
+    "olive_drab" => (107, 142, 35),              // green
+    "lawn_green" => (124, 252, 0),               // green
+    "chart_reuse" => (127, 255, 0),              // green
+    "green_yellow" => (173, 255, 47),            // green
+    "dark_green" => (0, 100, 0),                 // green
+    "green" => (0, 128, 0),                      // green
+    "forest_green" => (34, 139, 34),             // green
+    "lime" => (0, 255, 0),                       // green
+    "lime_green" => (50, 205, 50),               // green
+    "light_green" => (144, 238, 144),            // green
+    "pale_green" => (152, 251, 152),             // green
+    "dark_sea_green" => (143, 188, 143),         // green
+    "medium_spring_green" => (0, 250, 154),      // green
+    "spring_green" => (0, 255, 127),             // green
+    "sea_green" => (46, 139, 87),                // green
+    "purple" => (128, 0, 128),                   // purple
+    "thistle" => (216, 191, 216),                // purple
+    "plum" => (221, 160, 221),                   // purple
+    "violet" => (238, 130, 238),                 // purple
+    "magenta" => (255, 0, 255),                  // purple
+    "fuchsia" => (255, 0, 255),                  // purple
+    "orchid" => (218, 112, 214),                 // purple
+    "medium_violet_red" => (199, 21, 133),       // purple
+    "pale_violet_red" => (219, 112, 147),        // purple
+    "deep_pink" => (255, 20, 147),               // purple
+    "hot_pink" => (255, 105, 180),               // purple
+    "light_pink" => (255, 182, 193),             // purple
+    "pink" => (255, 192, 203),                   // purple
+    "maroon" => (128, 0, 0),                     // red
+    "dark_red" => (139, 0, 0),                   // red
+    "brown" => (165, 42, 42),                    // red
+    "firebrick" => (178, 34, 34),                // red
+    "crimson" => (220, 20, 60),                  // red
+    "red" => (255, 0, 0),                        // red
+    "tomato" => (255, 99, 71),                   // red
+    "coral" => (255, 127, 80),                   // red
+    "indian_red" => (205, 92, 92),               // red
+    "light_coral" => (240, 128, 128),            // red
+    "dark_salmon" => (233, 150, 122),            // red
+    "salmon" => (250, 128, 114),                 // red
+    "light_salmon" => (255, 160, 122),           // red
+    "orange_red" => (255, 69, 0),                // red
+    "dark_orange" => (255, 140, 0),              // red
+    "orange" => (255, 165, 0),                   // red
+    "antique_white" => (250, 235, 215),          // white
+    "beige" => (245, 245, 220),                  // white
+    "bisque" => (255, 228, 196),                 // white
+    "blanched_almond" => (255, 235, 205),        // white
+    "wheat" => (245, 222, 179),                  // white
+    "corn_silk" => (255, 248, 220),              // white
+    "white" => (255, 255, 255),                  // white
+    "navajo_white" => (255, 222, 173),           // white
+    "misty_rose" => (255, 228, 225),             // white
+    "lavender_blush" => (255, 240, 245),         // white
+    "linen" => (250, 240, 230),                  // white
+    "old_lace" => (253, 245, 230),               // white
+    "sea_shell" => (255, 245, 238),              // white
+    "mint_cream" => (245, 255, 250),             // white
+    "floral_white" => (255, 250, 240),           // white
+    "ghost_white" => (248, 248, 255),            // white
+    "ivory" => (255, 255, 240),                  // white
+    "snow" => (255, 250, 250),                   // white
+    "white_smoke" => (245, 245, 245),            // white
+    "gold" => (255, 215, 0),                     // yellow
+    "dark_goldenrod" => (184, 134, 11),          // yellow
+    "goldenrod" => (218, 165, 32),               // yellow
+    "pale_goldenrod" => (238, 232, 170),         // yellow
+    "dark_khaki" => (189, 183, 107),             // yellow
+    "khaki" => (240, 230, 140),                  // yellow
+    "yellow" => (255, 255, 0),                   // yellow
+    "yellow_green" => (154, 205, 50),            // yellow
+    "peach_puff" => (255, 218, 185),             // yellow
+    "moccasin" => (255, 228, 181),               // yellow
+    "papaya_whip" => (255, 239, 213),            // yellow
+    "lemon_chiffon" => (255, 250, 205),          // yellow
+    "light_goldenrod_yellow" => (250, 250, 210), // yellow
+    "light_yellow" => (255, 255, 224),           // yellow
+};

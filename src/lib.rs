@@ -152,6 +152,15 @@ pub use util::{
     serialize_static_str_to_string,
 };
 
+// #[doc(hidden)] pub mod color_naming;
+// #[doc(inline)]
+// pub use color_naming::{
+//     COLOR_NAMES_MAP,
+//     PYTHON_COLOR_NAMES,
+//     RUST_COLORNAMES_NAMES,
+//     RUST_COLORNAMES_NAMES_EXT,
+// };
+
 // #[cfg(any(feature = "tracing", feature = "logging"))]
 #[doc(hidden)] pub mod logging;
 #[doc(inline)]
@@ -159,6 +168,7 @@ pub use logging::{get_log_path, local_data_dir, setup_logging, setup_tracing};
 
 #[doc(hidden)] pub mod testing;
 #[doc(hidden)] pub use testing::global_setup;
+
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
 pub static PREFIX: LazyMut<PrefixContainer> = LazyMut::new(|| PrefixContainer::default());
 
@@ -169,3 +179,6 @@ pub fn set_runtime_prefix<T: Into<Prefix>>(prefix: T) {
 pub fn get_runtime_prefix() -> Prefix {
     crate::PREFIX.get_mut().get()
 }
+
+#[doc(hidden)] pub mod render;
+#[doc(inline)] pub use render::render;

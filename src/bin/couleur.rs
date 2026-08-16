@@ -24,55 +24,21 @@ use winnow::error::ContextError;
 pub struct Cli {
     #[arg(required = true)]
     text: Vec<String>,
-
     #[arg(short, long, help = "escape the ANSI sequences")]
     escape: bool,
-
     #[clap(flatten)]
     opts: RenderingOptions,
-}
-impl Cli {
-    pub fn text(&self) -> String {
-        self.text.join(" ")
-    }
-    pub fn nodes(&self) -> Result<Vec<Node>> {
-        let result = parse::<String, ContextError>(self.text())?;
-        let mut nodes = fold_nodes(result.to_vec().into_iter().map(|node| {
-            if let Node::Color(color) = &node {
-                Node::RenderableColor(RenderableColor::from(color))
-            } else {
-                node
-            }
-        }));
-        if nodes.is_empty() {
-            return Ok(nodes);
-        }
-        let last_node_does_not_reset_sequence =
-            nodes.last().map(|node| !node.clone().is_reset()).unwrap_or_default();
-        if last_node_does_not_reset_sequence && !self.opts.add_reset_to_last_node() {
-            nodes.push(Node::Reset(Reset::new(self.opts.prefix())));
-        }
-
-        Ok(nodes)
-    }
-    pub fn rendered(&self) -> Result<String> {
-        let nodes = self.nodes()?;
-        let result = nodes.into_iter().map(|node| node.render()).collect::<String>();
-        Ok(result)
-    }
 }
 
 impl ParserDispatcher<Error> for Cli {
     fn dispatch(&mut self) -> Result<()> {
         self.opts.init();
-        let result = self.rendered()?;
-
+        let rendered = render(self.text.join(" "), self.opts.prefix, self.escape)?;
         if self.escape {
             println!("{result:#?}");
         } else {
             println!("{result}");
         }
-
         Ok(())
     }
 }
