@@ -60,6 +60,16 @@ pub fn parse_color<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCo
             separated_pair(rgb_color_declaration::<E>, ":", contrast_alternatives::<E>)
                 .map(|(color, contrast): (Color, Contrast)| contrast.of(color))
         ),
+        preceded(
+            "contrast_of_color:",
+            separated_pair(rgb_color_declaration::<E>, ":", contrast_alternatives::<E>)
+                .map(|(color, contrast): (Color, Contrast)| contrast.of(color))
+        ),
+        preceded(
+            "contrasted_of:",
+            separated_pair(rgb_color_declaration::<E>, ":", contrast_alternatives::<E>)
+                .map(|(color, contrast): (Color, Contrast)| contrast.of(color))
+        ),
         preceded("color:", rgb_color_declaration::<E>)
     )).parse_next(input)
 }

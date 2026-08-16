@@ -259,9 +259,43 @@ fn test_render_string() -> Result<()> {
 }
 
 #[test]
-fn test_parse_contrast_of_color() -> Result<()> {
+fn test_parse_contrasted_color() -> Result<()> {
     assert_eq!(
         nodes::<ContextError>.parse_peek("{contrasted_color:#676633:web}Hello World{reset}"),
+        Ok((
+            "",
+            Node::Array(vec![
+                Node::Color("#E7E6B3".parse::<couleur_rs::Color>().unwrap()),
+                Node::Text("Hello World".to_string()),
+                Node::Reset(Default::default())
+            ])
+        ))
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_contrast_of_color() -> Result<()> {
+    assert_eq!(
+        nodes::<ContextError>.parse_peek("{contrast_of_color:#40A933:web}Hello World{reset}"),
+        Ok((
+            "",
+            Node::Array(vec![
+                Node::Color("#E7E6B3".parse::<couleur_rs::Color>().unwrap()),
+                Node::Text("Hello World".to_string()),
+                Node::Reset(Default::default())
+            ])
+        ))
+    );
+
+    Ok(())
+}
+
+#[test]
+fn test_parse_contrast_of() -> Result<()> {
+    assert_eq!(
+        nodes::<ContextError>.parse_peek("{contrast_of:#FFE052:web}Hello World{reset}"),
         Ok((
             "",
             Node::Array(vec![
