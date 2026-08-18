@@ -60,6 +60,7 @@ tracing-appender = { version = "0.2.5", optional = true }
 dirs = { version = "6.0.0" }
 lazy_mut = "0.2.1"
 serde_yaml = "0.9.34"
+build-alert = "0.1.8"
 
 
 # cargo add --optional tracing tracing-subscriber tracing-appender
