@@ -7,6 +7,26 @@ use iocore::{Path, env};
 #[cfg(any(feature = "logging", feature = "tracing"))]
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+#[cfg(any(feature = "logging", feature = "tracing"))]
+build_alert::yellow! {"
+NOTE: the features 'logging' and 'tracing' are meant to help debugging
+template parsing tests and will almost certainly get removed once the
+couleur_rs crate reaches a reasonably maturity level, so do not rely
+on neither of those features unless you're contributing to this
+crate's code.
+
+Also, if the latter is the case you might also activate the feature
+'trace-test-debug' so that all logs get written to `./couleur.log`
+"}
+
+#[cfg(all(test, not(any(feature = "logging", feature = "tracing", feature =  "trace-test-debug"))))]
+build_alert::yellow! {"
+NOTE: when contributing to tests of the templating module of the
+'couleur_rs' crate you might consider enabling the feature
+'trace-test-debug' so that every call to template parsing functions
+get logged to `./couleur.log`
+"}
+
 use crate::{Error, Result};
 
 #[cfg(any(feature = "logging", feature = "tracing"))]
