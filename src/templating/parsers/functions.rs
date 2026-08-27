@@ -2,10 +2,10 @@
 use winnow::{
     ModalResult,
     Parser,
-    ascii::{dec_uint, hex_digit1},
+    ascii::{Caseless, dec_uint, hex_digit1},
     combinator::{alt, cut_err, preceded, repeat, terminated},
     error::{AddContext, ContextError, ErrMode, ParserError, StrContext},
-    token::{take_until, take_while},
+    token::{literal, take_until, take_while},
 };
 
 use super::within_curly_braces;
@@ -26,8 +26,6 @@ pub fn parse_node<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCon
         color::<E>.map(Node::Color),                      // Color
         text::<E>.map(Node::Text),                        // Text
         nodes::<E>,                                       // Array
-        invalid_syntax::<E>.map(String::from).map(Node::InvalidSyntax), // InvalidSyntax
-        |input: &mut &'i str| Err(ErrMode::Cut(ParserError::from_input(input))), // invalidSyntax
     ))
     .parse_next(input)
 }
