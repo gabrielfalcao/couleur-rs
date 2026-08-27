@@ -169,6 +169,16 @@ impl From<Color> for Node {
         Node::Color(color)
     }
 }
+// impl Into<String> for Node {
+//     fn into(self) -> String {
+//         self.to_ansi_esc_suffix()
+//     }
+// }
+impl From<Node> for String {
+    fn from(node: Node) -> String {
+        node.to_ansi_esc_suffix()
+    }
+}
 pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
     let nodes = nodes.fold(Vec::new(), |mut vec, node| match node.clone() {
         Node::Reset(_reset) => {
