@@ -37,6 +37,7 @@ logging = [
     "dep:fern",
     "dep:chrono",
 ]
+colors-transform = []
 [dependencies]
 # bon = "3.9.3"
 clap = { version = "4.6.1", features = ["derive", "env", "string", "unicode", "wrap_help"] }
@@ -49,7 +50,7 @@ supports-color = "3.0.2"
 terminal-colorsaurus = "1.0.3"
 thiserror = "2.0.18"
 serde_json = "1.0.150"
-winnow = "1.0.4"
+winnow = { version = "1.0.4", features = ["debug", "parser"] }
 log = { version = "0.4.33", features = ["serde", "kv", "kv_serde"], optional = true }
 fern = { version = "0.7.1", features = ["chrono", "colored"], optional = true }
 chrono = { version = "0.4.45", features = ["serde"], optional = true }
@@ -61,6 +62,7 @@ dirs = { version = "6.0.0" }
 lazy_mut = "0.2.1"
 serde_yaml = "0.9.34"
 build-alert = "0.1.8"
+colornames = "0.0.6"
 
 
 # cargo add --optional tracing tracing-subscriber tracing-appender
