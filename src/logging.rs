@@ -29,18 +29,24 @@ get logged to `./couleur.log`
 
 use crate::{Error, Result};
 
-#[cfg(any(feature = "logging", feature = "tracing"))]
+#[cfg(any(feature = "logging", feature = "tracing", feature = "trace-test-debug"))]
 pub fn setup_logging() -> Result<()> {
     fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
-                "[{} {}] pid:{} {}: {}",
-                Local::now().to_rfc3339_opts(chrono::format::SecondsFormat::Secs, true),
+                "[{}] {}: {}",
                 record.level(),
-                std::process::id(),
                 record.target(),
                 message
             ))
+            // out.finish(format_args!(
+            //     "[{} {}] pid:{} {}: {}",
+            //     Local::now().to_rfc3339_opts(chrono::format::SecondsFormat::Secs, true),
+            //     record.level(),
+            //     std::process::id(),
+            //     record.target(),
+            //     message
+            // ))
         })
         .level(LevelFilter::Debug)
         .chain(fern::log_file(get_log_path()?)?)
@@ -50,19 +56,20 @@ pub fn setup_logging() -> Result<()> {
         .apply()?;
     Ok(())
 }
-#[cfg(not(any(feature = "logging", feature = "tracing")))]
+#[cfg(not(any(feature = "logging", feature = "tracing", feature = "trace-test-debug")))]
 pub fn setup_logging() -> Result<()> {
     Ok(())
 }
 
 pub fn local_data_dir() -> Path {
-    dirs::data_local_dir()
-        .map(|data_local_dir| Path::from(data_local_dir))
-        .unwrap_or_else(|| Path::cwd())
-        .join("couleur_rs")
+    Path::cwd()
+    // dirs::data_local_dir()
+    //     .map(|data_local_dir| Path::from(data_local_dir))
+    //     .unwrap_or_else(|| Path::cwd())
+    //     .join("couleur_rs")
 }
 
-#[cfg(any(feature = "logging", feature = "tracing"))]
+#[cfg(any(feature = "logging", feature = "tracing", feature = "trace-test-debug"))]
 #[cfg(not(feature = "trace-test-debug"))]
 pub fn get_log_path() -> Result<Path> {
     let log_path =
@@ -89,13 +96,13 @@ pub fn get_log_path() -> Result<Path> {
     }
     Ok(log_path)
 }
-#[cfg(any(feature = "logging", feature = "tracing"))]
+#[cfg(any(feature = "logging", feature = "tracing", feature = "trace-test-debug"))]
 #[cfg(feature = "trace-test-debug")]
 pub fn get_log_path() -> Result<Path> {
     Ok(Path::new(env!("CARGO_MANIFEST_DIR")).join("couleur.log"))
 }
 
-#[cfg(not(any(feature = "logging", feature = "tracing")))]
+#[cfg(not(any(feature = "logging", feature = "tracing", feature = "trace-test-debug")))]
 pub fn get_log_path() -> Result<Path> {
     Ok(Path::new(env!("CARGO_MANIFEST_DIR")).join("couleur.log"))
 }
@@ -116,7 +123,7 @@ pub fn setup_tracing() -> Result<()> {
 
     Ok(())
 }
-#[cfg(not(feature = "tracing"))]
+#[cfg(not(any(feature = "logging", feature = "tracing", feature = "trace-test-debug")))]
 pub fn setup_tracing() -> Result<()> {
     Ok(())
 }
