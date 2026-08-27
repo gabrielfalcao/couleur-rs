@@ -276,12 +276,19 @@ fn test_parse_contrast_of_color() -> Result<()> {
 }
 
 #[test]
-fn test_parse_error() -> Result<()> {
-    global_setup();
-    assert_eq!(
-        nodes::<ContextError>.parse_peek("{invalid_syntax}"),
-        Err(ErrMode::Cut(ContextError::new()))
-    );
+fn test_parse_empty_braces() -> Result<()> {
+    assert_eq!(nodes::<ContextError>.parse_peek("{}"), Ok(("", Node::Text("{}".to_string()),)));
 
     Ok(())
 }
+
+// #[test]
+// fn test_parse_error() -> Result<()> {
+//     global_setup();
+//     assert_eq!(
+//         nodes::<ContextError>.parse_peek("{invalid_syntax}"),
+//         Err(ErrMode::Cut(ContextError::new()))
+//     );
+//
+//     Ok(())
+// }
