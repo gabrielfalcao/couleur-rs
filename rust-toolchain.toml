@@ -1,5 +1,5 @@
 [toolchain]
-channel = "nightly-2026-08-25"
+channel = "nightly-2026-08-28"
 
 components = [
     "rust-src",
@@ -8,8 +8,7 @@ components = [
     "llvm-tools-preview",
     "rustfmt",
     "rust-docs",
-
-    # "clippy",
+    "clippy",
     # "llvm-bitcode-linker",
     # "rust-std-wasm32-unknown-emscripten",
     # "rust-std-wasm32-unknown-unknown",
