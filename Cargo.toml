@@ -63,6 +63,8 @@ lazy_mut = "0.2.1"
 serde_yaml = "0.9.34"
 build-alert = "0.1.8"
 colornames = "0.0.6"
+pest_derive = "2.9.2"
+pest = "2.9.2"
 
 
 # cargo add --optional tracing tracing-subscriber tracing-appender
