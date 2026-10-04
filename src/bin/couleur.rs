@@ -7,6 +7,7 @@ use couleur_rs::{
     RenderingOptions,
     Reset,
     Result,
+    parse,
     dispatch::ParserDispatcher,
 };
 // use winnow::{Parser as _};
