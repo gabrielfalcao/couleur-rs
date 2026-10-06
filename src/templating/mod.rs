@@ -23,7 +23,7 @@ pub fn parse<'a>(input: &'a str) -> Result<String> {
         .map_err(|e| Error::ParseError(e.variant.message().to_string().into()))?;
     let mut pair = pairs.next().unwrap();
     match pair.as_rule() {
-        Rule::rgb_color => Ok(reduce_pair(&mut pair)?),
+        Rule::rgb_color => Ok(reduce_pairs(&mut pair.into_inner())?),
         Rule::color => Ok(reduce_pairs(&mut pair.into_inner())?),
         Rule::file => Ok(reduce_pair(&mut pair)?),
         Rule::statement => Ok(reduce_pair(&mut pair)?),
@@ -37,9 +37,11 @@ pub fn parse<'a>(input: &'a str) -> Result<String> {
 }
 
 pub fn reduce_pair<'a>(pair: &'a mut Pair<Rule>) -> Result<String> {
+    dbg!(&pair);
     Ok(pair.as_span().as_str().to_string())
 }
 
-pub fn reduce_pairs<'a>(pair: &'a mut Pairs<Rule>) -> Result<String> {
-    Ok(reduce_pair(&mut pair.next().unwrap())?)
+pub fn reduce_pairs<'a>(pairs: &'a mut Pairs<Rule>) -> Result<String> {
+    dbg!(&pairs);
+    Ok(reduce_pair(&mut pairs.next().unwrap())?)
 }

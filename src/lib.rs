@@ -105,7 +105,6 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(hidden)] pub mod traits;
 #[doc(inline)] pub use traits::{AnsiRenderable, ToAnsiEscSuffix};
 
-
 #[doc(hidden)] pub mod templating;
 #[doc(inline)]
 pub use templating::{GRAMMAR, Node, NodeType, TemplateSource, fold_nodes, parse};
@@ -120,6 +119,9 @@ pub use util::{
     deserialize_string_to_str,
     serialize_static_str_to_string,
 };
+
+#[doc(hidden)] pub mod node;
+#[doc(inline)] pub use node::Node;
 
 // #[cfg(any(feature = "tracing", feature = "logging"))]
 #[doc(hidden)] pub mod logging;
