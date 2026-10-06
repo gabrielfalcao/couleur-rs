@@ -120,9 +120,6 @@ pub use util::{
     serialize_static_str_to_string,
 };
 
-#[doc(hidden)] pub mod node;
-#[doc(inline)] pub use node::Node;
-
 // #[cfg(any(feature = "tracing", feature = "logging"))]
 #[doc(hidden)] pub mod logging;
 #[doc(inline)]
