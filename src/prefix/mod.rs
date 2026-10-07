@@ -1,5 +1,130 @@
-pub(crate) mod prefix;
-pub use prefix::Prefix;
+use std::fmt::{Debug, Display};
 
-pub(crate) mod container;
-pub use container::PrefixContainer;
+use clap::{ValueEnum, builder::PossibleValue};
+use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase, ToTrainCase};
+use serde::{Deserialize, Serialize};
+
+#[doc(hidden)] pub mod container;
+#[doc(inline)] pub use container::PrefixContainer;
+
+use crate::{AnsiRenderable, ToAnsiEscSuffix};
+
+/// Represents the intent to use an specific type of ANSI sequence
+/// prefix such as `\x1b`, `\033` or `\E` so as to allow rendering
+/// ANSI colors in various contexts such as bash PS1 variable (which
+/// uses the Octal variant).
+///
+/// Defaults to the hex prefix which is used by rust programs.
+#[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Prefix {
+    Octal,
+    #[default]
+    Hex,
+    Unicode,
+    Escape,
+}
+impl Display for Prefix {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Prefix::Octal => "\033",
+                Prefix::Hex => "\x1b",
+                Prefix::Unicode => "\u{1b}",
+                Prefix::Escape => r"\E",
+            }
+        )
+    }
+}
+impl ToAnsiEscSuffix for Prefix {
+    fn to_ansi_esc_suffix(&self) -> String {
+        format!("{self}")
+    }
+}
+impl AnsiRenderable for Prefix {
+    fn prefix(&self) -> String {
+        format!("{self}")
+    }
+    fn render(&self) -> String {
+        format!("{self}[")
+    }
+}
+
+impl Prefix {
+    pub fn variant_name_snake(&self) -> &'static str {
+        match self {
+            Prefix::Octal => "octal",
+            Prefix::Hex => "hex",
+            Prefix::Unicode => "unicode",
+            Prefix::Escape => "escape",
+        }
+    }
+
+    pub fn variants<'a>() -> &'a [Prefix] {
+        &[Prefix::Octal, Prefix::Hex, Prefix::Escape]
+    }
+
+    pub fn variant_name_kebab(&self) -> String {
+        self.variant_name_snake().to_kebab_case()
+    }
+
+    pub fn variant_name_pascal(&self) -> String {
+        self.variant_name_snake().to_pascal_case()
+    }
+
+    pub fn variant_name_train(&self) -> String {
+        self.variant_name_snake().to_train_case()
+    }
+
+    fn to_possible_strings(&self) -> [String; 4] {
+        [
+            self.variant_name_snake().to_string(),
+            self.variant_name_kebab(),
+            self.variant_name_pascal(),
+            self.variant_name_train(),
+        ]
+    }
+}
+
+impl ValueEnum for Prefix {
+    fn value_variants<'a>() -> &'a [Prefix] {
+        Prefix::variants()
+    }
+
+    fn to_possible_value(&self) -> Option<PossibleValue> {
+        Some(
+            PossibleValue::new(self.to_string())
+                .alias(self.variant_name_kebab())
+                .alias(self.variant_name_pascal())
+                .alias(self.variant_name_train()),
+        )
+    }
+
+    fn from_str(val: &str, ignore_case: bool) -> std::result::Result<Prefix, String> {
+        let val = if ignore_case { val.to_lowercase() } else { val.to_string() };
+        let val = val.trim();
+        for (variant, possible_strings) in
+            Prefix::variants().iter().map(|variant| (variant, variant.to_possible_strings()))
+        {
+            for pos in possible_strings {
+                if pos == val {
+                    return Ok(*variant);
+                }
+            }
+        }
+        return Err(val.to_string());
+    }
+}
+//impl PartialEq<&Prefix> for Prefix {
+//    fn eq(&self, other: &Prefix) -> bool {
+//        self == *other
+//    }
+//}
+//
+//impl PartialOrd<&Prefix> for Prefix {
+//    fn partial_cmp(&self, other: &Rhs) -> Option<Ordering> {
+//        self.partial_cmp(*other)
+//    }
+//}
+//

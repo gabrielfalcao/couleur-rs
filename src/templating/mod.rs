@@ -47,6 +47,7 @@ pub fn reduce_pairs<'a>(pairs: &'a mut Pairs<Rule>) -> Result<String> {
     let mut pair = pairs.next().unwrap();
     let result = match pair.as_rule() {
         Rule::file => reduce_pairs(&mut pair.clone().into_inner())?,
+        Rule::color => reduce_pairs(&mut pair.clone().into_inner())?,
         Rule::statement => reduce_pairs(&mut pair.clone().into_inner())?,
         Rule::node => reduce_pairs(&mut pair.clone().into_inner())?,
         Rule::inner => reduce_pairs(&mut pair.clone().into_inner())?,
