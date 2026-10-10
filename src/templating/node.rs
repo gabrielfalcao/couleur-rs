@@ -193,9 +193,7 @@ pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
             vec.push(node.clone());
             vec
         }
-        Node::InvalidSyntax(_string) => {
-            vec
-        }
+        Node::InvalidSyntax(_string) => vec,
         Node::RenderableColor(_renderable_color) => {
             vec.push(node.clone());
             vec
@@ -210,6 +208,7 @@ pub fn fold_nodes<T: Iterator<Item = Node>>(nodes: T) -> Vec<Node> {
 }
 #[cfg(test)]
 mod node_tests {
+
     use crate::{
         AnsiRenderable,
         Color,

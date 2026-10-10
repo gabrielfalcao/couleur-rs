@@ -1,3 +1,4 @@
+#![allow(unused)]
 use clap::Parser;
 use couleur_rs::{
     Color,
