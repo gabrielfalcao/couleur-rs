@@ -1,0 +1,16 @@
+use regex::Regex;
+// file                        = { SOI ~ statement ~ EOI}
+
+// statement                   = { node | ANY+ }
+
+// node                        = { ("{" ~ inner ~ "}") }
+// reset                       = @{ "reset" }
+// rgb_color                   = @{ ASCII_HEX_DIGIT{6} }
+// rgb_hex                     = { "#"? ~ rgb_color }
+// foreground_color            = ${ ("color:" ~ rgb_hex) | ("fg:" ~ rgb_hex) }
+// background_color            = ${ ("bg:" ~ rgb_hex) }
+// color                       = ${ foreground_color | background_color }
+// inner                       = { reset | color }
+
+// // delimiter                = _{ NEWLINE+ }
+// // WHITESPACE               = _{ " " | "\t" | "\n" }
