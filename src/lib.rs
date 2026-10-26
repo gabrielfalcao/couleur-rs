@@ -106,8 +106,7 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, ParseError, R
 #[doc(inline)] pub use traits::{AnsiRenderable, ToAnsiEscSuffix};
 
 #[doc(hidden)] pub mod templating;
-#[doc(inline)]
-pub use templating::{GRAMMAR, Node, NodeType, TemplateSource, fold_nodes, parse};
+#[doc(inline)] pub use templating::REGEX;
 
 #[doc(hidden)] pub mod util;
 #[doc(hidden)]
