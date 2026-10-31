@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
@@ -115,5 +115,17 @@ impl ValueEnum for Layer {
             }
         }
         return Err(val.to_string());
+    }
+}
+
+impl FromStr for Layer {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Layer> {
+        match s.to_lowercase() {
+            "color" | "fg" => Ok(Layer::FG),
+            "bg" => Ok(Layer::BG),
+            other => Err(Error::RuntimeError(format!("unknown layer type {other:#?}"))),
+        }
     }
 }
