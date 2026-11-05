@@ -1,5 +1,5 @@
 use std::{fmt::Display, str::FromStr};
-
+use crate::{Error, Result};
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
 use serde::{Deserialize, Serialize};
@@ -122,7 +122,7 @@ impl FromStr for Layer {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Layer> {
-        match s.to_lowercase() {
+        match s.to_lowercase().as_str() {
             "color" | "fg" => Ok(Layer::FG),
             "bg" => Ok(Layer::BG),
             other => Err(Error::RuntimeError(format!("unknown layer type {other:#?}"))),

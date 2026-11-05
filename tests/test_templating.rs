@@ -23,11 +23,11 @@ fn test_parse_reset() -> Result<()> {
     Ok(())
 }
 
-// #[test]
-// fn test_parse_color_rgb_hex_prefixed_hash() -> Result<()> {
-//     assert_eq!(parse("{color:#F04F78}"), Ok("#F04F78".parse::<Color>().expect("parse rgb color").to_string()));
-//     Ok(())
-// }
+#[test]
+fn test_parse_color_rgb_hex_prefixed_hash() -> Result<()> {
+    assert_eq!(parse("{color:#F04F78}"), Ok("#F04F78".parse::<Color>().expect("parse rgb color").to_string()));
+    Ok(())
+}
 // #[test]
 // fn test_parse_color_rgb_hex() -> Result<()> {
 //     assert_eq!(parse("{color:F04F78}"), Ok("#F04F78".parse::<Color>().expect("parse rgb color").to_string()));

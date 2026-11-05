@@ -22,12 +22,23 @@ pub fn parse<T: Display>(input: T) -> Result<String> {
         } else {
             match (layer, color) {
                 (Some(layer), Some(color)) => {
-                    let color = Color::from_str(&color)?;
-                    let layer = Layer::from_str(&layer)?;
+                    let color = Color::from_str(&color.as_str())?;
+                    let layer = Layer::from_str(&layer.as_str())?;
                     tokens.push(layer.to_string());
                     tokens.push(color.to_string());
                 }
-                (None, None) => {}
+                (Some(layer), None) => {
+                    return Err(Error::RuntimeError(format!(r"missing RGB color from template syntax (.i.e.: \x7bcolor:#ffcc00\7d)")))
+                }
+                (None, Some(color)) => {
+                    let color = Color::from_str(&color.as_str())?;
+                    let layer = Layer::default();
+                    tokens.push(layer.to_string());
+                    tokens.push(color.to_string());
+                }
+                (None, None) => {
+                    return Err(Error::RuntimeError(format!("could not parse string: {input}")))
+                }
             }
         }
     }
