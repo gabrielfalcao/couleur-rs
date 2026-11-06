@@ -1,11 +1,12 @@
-use std::{fmt::Display, str::FromStr};
-use crate::{Error, Result};
+use std::{fmt::Display, str::FromStr, sync::LazyLock};
+
 use clap::{ValueEnum, builder::PossibleValue};
 use heck::{ToKebabCase, ToPascalCase, ToTrainCase};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "tracing")] use tracing::{Level, instrument, span};
 
-use crate::{Color, ToAnsiEscSuffix};
+use crate::{Color, Error, Result, ToAnsiEscSuffix};
 
 /// Represents the concept of "background" and "foreground" colors in a terminal
 #[derive(Clone, Copy, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
@@ -118,14 +119,24 @@ impl ValueEnum for Layer {
     }
 }
 
+pub static REGEX_LAYER: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"[{]((?<layer>(fg|color|bg):[#]?(?<color>[a-fA-F0-9]{6})))[}]")
+        .expect("valid regex")
+});
+
 impl FromStr for Layer {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Layer> {
-        match s.to_lowercase().as_str() {
-            "color" | "fg" => Ok(Layer::FG),
-            "bg" => Ok(Layer::BG),
-            other => Err(Error::RuntimeError(format!("unknown layer type {other:#?}"))),
+        let parsed = REGEX_LAYER.captures(s).unwrap();
+        let layer_s = parsed.name("layer");
+        let val = layer_s.map(|s|s.as_str().to_string()).unwrap_or_default();
+        if val == "color" || val == "fg" {
+            Ok(Layer::FG)
+        }  else         if val == "bg" {
+            Ok(Layer::BG)
+        } else {
+            Err(Error::RuntimeError(format!("unknown layer type {val:#?}")))
         }
     }
 }
