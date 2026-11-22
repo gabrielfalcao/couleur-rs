@@ -13,7 +13,6 @@ pub fn parse<T: Display>(input: T) -> Result<String> {
     let input = input.to_string();
     let mut tokens = Vec::<String>::new();
     for parsed in REGEX.captures_iter(&input) {
-        dbg!(&parsed);
         let reset = parsed.name("reset");
         let layer = parsed.name("layer");
         let color = parsed.name("color");
@@ -28,7 +27,9 @@ pub fn parse<T: Display>(input: T) -> Result<String> {
                     tokens.push(color.to_string());
                 }
                 (Some(layer), None) => {
-                    return Err(Error::RuntimeError(format!(r"missing RGB color from template syntax (.i.e.: \x7bcolor:#ffcc00\7d)")))
+                    return Err(Error::RuntimeError(format!(
+                        r"missing RGB color from template syntax (.i.e.: \x7bcolor:#ffcc00\7d)"
+                    )));
                 }
                 (None, Some(color)) => {
                     let color = Color::from_str(&color.as_str())?;
@@ -37,7 +38,7 @@ pub fn parse<T: Display>(input: T) -> Result<String> {
                     tokens.push(color.to_string());
                 }
                 (None, None) => {
-                    return Err(Error::RuntimeError(format!("could not parse string: {input}")))
+                    return Err(Error::RuntimeError(format!("could not parse string: {input}")));
                 }
             }
         }

@@ -128,15 +128,19 @@ impl FromStr for Layer {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Layer> {
-        let parsed = REGEX_LAYER.captures(s).unwrap();
-        let layer_s = parsed.name("layer");
-        let val = layer_s.map(|s|s.as_str().to_string()).unwrap_or_default();
-        if val == "color" || val == "fg" {
-            Ok(Layer::FG)
-        }  else         if val == "bg" {
-            Ok(Layer::BG)
-        } else {
-            Err(Error::RuntimeError(format!("unknown layer type {val:#?}")))
+        match REGEX_LAYER.captures(s) {
+            Some(parsed) => {
+                let layer_s = parsed.name("layer");
+                let val = layer_s.map(|s| s.as_str().to_string()).unwrap_or_default();
+                if val == "color" || val == "fg" {
+                    Ok(Layer::FG)
+                } else if val == "bg" {
+                    Ok(Layer::BG)
+                } else {
+                    Err(Error::RuntimeError(format!("unknown layer type {val:#?}")))
+                }
+            }
+            None => Ok(Layer::FG),
         }
     }
 }
