@@ -23,7 +23,6 @@ pub fn parse<T: Display>(input: T) -> Result<String> {
                 (Some(layer), Some(color)) => {
                     let color = Color::from_str(&color.as_str())?;
                     let layer = Layer::from_str(&layer.as_str())?;
-                    tokens.push(layer.to_string());
                     tokens.push(color.to_string());
                 }
                 (Some(layer), None) => {
