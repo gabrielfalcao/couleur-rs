@@ -2,7 +2,7 @@ use std::{fmt::Display, str::FromStr, sync::LazyLock};
 
 use regex::Regex;
 
-use crate::{Color, Error, Layer, Prefix, Reset, Result};
+use crate::{AnsiRenderable, Color, Error, Layer, Prefix, Reset, Result, ToAnsiEscSuffix};
 
 pub static REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?<markup>[{]((?<reset>reset)|(?<layer>(fg|color|bg):[#]?(?<color>[a-fA-F0-9]{6})))[}]|(?P<text>[^{}]+))+")
@@ -14,18 +14,22 @@ pub fn parse<T: Display>(input: T) -> Result<String> {
     let mut tokens = Vec::<String>::new();
     for parsed in REGEX.captures_iter(&input) {
         let prefix = Prefix::default().to_string();
-        let reset = if let Some(reset) = parsed.name("reset") {
-            reset.as_str().to_string()
-        } else {
-            String::new()
-        };
         let layer = if let Some(layer) = parsed.name("layer") {
-            layer.as_str().to_string()
+            match layer.as_str() {
+                "bg" => Layer::BG,
+                _ => Layer::FG,
+            }
+        } else {
+            Layer::default()
+        };
+        let reset = if let Some(reset) = parsed.name("reset") {
+            Reset::default().to_ansi_esc_suffix()
         } else {
             String::new()
         };
         let color = if let Some(color) = parsed.name("color") {
-            color.as_str().to_string()
+            let color = color.as_str().parse::<Color>()?;
+            color.to_ansi(layer)
         } else {
             String::new()
         };
