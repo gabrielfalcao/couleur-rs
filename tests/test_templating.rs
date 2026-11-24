@@ -19,7 +19,7 @@ type Result<T> = std::result::Result<T, ContextError>;
 
 #[test]
 fn test_parse_reset() -> Result<()> {
-    assert_eq!(parse("{reset}"), Ok(Reset::default().to_string()));
+    assert_eq!(parse("{reset}"), Ok(format!("0m")));
     Ok(())
 }
 
