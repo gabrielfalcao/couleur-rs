@@ -3,10 +3,7 @@ use std::{
     iter::{IntoIterator, Iterator},
 };
 
-use crate::Node;
-pub trait AnsiRenderable: Sized + Clone {
-    fn render(&self) -> String;
-}
+use crate::{AnsiRenderable, ToAnsiEscSuffix};
 use std::{convert::AsRef, ops::Deref};
 
 // impl<T> AnsiRenderable for T
@@ -22,14 +19,19 @@ impl AnsiRenderable for &str {
         self.to_string()
     }
 }
+impl ToAnsiEscSuffix for &str {
+    fn to_ansi_esc_suffix(&self) -> String {
+        self.to_string()
+    }
+}
+
 impl AnsiRenderable for String {
     fn render(&self) -> String {
         self.to_string()
     }
 }
-
-impl AnsiRenderable for &Vec<Node> {
-    fn render(&self) -> String {
-        self.into_iter().map(|node| node.render()).collect::<String>()
+impl ToAnsiEscSuffix for String {
+    fn to_ansi_esc_suffix(&self) -> String {
+        self.to_string()
     }
 }

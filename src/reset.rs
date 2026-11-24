@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{AnsiRenderable, Prefix, ToAnsiEscSuffix};
 
+
 /// Represents the ansi code `[0m` without any [ansi escape](https://en.wikipedia.org/wiki/C0_and_C1_control_codes#ESC) prefix
 #[derive(Clone, Debug, Copy, Default, PartialOrd, Ord, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Reset {
@@ -21,8 +22,9 @@ impl ToAnsiEscSuffix for Reset {
     }
 }
 impl AnsiRenderable for Reset {
-    fn prefix(&self) -> String {
-        self.prefix.unwrap_or_default().to_string()
+
+    fn render(&self) -> String {
+        vec![Prefix::default().render(), "0m".to_string()].join("")
     }
 }
 

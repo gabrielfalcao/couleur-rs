@@ -4,9 +4,6 @@ use regex::Regex;
 
 use crate::{AnsiRenderable, Color, Error, Layer, Prefix, Reset, Result, ToAnsiEscSuffix};
 
-#[doc(hidden)] pub mod node;
-#[doc(inline)] pub use node::{Node, NodeType, fold_nodes};
-
 pub static REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?<markup>[{]((?<reset>reset)|(?<layer>(fg|color|bg):[#]?(?<color>[a-fA-F0-9]{6})))[}]|(?P<text>[^{}]+))+")
         .expect("valid regex")

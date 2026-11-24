@@ -40,7 +40,7 @@ pub use util::{
 #[doc(inline)] pub use to_ansi::ToAnsi;
 
 #[doc(hidden)] pub mod templating;
-#[doc(inline)] pub use templating::{Node, NodeType, REGEX, fold_nodes, render};
+#[doc(inline)] pub use templating::{REGEX, render};
 
 #[doc(hidden)] pub mod color;
 #[doc(inline)] pub use color::{BLACK, Color, RGBParseError, RgbTriple, U8Triple, WHITE};
@@ -65,8 +65,6 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Exit, ParseEr
 #[doc(hidden)] pub mod contrast;
 #[doc(inline)] pub use contrast::Contrast;
 
-#[doc(hidden)] pub mod ansi_renderable;
-#[doc(inline)] pub use ansi_renderable::{AnsiRenderable, ToAnsiEscSuffix};
 
 #[doc(hidden)] pub mod terminal;
 #[doc(inline)] pub use terminal::{Terminal, TerminalInfo, TerminalInfoError};
@@ -79,6 +77,10 @@ pub use logging::{get_log_path, local_data_dir, setup_logging, setup_tracing};
 #[doc(hidden)] pub use testing::global_setup;
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
 pub static PREFIX: LazyMut<PrefixContainer> = LazyMut::new(|| PrefixContainer::default());
+
+
+#[doc(hidden)] pub mod traits;
+#[doc(inline)] pub use traits::{AnsiRenderable, ToAnsiEscSuffix};
 
 pub fn set_runtime_prefix<T: Into<Prefix>>(prefix: T) {
     let mut current = PREFIX.get_mut();

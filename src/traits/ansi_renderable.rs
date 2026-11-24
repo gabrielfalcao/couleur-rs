@@ -29,7 +29,9 @@ pub trait AnsiRenderable: ToAnsiEscSuffix + Debug {
     /// [`render()`]: crate::AnsiRenderable::render
     /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
     /// [`ToAnsiEscSuffix::to_ansi_esc_suffix()`]: crate::ToAnsiEscSuffix::to_ansi_esc_suffix
-    fn prefix(&self) -> String;
+    fn prefix(&self) -> String {
+        Prefix::default().render()
+    }
     fn render(&self) -> String {
         let prefix = self.prefix();
         let suffix = self.to_ansi_esc_suffix();
