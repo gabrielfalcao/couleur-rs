@@ -22,7 +22,8 @@ categories = ["command-line-interface"]
 default-run = "couleur"
 
 # categories = [] # https://crates.io/category_slugs
-
+[lints.cargo]
+unused_dependencies = "allow"
 [features]
 # default = []
 default = ["tracing", "logging", "trace-test-debug"]

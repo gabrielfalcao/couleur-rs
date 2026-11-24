@@ -26,19 +26,13 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 // 'trace-test-debug' so that every call to template parsing functions
 // get logged to `./couleur.log`
 // "}
-
 use crate::{Error, Result};
 
 #[cfg(any(feature = "logging", feature = "tracing", feature = "trace-test-debug"))]
 pub fn setup_logging() -> Result<()> {
     fern::Dispatch::new()
         .format(|out, message, record| {
-            out.finish(format_args!(
-                "[{}] {}: {}",
-                record.level(),
-                record.target(),
-                message
-            ))
+            out.finish(format_args!("[{}] {}: {}", record.level(), record.target(), message))
             // out.finish(format_args!(
             //     "[{} {}] pid:{} {}: {}",
             //     Local::now().to_rfc3339_opts(chrono::format::SecondsFormat::Secs, true),

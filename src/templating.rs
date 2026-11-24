@@ -4,12 +4,15 @@ use regex::Regex;
 
 use crate::{AnsiRenderable, Color, Error, Layer, Prefix, Reset, Result, ToAnsiEscSuffix};
 
+#[doc(hidden)] pub mod node;
+#[doc(inline)] pub use node::{Node, NodeType, fold_nodes};
+
 pub static REGEX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?<markup>[{]((?<reset>reset)|(?<layer>(fg|color|bg):[#]?(?<color>[a-fA-F0-9]{6})))[}]|(?P<text>[^{}]+))+")
         .expect("valid regex")
 });
 
-pub fn parse<T: Display>(input: T) -> Result<String> {
+pub fn render<T: Display>(input: T) -> Result<String> {
     let input = input.to_string();
     let mut tokens = Vec::<String>::new();
     for parsed in REGEX.captures_iter(&input) {
@@ -39,9 +42,8 @@ pub fn parse<T: Display>(input: T) -> Result<String> {
             String::new()
         };
         if color.len() > 0 {
-            tokens.push(prefix.clone());
-            tokens.push(layer.to_string());
             tokens.push(color.to_string());
+            tokens.push(text.to_string());
         }
         if reset.len() > 0 {
             tokens.push(prefix.clone());
