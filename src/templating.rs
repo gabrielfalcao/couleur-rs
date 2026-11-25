@@ -46,7 +46,7 @@ pub fn render<T: Display>(input: T) -> Result<String> {
             tokens.push(prefix.clone());
             tokens.push(reset.clone());
         }
-
+        dbg!(&tokens);
         // match (layer, color) {
         //     (Some(layer), Some(color)) => {
         //         let layer = Layer::from_str(&layer.as_str())?;

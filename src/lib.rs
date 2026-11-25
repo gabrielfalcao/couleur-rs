@@ -42,9 +42,6 @@ pub use util::{
 #[doc(hidden)] pub mod templating;
 #[doc(inline)] pub use templating::{REGEX, render};
 
-#[doc(hidden)] pub mod color;
-#[doc(inline)] pub use color::{BLACK, Color, RGBParseError, RgbTriple, U8Triple, WHITE};
-
 #[doc(hidden)] pub mod errors;
 #[doc(inline)]
 pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Exit, ParseError, Result};
@@ -92,6 +89,18 @@ pub use logging::{get_log_path, local_data_dir, setup_logging, setup_tracing};
 #[doc(hidden)] pub mod float;
 #[doc(inline)]
 pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
+
+#[doc(hidden)] pub mod color;
+#[doc(inline)]
+pub use color::{
+    BLACK,
+    Color,
+    RGBParseError,
+    RgbTriple,
+    U8Triple,
+    WHITE,
+    convert_ansi256_to_rgb_triple,
+};
 
 pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
 pub static PREFIX: LazyMut<PrefixContainer> = LazyMut::new(|| PrefixContainer::default());
