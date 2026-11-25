@@ -52,6 +52,8 @@ pub fn setup_logging() -> Result<()> {
 }
 #[cfg(not(any(feature = "logging", feature = "tracing", feature = "trace-test-debug")))]
 pub fn setup_logging() -> Result<()> {
+    setup_logger()?;
+
     Ok(())
 }
 

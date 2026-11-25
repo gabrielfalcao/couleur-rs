@@ -65,22 +65,36 @@ pub use errors::{ConversionToF32Error, ConversionToU8Error, Error, Exit, ParseEr
 #[doc(hidden)] pub mod contrast;
 #[doc(inline)] pub use contrast::Contrast;
 
-
 #[doc(hidden)] pub mod terminal;
 #[doc(inline)] pub use terminal::{Terminal, TerminalInfo, TerminalInfoError};
 
 // #[cfg(any(feature = "tracing", feature = "logging"))]
-#[doc(hidden)] pub mod logging;
-#[doc(inline)]
-pub use logging::{get_log_path, local_data_dir, setup_logging, setup_tracing};
 #[doc(hidden)] pub mod testing;
 #[doc(hidden)] pub use testing::global_setup;
-pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
-pub static PREFIX: LazyMut<PrefixContainer> = LazyMut::new(|| PrefixContainer::default());
-
 
 #[doc(hidden)] pub mod traits;
 #[doc(inline)] pub use traits::{AnsiRenderable, ToAnsiEscSuffix};
+
+#[doc(hidden)] pub mod renderable_color;
+#[doc(inline)] pub use renderable_color::RenderableColor;
+
+#[doc(hidden)] pub mod cli;
+#[doc(inline)] pub use cli::RenderingOptions;
+
+#[doc(hidden)] pub mod dispatch;
+#[doc(inline)]
+pub use dispatch::{ArgsDispatcher, ParserDispatcher, SubcommandDispatcher};
+
+#[doc(hidden)] pub mod logging;
+#[doc(inline)]
+pub use logging::{get_log_path, local_data_dir, setup_logging, setup_tracing};
+
+#[doc(hidden)] pub mod float;
+#[doc(inline)]
+pub use float::{FloatMetadata, leading_zeros_exp, leading_zeros_fractional};
+
+pub static TERMINAL: LazyLock<TerminalInfo> = LazyLock::new(|| Terminal::info());
+pub static PREFIX: LazyMut<PrefixContainer> = LazyMut::new(|| PrefixContainer::default());
 
 pub fn set_runtime_prefix<T: Into<Prefix>>(prefix: T) {
     let mut current = PREFIX.get_mut();

@@ -8,7 +8,7 @@ use couleur_rs::{
     RenderingOptions,
     Reset,
     Result,
-    parse,
+    render,
     dispatch::ParserDispatcher,
 };
 // use winnow::{Parser as _};
@@ -18,7 +18,7 @@ use winnow::error::ContextError;
     author = "Gabriel Falcão <gabrielteratos@gmail.com",
     version,
     about,
-    long_about = "parse, manipulate, apply contrast algorithms to RGB colors and print in ANSI code"
+    long_about = "render, manipulate, apply contrast algorithms to RGB colors and print in ANSI code"
 )]
 pub struct Cli {
     #[arg(required = true)]
@@ -35,7 +35,7 @@ impl Cli {
         self.text.join(" ")
     }
     pub fn rendered(&self) -> Result<String> {
-        let result = parse(&self.text())?;
+        let result = render(&self.text())?;
 
         Ok(result)
     }

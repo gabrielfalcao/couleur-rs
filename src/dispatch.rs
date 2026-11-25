@@ -1,3 +1,4 @@
+use crate::setup_logging;
 pub trait ParserDispatcher<E: std::error::Error>: clap::Parser
 where
     crate::Exit: From<std::result::Result<(), E>>,
@@ -16,6 +17,7 @@ where
         Ok(())
     }
     fn main() -> crate::Exit {
+        setup_logging().unwrap();
         Self::run().into()
     }
     fn args() -> (Vec<String>, bool) {
