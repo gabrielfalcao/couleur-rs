@@ -131,7 +131,7 @@ impl ToAnsiEscSuffix for Prefix {
     }
 }
 impl AnsiRenderable for Prefix {
-    fn prefix(&self) -> String {
+    fn render(&self) -> String {
         self.to_string()
     }
 }

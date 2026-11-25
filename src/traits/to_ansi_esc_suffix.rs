@@ -28,5 +28,7 @@
 /// [`Reset`]: crate::Reset
 /// [`ToAnsiEscSuffix`]: crate::ToAnsiEscSuffix
 pub trait ToAnsiEscSuffix: Sized + Clone {
-    fn to_ansi_esc_suffix(&self) -> String;
+    fn to_ansi_esc_suffix(&self) -> String {
+        "\x1b[".to_string()
+    }
 }

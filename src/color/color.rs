@@ -261,6 +261,7 @@ impl Color {
         let triple = self.to_triple().iter().map(|v| v.to_string()).collect::<Vec<String>>();
         let color = triple.join(";");
         let mut parts = Vec::<String>::new();
+        parts.push("1".to_string());
         parts.push(layer.code().to_string());
         parts.push("2".to_string());
         parts.push(format!("{color}m"));
